@@ -12,6 +12,7 @@ import io.flutter.plugin.common.StringCodec;
 
 import com.lightstreamer.client.LightstreamerClient;
 import com.lightstreamer.client.Subscription;
+import com.lightstreamer.client.mpn.MpnSubscription;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,19 +32,23 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
 
   private ConcurrentHashMap<String, Subscription> activeSubs = new ConcurrentHashMap<String, Subscription>();
 
-  private static final LightstreamerClient ls = new LightstreamerClient("https://push.lightstreamer.com/", "WELCOME");
+  private ConcurrentHashMap<String, MpnSubscription> activeMpnSubs = new ConcurrentHashMap<String, MpnSubscription>();
+
+  private int prgs_sub = 0;
+
+  private LightstreamerClient ls = new LightstreamerClient("https://push.lightstreamer.com/", "WELCOME");
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "lightstreamer_flutter_client");
+    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.lightstreamer_flutter_client.method");
     channel.setMethodCallHandler(this);
 
 
     clientstatus_channel = new BasicMessageChannel<String>(
-            flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.flutter.clientStatus_channel", StringCodec.INSTANCE);
+            flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.lightstreamer_flutter_client.status", StringCodec.INSTANCE);
 
     subscribedata_channel = new BasicMessageChannel<String>(
-            flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.flutter.subscribedata_channel", StringCodec.INSTANCE);
+            flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.lightstreamer_flutter_client.realtime", StringCodec.INSTANCE);
   }
 
   @Override
@@ -67,6 +72,12 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
         if (!ls.getListeners().isEmpty()) {
           ls.removeListener(ls.getListeners().get(0));
         }
+
+        if (call.hasArgument("user"))
+          ls.connectionDetails.setUser(call.<String>argument("user"));
+
+        if (call.hasArgument("password"))
+          ls.connectionDetails.setPassword(call.<String>argument("password"));
 
         ls.addListener(new MyClientListener(clientstatus_channel));
         ls.connect();
@@ -96,7 +107,7 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
           ls.sendMessage(call.<String>argument("message"));
         }
       }
-    }  else if (call.method.equals("subscribe")) {
+    } else if (call.method.equals("subscribe")) {
       if ( call.hasArgument("mode") ) {
         String mode = call.<String>argument("mode");
         System.out.println("mode: " + mode);
@@ -107,26 +118,130 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
           itemArr = itemList.toArray(itemArr);
 
           if ( call.hasArgument("fieldList") ) {
+            String sub_id = "Ok" + prgs_sub++;
+
             ArrayList<String> fieldList = call.<ArrayList<String>>argument("fieldList");
             System.out.println("fieldList: " + fieldList);
             String[] fieldArr = new String[fieldList.size()];
             fieldArr = fieldList.toArray(fieldArr);
 
             Subscription sub = new Subscription(mode, itemArr, fieldArr);
+
             if (call.hasArgument("dataAdapter"))
               sub.setDataAdapter(call.<String>argument("dataAdapter"));
 
-            sub.addListener(new MySubListener(subscribedata_channel));
+            if (call.hasArgument("requestedSnapshot"))
+              sub.setRequestedSnapshot(call.<String>argument("requestedSnapshot"));
+
+            if (call.hasArgument("requestedBufferSize"))
+              sub.setRequestedBufferSize(call.<String>argument("requestedBufferSize"));
+
+            if (call.hasArgument("requestedMaxFrequency"))
+              sub.setRequestedMaxFrequency(call.<String>argument("requestedMaxFrequency"));
+
+            sub.addListener(new MySubListener(subscribedata_channel,sub_id));
 
             ls.subscribe(sub);
-            activeSubs.put(itemList.get(0), sub);
+
+            activeSubs.put(sub_id, sub);
+
+            result.success(sub_id);
+          } else {
+            result.error("000", "No Fields List specified", null);
           }
+        } else {
+          result.error("000", "No Items List specified", null);
+        }
+      } else {
+        result.error("000", "No subscription mode specified", null);
+      }
+    } else if (call.method.equals("unsubscribe")) {
+      System.out.println("Unsubscribe");
+      if ( call.hasArgument("sub_id") ) {
+        String sub_id = call.<String>argument("sub_id");
+        System.out.println("Sub Id: " + sub_id);
+
+        Subscription sub = activeSubs.remove(sub_id);
+        if ( sub != null ) {
+          ls.unsubscribe(sub);
         }
 
         result.success("Ok");
+      } else {
+        System.out.println("No Sub Id specified");
+
+        result.error("000", "No Items List specified", null);
+      }
+    } else if (call.method.equals("mpnSubscribe")) {
+      if ( call.hasArgument("mode") ) {
+        String mode = call.<String>argument("mode");
+        System.out.println("mode: " + mode);
+        if ( call.hasArgument("itemList") ) {
+          ArrayList<String> itemList = call.<ArrayList<String>>argument("itemList");
+          System.out.println("itemList: " + itemList);
+          String[] itemArr = new String[itemList.size()];
+          itemArr = itemList.toArray(itemArr);
+
+          if ( call.hasArgument("fieldList") ) {
+            String sub_id = "Ok" + prgs_sub++;
+
+            ArrayList<String> fieldList = call.<ArrayList<String>>argument("fieldList");
+            System.out.println("fieldList: " + fieldList);
+            String[] fieldArr = new String[fieldList.size()];
+            fieldArr = fieldList.toArray(fieldArr);
+
+            MpnSubscription sub = new MpnSubscription(mode, itemArr, fieldArr);
+
+            if (call.hasArgument("dataAdapter"))
+              sub.setDataAdapter(call.<String>argument("dataAdapter"));
+
+            if (call.hasArgument("requestedBufferSize"))
+              sub.setRequestedBufferSize(call.<String>argument("requestedBufferSize"));
+
+            if (call.hasArgument("requestedMaxFrequency"))
+              sub.setRequestedMaxFrequency(call.<String>argument("requestedMaxFrequency"));
+
+            if (call.hasArgument("notificationFormat"))
+              sub.setNotificationFormat(call.<String>argument("notificationFormat"));
+
+            if (call.hasArgument("triggerExpression"))
+              sub.setTriggerExpression(call.<String>argument("triggerExpression"));
+
+            sub.addListener(new MyMpnSubListener(subscribedata_channel, sub_id));
+
+            ls.subscribe(sub,true);
+
+            activeMpnSubs.put(sub_id, sub);
+
+            result.success(sub_id);
+          } else {
+            result.error("000", "No Fields List specified", null);
+          }
+        } else {
+          result.error("000", "No Items List specified", null);
+        }
+      } else {
+        result.error("000", "No subscription mode specified", null);
+      }
+    } else if (call.method.equals("mpnUnsubscribe")) {
+      System.out.println("MPN Unsubscribe");
+      if ( call.hasArgument("sub_id") ) {
+        String sub_id = call.<String>argument("sub_id");
+        System.out.println("Sub Id: " + sub_id);
+
+        MpnSubscription sub = activeMpnSubs.remove(sub_id);
+        if ( sub != null ) {
+          ls.unsubscribe(sub);
+        }
+
+        result.success("Ok");
+      } else {
+        System.out.println("No Sub Id specified");
+
+        result.error("000", "No Items List specified", null);
       }
     } else if (call.method.equals("getStatus")) {
-      System.out.println(" get status:" + ls.getStatus());
+      System.out.println("Get Status:" + ls.getStatus());
 
       result.success(ls.getStatus());
     } else {

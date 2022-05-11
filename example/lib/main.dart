@@ -4,6 +4,13 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_flutter_client.dart';
 
+// ignore: non_constant_identifier_names
+String static_sub_id = "";
+
+String _last7 = " ---- ";
+
+Color highlightcolor7 = Colors.blueGrey;
+
 void main() {
   runApp(MyApp());
 }
@@ -30,8 +37,10 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
+      Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
+
       status = await LightstreamerFlutterClient.connect(
-              "https://push.lightstreamer.com/", "WELCOME") ??
+              "https://push.lightstreamer.com/", "WELCOME", params) ??
           'Unknown client session status';
     } on PlatformException {
       status = 'Failed to start Lighstreamer connection.';
@@ -51,11 +60,14 @@ class _MyAppState extends State<MyApp> {
     String currentStatus;
 
     try {
+      Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
+
       currentStatus = await LightstreamerFlutterClient.connect(
-              "https://push.lightstreamer.com/", "WELCOME") ??
+              "https://push.lightstreamer.com/", "WELCOME", params) ??
           'Unknown client session status';
     } on PlatformException catch (e) {
-      currentStatus = "Problems in starting a session with Lightstreamer.";
+      currentStatus =
+          "Problems in starting a session with Lightstreamer: '${e.message}' .";
     }
 
     setState(() {
@@ -70,7 +82,8 @@ class _MyAppState extends State<MyApp> {
       currentStatus = await LightstreamerFlutterClient.disconnect() ??
           'Unknown client session status';
     } on PlatformException catch (e) {
-      currentStatus = "Problems in starting a session with Lightstreamer.";
+      currentStatus =
+          "Problems in starting a session with Lightstreamer: '${e.message}' .";
     }
 
     setState(() {
@@ -101,13 +114,36 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _subscribe() async {
+    String? subId = "";
     try {
-      Map<String, String> params = {"dataAdapter": "STOCKS"};
-      await LightstreamerFlutterClient.subscribe(
+      Map<String, String> params = {
+        "dataAdapter": "STOCKS",
+        "requestedMaxFrequency": "0.3"
+      };
+      subId = await LightstreamerFlutterClient.subscribe(
           "MERGE",
           mySubController.text.split(","),
           "last_price,time,stock_name".split(","),
           params);
+
+      static_sub_id = subId as String;
+
+      LightstreamerFlutterClient.setSubscriptionListener(subId, _values);
+    } on PlatformException catch (e) {
+      // ...
+    }
+  }
+
+  void _values(String item, String fieldName, String fieldValue) {
+    setState(() {
+      _last7 = item + "," + fieldName + "," + fieldValue;
+      highlightcolor7 = Colors.yellow;
+    });
+  }
+
+  Future<void> _unsubscribe() async {
+    try {
+      await LightstreamerFlutterClient.unsubscribe(static_sub_id);
     } on PlatformException catch (e) {
       // ...
     }
@@ -172,6 +208,14 @@ class _MyAppState extends State<MyApp> {
               ElevatedButton(
                 child: const Text('Subscribe'),
                 onPressed: _subscribe,
+              ),
+              ElevatedButton(
+                child: const Text('Unsubscribe'),
+                onPressed: _unsubscribe,
+              ),
+              Text(
+                _last7,
+                style: TextStyle(backgroundColor: highlightcolor7),
               ),
             ],
           ),

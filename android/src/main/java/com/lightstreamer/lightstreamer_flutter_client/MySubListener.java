@@ -16,8 +16,11 @@ public class MySubListener implements SubscriptionListener {
 
     private BasicMessageChannel<String> _subdata_channel;
 
-    public MySubListener(BasicMessageChannel<String> subdata_channel) {
+    private String _subId = "";
+
+    public MySubListener(BasicMessageChannel<String> subdata_channel, String subId) {
         _subdata_channel = subdata_channel;
+        _subId = subId;
     }
 
     @Override
@@ -64,7 +67,7 @@ public class MySubListener implements SubscriptionListener {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        _subdata_channel.send(uItem + "|" + uKey + "|" + uValue);
+                        _subdata_channel.send(_subId + "|" + uItem + "|" + uKey + "|" + uValue);
                     }
                 });
 
