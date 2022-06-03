@@ -62,11 +62,23 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
           System.out.println("serverAddress: " + call.<String>argument("serverAddress"));
 
           ls.connectionDetails.setServerAddress(call.<String>argument("serverAddress"));
+        } else {
+          System.out.println("No serverAddress passed. ");
+
+          result.error("1", "No server address was configured", null);
+
+          return ;
         }
         if ( call.hasArgument("adapterSet") ) {
           System.out.println("adapterSet: " + call.<String>argument("adapterSet"));
 
           ls.connectionDetails.setAdapterSet(call.<String>argument("adapterSet"));
+        } else {
+          System.out.println("No adapterSet passed. ");
+
+          result.error("2", "No adapter set id was configured", null);
+
+          return ;
         }
 
         if (!ls.getListeners().isEmpty()) {

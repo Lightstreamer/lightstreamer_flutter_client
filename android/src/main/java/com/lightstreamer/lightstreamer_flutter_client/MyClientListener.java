@@ -27,19 +27,13 @@ public class MyClientListener implements ClientListener {
     }
 
     @Override
-    public void onServerError(int errorCode, String errorMessage) {
-        // ...
-    }
-
-    @Override
-    public void onStatusChange(final String status) {
-
-        System.out.println("Status changed: " + status);
+    public void onServerError(final int errorCode, final String errorMessage) {
+        System.out.println(new StringBuilder().append("Server error ").append(errorCode).append(" :").append(errorMessage).toString());
         try {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    _clientstatus_channel.send(status);
+                    _clientstatus_channel.send(new StringBuilder().append("ServerError:").append(errorCode).append(errorMessage).toString());
                 }
             });
 
@@ -49,7 +43,34 @@ public class MyClientListener implements ClientListener {
     }
 
     @Override
-    public void onPropertyChange(String property) {
-        // ...
+    public void onStatusChange(final String status) {
+        System.out.println("Status changed: " + status);
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _clientstatus_channel.send(new StringBuilder().append("StatusChange:").append(status).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onPropertyChange(final String property) {
+        System.out.println(new StringBuilder().append("Property Change: ").append(property));
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _clientstatus_channel.send(new StringBuilder().append("PropertyChange:").append(property).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
     }
 }

@@ -40,11 +40,13 @@ class _MyAppState extends State<MyApp> {
       Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
 
       status = await LightstreamerFlutterClient.connect(
-              "https://push.lightstreamer.com/", "WELCOME", params) ??
+              "https://push.lightstreamer.com/", "", params) ??
           'Unknown client session status';
     } on PlatformException {
       status = 'Failed to start Lighstreamer connection.';
     }
+
+    LightstreamerFlutterClient.setClientListener(_clientStatus);
 
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
@@ -138,6 +140,12 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _last7 = item + "," + fieldName + "," + fieldValue;
       highlightcolor7 = Colors.yellow;
+    });
+  }
+
+  void _clientStatus(String msg) {
+    setState(() {
+      _status = msg;
     });
   }
 

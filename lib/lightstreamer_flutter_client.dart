@@ -16,6 +16,8 @@ class LightstreamerFlutterClient {
 
   static Map<String, Function> subscriptionListeners = {};
 
+  static Function? clientListener;
+
   // mandatory arguments:
   // serverAddress - String
   // adapterSet - String
@@ -162,6 +164,12 @@ class LightstreamerFlutterClient {
     return status;
   }
 
+  static void setClientListener(Function listener) {
+    lightstreamer_clientStatus_channel.setMessageHandler(_consumeClientStatus);
+
+    clientListener = listener;
+  }
+
   static void setSubscriptionListener(String subId, Function subListener) {
     if (subscriptionListeners.isEmpty) {
       lightstreamer_realtime_channel.setMessageHandler(_consumeRTMessage);
@@ -224,6 +232,16 @@ class LightstreamerFlutterClient {
     if (subscriptionListeners.containsKey(subId)) {
       subscriptionListeners[subId]!(item, fname, fvalue);
     }
+
+    return "ok";
+  }
+
+  static Future<String> _consumeClientStatus(String? message) async {
+    String currentMessage = message as String;
+
+    developer.log("Received message: " + currentMessage);
+
+    clientListener!(message);
 
     return "ok";
   }
