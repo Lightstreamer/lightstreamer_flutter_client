@@ -28,6 +28,8 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
 
   private BasicMessageChannel<String> clientstatus_channel;
 
+  private BasicMessageChannel<String> messagestatus_channel;
+
   private BasicMessageChannel<String> subscribedata_channel;
 
   private ConcurrentHashMap<String, Subscription> activeSubs = new ConcurrentHashMap<String, Subscription>();
@@ -43,9 +45,11 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.lightstreamer_flutter_client.method");
     channel.setMethodCallHandler(this);
 
-
     clientstatus_channel = new BasicMessageChannel<String>(
             flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.lightstreamer_flutter_client.status", StringCodec.INSTANCE);
+
+    messagestatus_channel = new BasicMessageChannel<String>(
+            flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.lightstreamer_flutter_client.messages", StringCodec.INSTANCE);
 
     subscribedata_channel = new BasicMessageChannel<String>(
             flutterPluginBinding.getBinaryMessenger(), "com.lightstreamer.lightstreamer_flutter_client.realtime", StringCodec.INSTANCE);
@@ -118,6 +122,48 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
         if (ls.getStatus().startsWith("CONNECTED:")) {
           ls.sendMessage(call.<String>argument("message"));
         }
+      } else {
+        System.out.println("No message passed. ");
+
+        result.error("3", "No message", null);
+
+        return ;
+      }
+    } else if (call.method.equals("sendMessageExt")) {
+      if ( call.hasArgument("message") ) {
+        int timeout = 4000;
+        String seq = "DEFAULT_SEQ1";
+        boolean enq = false;
+
+        System.out.println("message: " + call.<String>argument("message"));
+
+        if ( call.hasArgument("sequence") ) {
+          System.out.println("message: " + call.<String>argument("sequence"));
+
+          seq = call.<String>argument("sequence");
+        }
+        if ( call.hasArgument("delayTimeout") ) {
+          System.out.println("message: " + call.<Integer>argument("delayTimeout"));
+
+          timeout = call.<Integer>argument("delayTimeout").intValue();
+        }
+        if ( call.hasArgument("enqueueWhileDisconnected") ) {
+          System.out.println("message: " + call.<Boolean>argument("enqueueWhileDisconnected"));
+
+          if ( call.<Boolean>argument("enqueueWhileDisconnected").booleanValue()) {
+            enq = true;
+          }
+        }
+
+        if (ls.getStatus().startsWith("CONNECTED:")) {
+          ls.sendMessage(call.<String>argument("message"), seq, timeout, new MyClientMessageLisener(messagestatus_channel), enq);
+        }
+      } else {
+        System.out.println("No message passed. ");
+
+        result.error("3", "No message", null);
+
+        return ;
       }
     } else if (call.method.equals("subscribe")) {
       if ( call.hasArgument("mode") ) {

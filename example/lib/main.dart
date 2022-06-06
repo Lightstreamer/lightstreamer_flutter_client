@@ -109,7 +109,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _sendMessage() async {
     try {
-      await LightstreamerFlutterClient.sendMessage(myController.text);
+      // await LightstreamerFlutterClient.sendMessage(myController.text);
+
+      await LightstreamerFlutterClient.sendMessageExt(
+          myController.text, "Sequence1", 5000, _clientmessages, true);
     } on PlatformException catch (e) {
       // ...
     }
@@ -144,6 +147,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _clientStatus(String msg) {
+    setState(() {
+      _status = msg;
+    });
+  }
+
+  void _clientmessages(String msg) {
     setState(() {
       _status = msg;
     });

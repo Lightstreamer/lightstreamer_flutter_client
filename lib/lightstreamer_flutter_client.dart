@@ -14,9 +14,16 @@ class LightstreamerFlutterClient {
   static const lightstreamer_realtime_channel = BasicMessageChannel<String>(
       'com.lightstreamer.lightstreamer_flutter_client.realtime', StringCodec());
 
+  static const lightstreamer_clientMessage_channel =
+      BasicMessageChannel<String>(
+          'com.lightstreamer.lightstreamer_flutter_client.messages',
+          StringCodec());
+
   static Map<String, Function> subscriptionListeners = {};
 
   static Function? clientListener;
+
+  static Function? messageListener;
 
   // mandatory arguments:
   // serverAddress - String
@@ -202,18 +209,25 @@ class LightstreamerFlutterClient {
     return status;
   }
 
+  // sendMessage with fire-and-forget behavior
   static Future sendMessage(String msg) async {
     await _channel.invokeMethod('sendMessage', {"message": msg});
     return;
   }
 
+  // sendMessage extended version
   static Future sendMessageExt(String msg, String sequence, int delayTimeout,
-      bool listener, bool enqueueWhileDisconnected) async {
-    await _channel.invokeMethod('sendMessage', {
+      Function mlistener, bool enqueueWhileDisconnected) async {
+    lightstreamer_clientMessage_channel
+        .setMessageHandler(_consumeClientMessage);
+
+    messageListener = mlistener;
+
+    await _channel.invokeMethod('sendMessageExt', {
       "message": msg,
       "sequence": sequence,
       "delayTimeout": delayTimeout,
-      "listener": listener,
+      "listener": true,
       "enqueueWhileDisconnected": enqueueWhileDisconnected
     });
     return;
@@ -242,6 +256,16 @@ class LightstreamerFlutterClient {
     developer.log("Received message: " + currentMessage);
 
     clientListener!(message);
+
+    return "ok";
+  }
+
+  static Future<String> _consumeClientMessage(String? message) async {
+    String currentMessage = message as String;
+
+    developer.log("Received message client: " + currentMessage);
+
+    messageListener!(message);
 
     return "ok";
   }
