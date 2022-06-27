@@ -69,7 +69,7 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
         } else {
           System.out.println("No serverAddress passed. ");
 
-          result.error("1", "No server address was configured", null);
+          result.error("11", "No server address was configured", null);
 
           return ;
         }
@@ -80,7 +80,7 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
         } else {
           System.out.println("No adapterSet passed. ");
 
-          result.error("2", "No adapter set id was configured", null);
+          result.error("12", "No adapter set id was configured", null);
 
           return ;
         }
@@ -125,43 +125,71 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
       } else {
         System.out.println("No message passed. ");
 
-        result.error("3", "No message", null);
+        result.error("10", "No message", null);
 
         return ;
       }
     } else if (call.method.equals("sendMessageExt")) {
       if ( call.hasArgument("message") ) {
-        int timeout = 4000;
-        String seq = "DEFAULT_SEQ1";
+        int timeout = -1;
+        String seq = "DEFAULT_FLUTTERPLUGIN_SEQUENCE";
         boolean enq = false;
+        boolean addListnr = false;
 
         System.out.println("message: " + call.<String>argument("message"));
 
         if ( call.hasArgument("sequence") ) {
-          System.out.println("message: " + call.<String>argument("sequence"));
+          System.out.println("sequence: " + call.<String>argument("sequence"));
 
           seq = call.<String>argument("sequence");
+          if (seq == null) {
+            System.out.println("sequence forced to \"UNORDERED_MESSAGES\" ");
+          }
         }
         if ( call.hasArgument("delayTimeout") ) {
-          System.out.println("message: " + call.<Integer>argument("delayTimeout"));
+          System.out.println("delayTimeout: " + call.<Integer>argument("delayTimeout"));
 
-          timeout = call.<Integer>argument("delayTimeout").intValue();
+          if (call.<Integer>argument("delayTimeout") == null) {
+            System.out.println("delayTimeout forced to negative");
+          } else {
+            timeout = call.<Integer>argument("delayTimeout").intValue();
+          }
+
         }
         if ( call.hasArgument("enqueueWhileDisconnected") ) {
-          System.out.println("message: " + call.<Boolean>argument("enqueueWhileDisconnected"));
+          System.out.println("enqueueWhileDisconnected: " + call.<Boolean>argument("enqueueWhileDisconnected"));
 
-          if ( call.<Boolean>argument("enqueueWhileDisconnected").booleanValue()) {
-            enq = true;
+          if (call.<Integer>argument("enqueueWhileDisconnected") == null) {
+            System.out.println("enqueueWhileDisconnected forced to false");
+          } else {
+            if (call.<Boolean>argument("enqueueWhileDisconnected").booleanValue()) {
+              enq = true;
+            }
+          }
+        }
+        if ( call.hasArgument("listener") ) {
+          System.out.println("listener: " + call.<Boolean>argument("listener"));
+
+          if (call.<Integer>argument("listener") == null) {
+            System.out.println("No listener");
+          } else {
+            if (call.<Boolean>argument("listener").booleanValue()) {
+              addListnr = true;
+            }
           }
         }
 
         if (ls.getStatus().startsWith("CONNECTED:")) {
-          ls.sendMessage(call.<String>argument("message"), seq, timeout, new MyClientMessageLisener(messagestatus_channel), enq);
+          if (addListnr) {
+            ls.sendMessage(call.<String>argument("message"), seq, timeout, new MyClientMessageLisener(messagestatus_channel), enq);
+          } else {
+            ls.sendMessage(call.<String>argument("message"), seq, timeout, null, enq);
+          }
         }
       } else {
         System.out.println("No message passed. ");
 
-        result.error("3", "No message", null);
+        result.error("9", "No message", null);
 
         return ;
       }
@@ -205,13 +233,13 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
 
             result.success(sub_id);
           } else {
-            result.error("000", "No Fields List specified", null);
+            result.error("6", "No Fields List specified", null);
           }
         } else {
-          result.error("000", "No Items List specified", null);
+          result.error("7", "No Items List specified", null);
         }
       } else {
-        result.error("000", "No subscription mode specified", null);
+        result.error("8", "No subscription mode specified", null);
       }
     } else if (call.method.equals("unsubscribe")) {
       System.out.println("Unsubscribe");
@@ -228,7 +256,7 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
       } else {
         System.out.println("No Sub Id specified");
 
-        result.error("000", "No Items List specified", null);
+        result.error("5", "No Items List specified", null);
       }
     } else if (call.method.equals("mpnSubscribe")) {
       if ( call.hasArgument("mode") ) {
@@ -273,13 +301,13 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
 
             result.success(sub_id);
           } else {
-            result.error("000", "No Fields List specified", null);
+            result.error("1", "No Fields List specified", null);
           }
         } else {
-          result.error("000", "No Items List specified", null);
+          result.error("2", "No Items List specified", null);
         }
       } else {
-        result.error("000", "No subscription mode specified", null);
+        result.error("3", "No subscription mode specified", null);
       }
     } else if (call.method.equals("mpnUnsubscribe")) {
       System.out.println("MPN Unsubscribe");
@@ -296,7 +324,7 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
       } else {
         System.out.println("No Sub Id specified");
 
-        result.error("000", "No Items List specified", null);
+        result.error("4", "No Items List specified", null);
       }
     } else if (call.method.equals("getStatus")) {
       System.out.println("Get Status:" + ls.getStatus());

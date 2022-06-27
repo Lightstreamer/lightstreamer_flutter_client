@@ -7,9 +7,9 @@ import 'package:lightstreamer_flutter_client/lightstreamer_flutter_client.dart';
 // ignore: non_constant_identifier_names
 String static_sub_id = "";
 
-String _last7 = " ---- ";
+String _lastUpdate = " ---- ";
 
-Color highlightcolor7 = Colors.blueGrey;
+Color highlightcolorLast = Colors.blueGrey;
 
 void main() {
   runApp(MyApp());
@@ -112,7 +112,9 @@ class _MyAppState extends State<MyApp> {
       // await LightstreamerFlutterClient.sendMessage(myController.text);
 
       await LightstreamerFlutterClient.sendMessageExt(
-          myController.text, "Sequence1", 5000, _clientmessages, true);
+          "Hello World", "Sequence1", 5000, _clientmessages, true);
+      // await LightstreamerFlutterClient.sendMessageExt(
+      //    myController.text, null, null, _clientmessages, true);
     } on PlatformException catch (e) {
       // ...
     }
@@ -141,8 +143,8 @@ class _MyAppState extends State<MyApp> {
 
   void _values(String item, String fieldName, String fieldValue) {
     setState(() {
-      _last7 = item + "," + fieldName + "," + fieldValue;
-      highlightcolor7 = Colors.yellow;
+      _lastUpdate = item + "," + fieldName + "," + fieldValue;
+      highlightcolorLast = Colors.yellow;
     });
   }
 
@@ -231,8 +233,8 @@ class _MyAppState extends State<MyApp> {
                 onPressed: _unsubscribe,
               ),
               Text(
-                _last7,
-                style: TextStyle(backgroundColor: highlightcolor7),
+                _lastUpdate,
+                style: TextStyle(backgroundColor: highlightcolorLast),
               ),
             ],
           ),

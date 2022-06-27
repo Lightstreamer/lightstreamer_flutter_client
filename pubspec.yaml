@@ -1,5 +1,5 @@
 name: lightstreamer_flutter_client
-description: A new flutter plugin project.
+description: A lutter plugin for Lightstreamer, built on top of Android SDK.
 version: 0.0.1
 homepage:
 
@@ -29,8 +29,8 @@ flutter:
       android:
         package: com.lightstreamer.lightstreamer_flutter_client
         pluginClass: LightstreamerFlutterClientPlugin
-      ios:
-        pluginClass: LightstreamerFlutterClientPlugin
+      #ios:
+      #  pluginClass: LightstreamerFlutterClientPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

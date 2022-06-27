@@ -216,18 +216,23 @@ class LightstreamerFlutterClient {
   }
 
   // sendMessage extended version
-  static Future sendMessageExt(String msg, String sequence, int delayTimeout,
-      Function mlistener, bool enqueueWhileDisconnected) async {
-    lightstreamer_clientMessage_channel
-        .setMessageHandler(_consumeClientMessage);
+  static Future sendMessageExt(String msg, String? sequence, int? delayTimeout,
+      Function? mlistener, bool enqueueWhileDisconnected) async {
+    bool listnr = false;
 
-    messageListener = mlistener;
+    if (mlistener != null) {
+      developer.log("Received mlistener");
+      lightstreamer_clientMessage_channel
+          .setMessageHandler(_consumeClientMessage);
+      messageListener = mlistener;
+      listnr = true;
+    }
 
     await _channel.invokeMethod('sendMessageExt', {
       "message": msg,
       "sequence": sequence,
       "delayTimeout": delayTimeout,
-      "listener": true,
+      "listener": listnr,
       "enqueueWhileDisconnected": enqueueWhileDisconnected
     });
     return;
