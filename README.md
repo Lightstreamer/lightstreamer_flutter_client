@@ -19,7 +19,8 @@ To connect to a Lightstreamer Server a LightstreamerClient object has to be crea
     String currentStatus;
 
     try {
-      Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
+      Map<String, String> params = {"user": "prova1", 
+             "password": "qwerty!"};
 
       currentStatus = await LightstreamerFlutterClient.connect(
               "https://push.lightstreamer.com/", "WELCOME", params) ??

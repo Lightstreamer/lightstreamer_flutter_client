@@ -15,6 +15,8 @@ import com.lightstreamer.client.Subscription;
 import com.lightstreamer.client.mpn.MpnSubscription;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -94,6 +96,103 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
 
         if (call.hasArgument("password"))
           ls.connectionDetails.setPassword(call.<String>argument("password"));
+
+        try {
+          if (call.hasArgument("forcedTransport")) {
+            ls.connectionOptions.setForcedTransport(call.<String>argument("forcedTransport"));
+            System.out.println("Forced Transport: " + call.<String>argument("forcedTransport"));
+          }
+        } catch (Exception e) {
+          System.out.println("Forced Transport error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("firstRetryMaxDelay"))
+            ls.connectionOptions.setFirstRetryMaxDelay(Long.parseLong(call.<String>argument("firstRetryMaxDelay")));
+        } catch (Exception e) {
+          System.out.println("First Retry Max Delay error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("retryDelay"))
+            ls.connectionOptions.setRetryDelay(Long.parseLong(call.<String>argument("retryDelay")));
+        } catch (Exception e) {
+          System.out.println("Retry Delay error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("idleTimeout"))
+            ls.connectionOptions.setIdleTimeout(Long.parseLong(call.<String>argument("idleTimeout")));
+        } catch (Exception e) {
+          System.out.println("Idle Timeout error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("reconnectTimeout"))
+            ls.connectionOptions.setReconnectTimeout(Long.parseLong(call.<String>argument("reconnectTimeout")));
+        } catch (Exception e) {
+          System.out.println("Reconnect Timeout error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("stalledTimeout"))
+            ls.connectionOptions.setStalledTimeout(Long.parseLong(call.<String>argument("stalledTimeout")));
+        } catch (Exception e) {
+          System.out.println("Stalled Timeout error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("sessionRecoveryTimeout"))
+            ls.connectionOptions.setSessionRecoveryTimeout(Long.parseLong(call.<String>argument("sessionRecoveryTimeout")));
+        } catch (Exception e) {
+          System.out.println("Session Recovery Timeout error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("keepaliveInterval"))
+            ls.connectionOptions.setKeepaliveInterval(Long.parseLong(call.<String>argument("keepaliveInterval")));
+        } catch (Exception e) {
+          System.out.println("Keepalive Interval error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("pollingInterval"))
+            ls.connectionOptions.setPollingInterval(Long.parseLong(call.<String>argument("pollingInterval")));
+        } catch (Exception e) {
+          System.out.println("Polling Interval error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("reverseHeartbeatInterval"))
+            ls.connectionOptions.setReverseHeartbeatInterval(Long.parseLong(call.<String>argument("reverseHeartbeatInterval")));
+        } catch (Exception e) {
+          System.out.println("Reverse Heartbeat Interval error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("maxBandwidth"))
+            ls.connectionOptions.setRequestedMaxBandwidth(call.<String>argument("maxBandwidth"));
+        } catch (Exception e) {
+          System.out.println("Max Bandwidth error: " + e.getMessage());
+        }
+
+        try {
+          if (call.hasArgument("httpExtraHeaders")) {
+            String s = call.<String>argument("httpExtraHeaders");
+            System.out.println(" HTTP Extra Headers: " + s);
+            Map<String, String> myMap = new HashMap<String, String>();
+            String[] pairs = s.split(",");
+            for (int i=0;i<pairs.length;i++) {
+              String pair = pairs[i];
+              String[] keyValue = pair.split(":");
+              myMap.put(keyValue[0], keyValue[1]);
+            }
+
+            ls.connectionOptions.setHttpExtraHeaders(myMap);
+          }
+        } catch (Exception e) {
+          System.out.println("HTTP Extra Headers error: " + e.getMessage());
+        }
 
         ls.addListener(new MyClientListener(clientstatus_channel));
         ls.connect();

@@ -12,6 +12,8 @@ public class MyClientListener implements ClientListener {
 
     private BasicMessageChannel<String> _clientstatus_channel;
 
+    private LightstreamerClient client;
+
     public MyClientListener(BasicMessageChannel<String> clientstatus_channel) {
         _clientstatus_channel = clientstatus_channel;
     }
@@ -23,7 +25,7 @@ public class MyClientListener implements ClientListener {
 
     @Override
     public void onListenStart(LightstreamerClient client) {
-        // ...
+        this.client = client;
     }
 
     @Override
@@ -61,6 +63,10 @@ public class MyClientListener implements ClientListener {
     @Override
     public void onPropertyChange(final String property) {
         System.out.println(new StringBuilder().append("Property Change: ").append(property));
+
+        if (property.equalsIgnoreCase("realMaxBandwidth")) {
+            System.out.println(new StringBuilder().append("Real Max Bandwidth: ").append(this.client.connectionOptions.getRealMaxBandwidth()));
+        }
         try {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override

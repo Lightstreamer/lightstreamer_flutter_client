@@ -62,7 +62,22 @@ class _MyAppState extends State<MyApp> {
     String currentStatus;
 
     try {
-      Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
+      Map<String, String> params = {
+        "user": "prova1",
+        "password": "qwerty!",
+        "forcedTransport": "WS",
+        "firstRetryMaxDelay": "1500",
+        "retryDelay": "3850",
+        "idleTimeout": "5000",
+        "reconnectTimeout": "7500",
+        "stalledTimeout": "pioajasol",
+        "sessionRecoveryTimeout": "12500",
+        "keepaliveInterval": "5000",
+        "pollingInterval": "5700",
+        "reverseHeartbeatInterval": "8890",
+        "maxBandwidth": "10.1",
+        // "httpExtraHeaders": "{Pippo: Ciao, Pluto: 3}"
+      };
 
       currentStatus = await LightstreamerFlutterClient.connect(
               "https://push.lightstreamer.com/", "WELCOME", params) ??
@@ -111,10 +126,10 @@ class _MyAppState extends State<MyApp> {
     try {
       // await LightstreamerFlutterClient.sendMessage(myController.text);
 
-      await LightstreamerFlutterClient.sendMessageExt(
-          "Hello World", "Sequence1", 5000, _clientmessages, true);
       // await LightstreamerFlutterClient.sendMessageExt(
-      //    myController.text, null, null, _clientmessages, true);
+      //      "Hello World", "Sequence1", 5000, _clientmessages, true);
+      await LightstreamerFlutterClient.sendMessageExt(
+          myController.text, null, null, _clientmessages, true);
     } on PlatformException catch (e) {
       // ...
     }
@@ -173,7 +188,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Connect'),
+          title: const Text('Lightstreamer Flutter Plugin Example'),
         ),
         body: Center(
           child: Column(

@@ -47,6 +47,66 @@ class LightstreamerFlutterClient {
           "password", () => parameters.remove("password") as Object);
     }
 
+    if (parameters.containsKey("forcedTransport")) {
+      arguments.putIfAbsent("forcedTransport",
+          () => parameters.remove("forcedTransport") as Object);
+    }
+
+    if (parameters.containsKey("firstRetryMaxDelay")) {
+      arguments.putIfAbsent("firstRetryMaxDelay",
+          () => parameters.remove("firstRetryMaxDelay") as Object);
+    }
+
+    if (parameters.containsKey("retryDelay")) {
+      arguments.putIfAbsent(
+          "retryDelay", () => parameters.remove("retryDelay") as Object);
+    }
+
+    if (parameters.containsKey("idleTimeout")) {
+      arguments.putIfAbsent(
+          "idleTimeout", () => parameters.remove("idleTimeout") as Object);
+    }
+
+    if (parameters.containsKey("reconnectTimeout")) {
+      arguments.putIfAbsent("reconnectTimeout",
+          () => parameters.remove("reconnectTimeout") as Object);
+    }
+
+    if (parameters.containsKey("stalledTimeout")) {
+      arguments.putIfAbsent("stalledTimeout",
+          () => parameters.remove("stalledTimeout") as Object);
+    }
+
+    if (parameters.containsKey("keepaliveInterval")) {
+      arguments.putIfAbsent("keepaliveInterval",
+          () => parameters.remove("keepaliveInterval") as Object);
+    }
+
+    if (parameters.containsKey("pollingInterval")) {
+      arguments.putIfAbsent("pollingInterval",
+          () => parameters.remove("pollingInterval") as Object);
+    }
+
+    if (parameters.containsKey("reverseHeartbeatInterval")) {
+      arguments.putIfAbsent("reverseHeartbeatInterval",
+          () => parameters.remove("reverseHeartbeatInterval") as Object);
+    }
+
+    if (parameters.containsKey("sessionRecoveryTimeout")) {
+      arguments.putIfAbsent("sessionRecoveryTimeout",
+          () => parameters.remove("sessionRecoveryTimeout") as Object);
+    }
+
+    if (parameters.containsKey("maxBandwidth")) {
+      arguments.putIfAbsent(
+          "maxBandwidth", () => parameters.remove("maxBandwidth") as Object);
+    }
+
+    if (parameters.containsKey("httpExtraHeaders")) {
+      arguments.putIfAbsent("httpExtraHeaders",
+          () => parameters.remove("httpExtraHeaders") as Object);
+    }
+
     final String? status = await _channel.invokeMethod('connect', arguments);
 
     return status;
