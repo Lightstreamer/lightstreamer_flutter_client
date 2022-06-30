@@ -76,8 +76,12 @@ class _MyAppState extends State<MyApp> {
         "pollingInterval": "5700",
         "reverseHeartbeatInterval": "8890",
         "maxBandwidth": "10.1",
-        // "httpExtraHeaders": "{Pippo: Ciao, Pluto: 3}"
+        "httpExtraHeaders": "{x-lightstreamer: prova1, x-test: abcdef}",
+        "httpExtraHeadersOnSessionCreationOnly": "true",
+        // "proxy": "{HTTP,localhost,19540,1,1}"
       };
+
+      Map<String, String> params2 = {"user": "prova1", "password": "qwerty!"};
 
       currentStatus = await LightstreamerFlutterClient.connect(
               "https://push.lightstreamer.com/", "WELCOME", params) ??
@@ -140,13 +144,25 @@ class _MyAppState extends State<MyApp> {
     try {
       Map<String, String> params = {
         "dataAdapter": "STOCKS",
-        "requestedMaxFrequency": "0.3"
+        "requestedMaxFrequency": "7",
+        "requestedSnapshot": "yes"
       };
       subId = await LightstreamerFlutterClient.subscribe(
           "MERGE",
           mySubController.text.split(","),
           "last_price,time,stock_name".split(","),
           params);
+
+      // Map<String, String> params2 = {
+      //  "dataAdapter": "CHAT",
+      //  "requestedMaxFrequency": "7",
+      //  "requestedSnapshot": "yes"
+      // };
+      // subId = await LightstreamerFlutterClient.subscribe(
+      //    "DISTINCT",
+      //    mySubController.text.split(","),
+      //    "message,timestamp".split(","),
+      //    params2);
 
       static_sub_id = subId as String;
 
@@ -158,7 +174,8 @@ class _MyAppState extends State<MyApp> {
 
   void _values(String item, String fieldName, String fieldValue) {
     setState(() {
-      _lastUpdate = item + "," + fieldName + "," + fieldValue;
+      _lastUpdate =
+          item + "," + fieldName + "," + fieldValue + "\n" + _lastUpdate;
       highlightcolorLast = Colors.yellow;
     });
   }
@@ -247,10 +264,12 @@ class _MyAppState extends State<MyApp> {
                 child: const Text('Unsubscribe'),
                 onPressed: _unsubscribe,
               ),
-              Text(
-                _lastUpdate,
-                style: TextStyle(backgroundColor: highlightcolorLast),
-              ),
+              Text(_lastUpdate,
+                  maxLines: 20,
+                  style: TextStyle(backgroundColor: highlightcolorLast),
+                  overflow: TextOverflow.fade,
+                  textDirection: TextDirection.ltr,
+                  textAlign: TextAlign.justify),
             ],
           ),
         ),

@@ -24,8 +24,20 @@ public class MySubListener implements SubscriptionListener {
     }
 
     @Override
-    public void onClearSnapshot(String itemName, int itemPos) {
+    public void onClearSnapshot(final String itemName, final int itemPos) {
         System.out.println("Server has cleared the current status of the chat");
+
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _subdata_channel.send(new StringBuilder().append("onClearSnapshot|").append(itemName).append("|").append(itemPos).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
     }
 
     @Override
@@ -39,13 +51,37 @@ public class MySubListener implements SubscriptionListener {
     }
 
     @Override
-    public void onEndOfSnapshot(String arg0, int arg1) {
+    public void onEndOfSnapshot(final String itemName, final int itemPos) {
         System.out.println("Snapshot is now fully received, from now on only real-time messages will be received");
+
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _subdata_channel.send(new StringBuilder().append("onEndOfSnapshot|").append(itemName).append("|").append(itemPos).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
     }
 
     @Override
-    public void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) {
+    public void onItemLostUpdates(final String itemName, final int itemPos, final int lostUpdates) {
         System.out.println(lostUpdates + " messages were lost");
+
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _subdata_channel.send(new StringBuilder().append("onItemLostUpdates|").append(_subId).append("|").append(itemName).append("|").append(itemPos).append("|").append(lostUpdates).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
     }
 
     @Override
@@ -67,7 +103,7 @@ public class MySubListener implements SubscriptionListener {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        _subdata_channel.send(_subId + "|" + uItem + "|" + uKey + "|" + uValue);
+                        _subdata_channel.send(new StringBuilder().append("onItemUpdate|").append(_subId).append("|").append(uItem).append("|").append(uKey).append("|").append(uValue).toString());
                     }
                 });
 
@@ -95,8 +131,20 @@ public class MySubListener implements SubscriptionListener {
     }
 
     @Override
-    public void onSubscriptionError(int code, String message) {
+    public void onSubscriptionError(final int code, final String message) {
         System.out.println("Cannot subscribe because of error " + code + ": " + message);
+
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _subdata_channel.send(new StringBuilder().append("onSubscriptionError|").append(code).append("|").append(message).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
     }
 
     @Override

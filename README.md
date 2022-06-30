@@ -57,7 +57,8 @@ In order to receive real-time updates from the Lightstreamer server the client n
     try {
       Map<String, String> params = {
         "dataAdapter": "STOCKS",
-        "requestedMaxFrequency": "0.3"
+        "requestedMaxFrequency": "0.3",
+        "requestedSnapshot": "yes"
       };
       subId = await LightstreamerFlutterClient.subscribe(
           "MERGE",

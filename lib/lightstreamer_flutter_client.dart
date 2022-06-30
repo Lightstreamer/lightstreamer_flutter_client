@@ -107,6 +107,18 @@ class LightstreamerFlutterClient {
           () => parameters.remove("httpExtraHeaders") as Object);
     }
 
+    if (parameters.containsKey("httpExtraHeadersOnSessionCreationOnly")) {
+      arguments.putIfAbsent(
+          "httpExtraHeadersOnSessionCreationOnly",
+          () => parameters.remove("httpExtraHeadersOnSessionCreationOnly")
+              as Object);
+    }
+
+    if (parameters.containsKey("proxy")) {
+      arguments.putIfAbsent(
+          "proxy", () => parameters.remove("proxy") as Object);
+    }
+
     final String? status = await _channel.invokeMethod('connect', arguments);
 
     return status;
@@ -303,13 +315,17 @@ class LightstreamerFlutterClient {
 
     developer.log("Received message: " + currentValue);
     List<String> l = currentValue.split("|");
-    String subId = l.first;
-    String item = l[1];
-    String fname = l[2];
-    String fvalue = l.last;
+    if (l.first == "onItemUpdate") {
+      String subId = l[1];
+      String item = l[2];
+      String fname = l[3];
+      String fvalue = l.last;
 
-    if (subscriptionListeners.containsKey(subId)) {
-      subscriptionListeners[subId]!(item, fname, fvalue);
+      if (subscriptionListeners.containsKey(subId)) {
+        subscriptionListeners[subId]!(item, fname, fvalue);
+      }
+    } else {
+      clientListener!(message);
     }
 
     return "ok";
