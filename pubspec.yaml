@@ -1,8 +1,9 @@
 name: lightstreamer_flutter_client
 description: A lutter plugin for Lightstreamer, built on top of Android SDK.
 version: 1.0.0
-homepage:
-repository:
+homepage: https://pub.dev/packages/lightstreamer_flutter_client
+repository: https://github.com/Lightstreamer/lightstreamer_flutter_client
+publish_to: none
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
