@@ -84,7 +84,7 @@ class _MyAppState extends State<MyApp> {
       Map<String, String> params2 = {"user": "prova1", "password": "qwerty!"};
 
       currentStatus = await LightstreamerFlutterClient.connect(
-              "https://push.lightstreamer.com/", "WELCOME", params) ??
+              "https://push.lightstreamer.com/", "DEMO", params) ??
           'Unknown client session status';
     } on PlatformException catch (e) {
       currentStatus =
@@ -143,15 +143,21 @@ class _MyAppState extends State<MyApp> {
     String? subId = "";
     try {
       Map<String, String> params = {
-        "dataAdapter": "STOCKS",
+        "dataAdapter": "QUOTE_ADAPTER",
         "requestedMaxFrequency": "7",
-        "requestedSnapshot": "yes"
+        "requestedSnapshot": "yes",
+        // "commandSecondLevelDataAdapter": "QUOTE_ADAPTER",
+        // "commandSecondLevelFields": "stock_name,last_price,time"
       };
+
       subId = await LightstreamerFlutterClient.subscribe(
           "MERGE",
           mySubController.text.split(","),
           "last_price,time,stock_name".split(","),
           params);
+
+      // subId = await LightstreamerFlutterClient.subscribe("COMMAND",
+      //     "portfolio1".split(","), "key,command,qty".split(","), params);
 
       // Map<String, String> params2 = {
       //  "dataAdapter": "CHAT",

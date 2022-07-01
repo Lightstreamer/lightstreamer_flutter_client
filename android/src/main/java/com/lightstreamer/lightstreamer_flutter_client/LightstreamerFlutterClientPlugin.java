@@ -211,7 +211,17 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
           if (call.hasArgument("requestedMaxFrequency"))
             sub.setRequestedMaxFrequency(call.<String>argument("requestedMaxFrequency"));
 
-          sub.addListener(new MySubListener(subscribedata_channel,sub_id));
+          if (call.hasArgument("commandSecondLevelDataAdapter"))
+            sub.setCommandSecondLevelDataAdapter(call.<String>argument("commandSecondLevelDataAdapter"));
+
+          if ( call.hasArgument("commandSecondLevelFields") ) {
+            String sfieldList = call.<String>argument("commandSecondLevelFields");
+            System.out.println("commandSecondLevelFields: " + sfieldList);
+
+            sub.setCommandSecondLevelFields(sfieldList.split(","));
+          }
+
+          sub.addListener(new MySubListener(subscribedata_channel,sub_id,mode.equalsIgnoreCase("COMMAND")));
 
           ls.subscribe(sub);
 

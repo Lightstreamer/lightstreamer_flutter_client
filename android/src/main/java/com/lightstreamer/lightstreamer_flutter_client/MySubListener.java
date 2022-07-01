@@ -18,9 +18,12 @@ public class MySubListener implements SubscriptionListener {
 
     private String _subId = "";
 
-    public MySubListener(BasicMessageChannel<String> subdata_channel, String subId) {
+    private boolean _commandMode = false;
+
+    public MySubListener(BasicMessageChannel<String> subdata_channel, String subId, boolean comm) {
         _subdata_channel = subdata_channel;
         _subId = subId;
+        _commandMode = comm;
     }
 
     @Override
@@ -41,13 +44,37 @@ public class MySubListener implements SubscriptionListener {
     }
 
     @Override
-    public void onCommandSecondLevelItemLostUpdates(int lostUpdates, String key) {
-        //not on this subscription
+    public void onCommandSecondLevelItemLostUpdates(final int lostUpdates, final String key) {
+        System.out.println(lostUpdates + " messages were lost for key: " + key);
+
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _subdata_channel.send(new StringBuilder().append("onCommandSecondLevelItemLostUpdates|").append(_subId).append("|").append(key).append("|").append(lostUpdates).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
     }
 
     @Override
-    public void onCommandSecondLevelSubscriptionError(int code, String message, String key) {
-        //not on this subscription
+    public void onCommandSecondLevelSubscriptionError(final int code, final String message, final String key) {
+        System.out.println("Cannot subscribe because of error " + code + ": " + message);
+
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    _subdata_channel.send(new StringBuilder().append("onCommandSecondLevelSubscriptionError|").append(code).append("|").append(message).append("|").append(key).toString());
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("ERROR 2nd: " + e.getMessage());
+        }
     }
 
     @Override
@@ -95,7 +122,14 @@ public class MySubListener implements SubscriptionListener {
 
             final String uValue = field.getValue();
             final String uKey = field.getKey();
-            final String uItem = update.getItemName();
+            final String uItem;
+
+
+            if (_commandMode) {
+                uItem = update.getItemName() + "," + update.getValue("key");
+            } else {
+                uItem = update.getItemName();
+            }
 
             System.out.println("Field " + uKey + " changed: " + uValue);
 

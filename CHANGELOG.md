@@ -1,3 +1,7 @@
+## 1.0.1 (yet to be published)
+
+Fix Second level Command mode subscription.
+
 ## 1.0.0
 
 The first version of our Flutter plugin, wrapping our Android client library.
