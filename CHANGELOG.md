@@ -1,6 +1,9 @@
-## 1.0.1 (yet to be published)
+## 1.0.1
 
-Fix Second level Command mode subscription.
+### Implemented enhancements:
+
+    - Fix Second level Command mode subscription.
+    - Conforming to pub.dev recommendations for some details
 
 ## 1.0.0
 
