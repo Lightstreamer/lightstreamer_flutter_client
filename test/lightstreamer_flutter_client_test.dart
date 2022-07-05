@@ -17,7 +17,13 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await LightstreamerFlutterClient.platformVersion, '42');
+  test('connect', () async {
+    await LightstreamerFlutterClient.connect(
+        "https://push.lightstreamer.com", "WELCOME", {});
+
+    await Future.delayed(Duration(seconds: 2));
+
+    expect(
+        await LightstreamerFlutterClient.getStatus(), 'CONNECTED:WS-STREAMING');
   });
 }

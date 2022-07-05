@@ -130,7 +130,7 @@ A full running example app is included in the project under `example` folder.
 
 ## External Documentations
 
- - Package home: [pub.dev/packages/lightstreamer_flutter_client]()
+ - Package home: [pub.dev/packages/lightstreamer_flutter_client](https://pub.dev/packages/lightstreamer_flutter_client)
  - To add a package plugin to your Flutter project see: [Adding a package dependency to an app](https://flutter.dev/docs/development/packages-and-plugins/using-packages#adding-a-package-dependency-to-an-app)
  - For help getting started with Flutter, view
 [online documentation](https://flutter.dev/docs), which offers tutorials,
