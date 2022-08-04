@@ -3,7 +3,7 @@ import UIKit
 
 public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "lightstreamer_flutter_client", binaryMessenger: registrar.messenger())
+    let channel = FlutterMethodChannel(name: "com.lightstreamer.lightstreamer_flutter_client.method", binaryMessenger: registrar.messenger())
     let instance = SwiftLightstreamerFlutterClientPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
