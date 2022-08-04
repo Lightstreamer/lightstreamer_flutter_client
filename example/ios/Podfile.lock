@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - lightstreamer_flutter_client (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - lightstreamer_flutter_client (from `.symlinks/plugins/lightstreamer_flutter_client/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  lightstreamer_flutter_client:
+    :path: ".symlinks/plugins/lightstreamer_flutter_client/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  lightstreamer_flutter_client: e41caa1b6f27c0164789b75a6b44b9572c4caf42
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.11.3
