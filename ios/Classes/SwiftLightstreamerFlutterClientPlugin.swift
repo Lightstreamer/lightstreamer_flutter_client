@@ -16,7 +16,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   
   let ls = LightstreamerClient(serverAddress: nil, adapterSet: nil)
   
-  let category = OSLog(subsystem: "com.lightstreamer", category: "flutter")
+  let category = OSLog(subsystem: "com.lightstreamer", category: "lightstreamer.flutter")
   
   init(_ registrar: FlutterPluginRegistrar) {
     clientstatus_channel = FlutterBasicMessageChannel(name: "com.lightstreamer.lightstreamer_flutter_client.status", binaryMessenger: registrar.messenger())
