@@ -374,7 +374,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       }
       
       if let param = arguments["httpExtraHeaders"] {
-        // example: [h1:v1,h2:v2]
+        // example: {h1:v1,h2:v2}
         var headers: [String:String] = [:]
         let startIndex = param.index(param.startIndex, offsetBy: 1)
         let endIndex = param.index(param.endIndex, offsetBy: -1)
