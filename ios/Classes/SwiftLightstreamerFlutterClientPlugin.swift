@@ -265,6 +265,8 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: nil, enqueueWhileDisconnected: enq)
       }
       
+      result("Ok")
+      
     } else {
       result(FlutterError(code: "9", message: "No message", details: nil))
     }
@@ -274,6 +276,8 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
     let arguments = call.arguments as! [String:String]
     if let msg = arguments["message"] {
       ls.sendMessage(msg)
+      
+      result("Ok")
       
     } else {
       result(FlutterError(code: "10", message: "No message", details: nil))
