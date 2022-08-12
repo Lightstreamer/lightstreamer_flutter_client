@@ -258,13 +258,11 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
         addListnr = param
       }
       
-      if getStatus().starts(with: "CONNECTED:") {
-        if addListnr {
-          let listener = MyClientMessageLisener(messagestatus_channel)
-          ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: listener, enqueueWhileDisconnected: enq)
-        } else {
-          ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: nil, enqueueWhileDisconnected: enq)
-        }
+      if addListnr {
+        let listener = MyClientMessageLisener(messagestatus_channel)
+        ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: listener, enqueueWhileDisconnected: enq)
+      } else {
+        ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: nil, enqueueWhileDisconnected: enq)
       }
       
     } else {
@@ -275,9 +273,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   func sendMessage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
     let arguments = call.arguments as! [String:String]
     if let msg = arguments["message"] {
-      if getStatus().starts(with: "CONNECTED:") {
-        ls.sendMessage(msg)
-      }
+      ls.sendMessage(msg)
       
     } else {
       result(FlutterError(code: "10", message: "No message", details: nil))
@@ -285,124 +281,115 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   }
   
   func disconnect(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-    if getStatus().starts(with: "CONNECTED:") {
-      ls.disconnect()
+    ls.disconnect()
       
-      result(getStatus())
-    } else {
-      result(getStatus())
-    }
+    result(getStatus())
   }
   
   func connect(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-    if !getStatus().starts(with: "CONNECTED:") {
-      
-      let arguments = call.arguments as! [String:String]
-      
-      if let param = arguments["serverAddress"] {
-        ls.connectionDetails.serverAddress = param
-      } else {
-        result(FlutterError(code: "11", message: "No server address was configured", details: nil))
-        return // early exit
-      }
-      
-      if let param = arguments["adapterSet"] {
-        ls.connectionDetails.adapterSet = param
-      } else {
-        result(FlutterError(code: "12", message: "No adapter set id was configured", details: nil))
-        return // early exit
-      }
-      
-      if !ls.delegates.isEmpty {
-        ls.removeDelegate(ls.delegates[0])
-      }
-      
-      if let param = arguments["user"] {
-        ls.connectionDetails.user = param
-      }
-      
-      if let param = arguments["password"] {
-        ls.connectionDetails.setPassword(param)
-      }
-      
-      if let param = arguments["forcedTransport"] {
-        ls.connectionOptions.forcedTransport = TransportSelection(rawValue: param)!
-      }
-      
-      if let param = arguments["firstRetryMaxDelay"], let value = Millis(param) {
-        ls.connectionOptions.firstRetryMaxDelay = value
-      }
-      
-      if let param = arguments["retryDelay"], let value = Millis(param) {
-        ls.connectionOptions.retryDelay = value
-      }
-      
-      if let param = arguments["idleTimeout"], let value = Millis(param) {
-        ls.connectionOptions.idleTimeout = value
-      }
-      
-      if let param = arguments["reconnectTimeout"], let value = Millis(param) {
-        ls.connectionOptions.reconnectTimeout = value
-      }
-      
-      if let param = arguments["stalledTimeout"], let value = Millis(param) {
-        ls.connectionOptions.stalledTimeout = value
-      }
-      
-      if let param = arguments["sessionRecoveryTimeout"], let value = Millis(param) {
-        ls.connectionOptions.sessionRecoveryTimeout = value
-      }
-      
-      if let param = arguments["keepaliveInterval"], let value = Millis(param) {
-        ls.connectionOptions.keepaliveInterval = value
-      }
-      
-      if let param = arguments["pollingInterval"], let value = Millis(param) {
-        ls.connectionOptions.pollingInterval = value
-      }
-      
-      if let param = arguments["reverseHeartbeatInterval"], let value = Millis(param) {
-        ls.connectionOptions.reverseHeartbeatInterval = value
-      }
-      
-      if let param = arguments["maxBandwidth"] {
-        if param == "unlimited" {
-          ls.connectionOptions.requestedMaxBandwidth = .unlimited
-        } else if let bw = Double(param) {
-          ls.connectionOptions.requestedMaxBandwidth = .limited(bw)
-        }
-      }
-      
-      if let param = arguments["httpExtraHeaders"] {
-        // example: {h1:v1,h2:v2}
-        var headers: [String:String] = [:]
-        let startIndex = param.index(param.startIndex, offsetBy: 1)
-        let endIndex = param.index(param.endIndex, offsetBy: -1)
-        let values = param[startIndex..<endIndex]
-        for pair in values.split(separator: ",") {
-          let comps = pair.split(separator: ":")
-          let key = comps[0].trimmingCharacters(in: .whitespacesAndNewlines)
-          let val = comps[1].trimmingCharacters(in: .whitespacesAndNewlines)
-          headers[key] = val
-        }
-        ls.connectionOptions.HTTPExtraHeaders = headers
-      }
-      
-      if let param = arguments["httpExtraHeadersOnSessionCreationOnly"], let value = Bool(param) {
-        ls.connectionOptions.HTTPExtraHeadersOnSessionCreationOnly = value
-      }
-      
-      if arguments["proxy"] != nil {
-        os_log("%@", log: category, type: .error, "Proxy not supported")
-      }
-      
-      ls.addDelegate(MyClientListener(clientstatus_channel))
-      ls.connect();
-      
-      result(getStatus())
+    let arguments = call.arguments as! [String:String]
+    
+    if let param = arguments["serverAddress"] {
+      ls.connectionDetails.serverAddress = param
     } else {
-      result(getStatus())
+      result(FlutterError(code: "11", message: "No server address was configured", details: nil))
+      return // early exit
     }
+    
+    if let param = arguments["adapterSet"] {
+      ls.connectionDetails.adapterSet = param
+    } else {
+      result(FlutterError(code: "12", message: "No adapter set id was configured", details: nil))
+      return // early exit
+    }
+    
+    if !ls.delegates.isEmpty {
+      ls.removeDelegate(ls.delegates[0])
+    }
+    
+    if let param = arguments["user"] {
+      ls.connectionDetails.user = param
+    }
+    
+    if let param = arguments["password"] {
+      ls.connectionDetails.setPassword(param)
+    }
+    
+    if let param = arguments["forcedTransport"] {
+      ls.connectionOptions.forcedTransport = TransportSelection(rawValue: param)!
+    }
+    
+    if let param = arguments["firstRetryMaxDelay"], let value = Millis(param) {
+      ls.connectionOptions.firstRetryMaxDelay = value
+    }
+    
+    if let param = arguments["retryDelay"], let value = Millis(param) {
+      ls.connectionOptions.retryDelay = value
+    }
+    
+    if let param = arguments["idleTimeout"], let value = Millis(param) {
+      ls.connectionOptions.idleTimeout = value
+    }
+    
+    if let param = arguments["reconnectTimeout"], let value = Millis(param) {
+      ls.connectionOptions.reconnectTimeout = value
+    }
+    
+    if let param = arguments["stalledTimeout"], let value = Millis(param) {
+      ls.connectionOptions.stalledTimeout = value
+    }
+    
+    if let param = arguments["sessionRecoveryTimeout"], let value = Millis(param) {
+      ls.connectionOptions.sessionRecoveryTimeout = value
+    }
+    
+    if let param = arguments["keepaliveInterval"], let value = Millis(param) {
+      ls.connectionOptions.keepaliveInterval = value
+    }
+    
+    if let param = arguments["pollingInterval"], let value = Millis(param) {
+      ls.connectionOptions.pollingInterval = value
+    }
+    
+    if let param = arguments["reverseHeartbeatInterval"], let value = Millis(param) {
+      ls.connectionOptions.reverseHeartbeatInterval = value
+    }
+    
+    if let param = arguments["maxBandwidth"] {
+      if param == "unlimited" {
+        ls.connectionOptions.requestedMaxBandwidth = .unlimited
+      } else if let bw = Double(param) {
+        ls.connectionOptions.requestedMaxBandwidth = .limited(bw)
+      }
+    }
+    
+    if let param = arguments["httpExtraHeaders"] {
+      // example: {h1:v1,h2:v2}
+      var headers: [String:String] = [:]
+      let startIndex = param.index(param.startIndex, offsetBy: 1)
+      let endIndex = param.index(param.endIndex, offsetBy: -1)
+      let values = param[startIndex..<endIndex]
+      for pair in values.split(separator: ",") {
+        let comps = pair.split(separator: ":")
+        let key = comps[0].trimmingCharacters(in: .whitespacesAndNewlines)
+        let val = comps[1].trimmingCharacters(in: .whitespacesAndNewlines)
+        headers[key] = val
+      }
+      ls.connectionOptions.HTTPExtraHeaders = headers
+    }
+    
+    if let param = arguments["httpExtraHeadersOnSessionCreationOnly"], let value = Bool(param) {
+      ls.connectionOptions.HTTPExtraHeadersOnSessionCreationOnly = value
+    }
+    
+    if arguments["proxy"] != nil {
+      os_log("%@", log: category, type: .error, "Proxy not supported")
+    }
+    
+    ls.addDelegate(MyClientListener(clientstatus_channel))
+    ls.connect();
+    
+    result(getStatus())
   }
   
   func getStatus() -> String {
