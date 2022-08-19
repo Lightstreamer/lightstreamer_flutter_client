@@ -1,3 +1,9 @@
+## 1.0.2
+
+### Implemented enhancements:
+
+    - Added support for iOS.
+
 ## 1.0.1
 
 ### Implemented enhancements:

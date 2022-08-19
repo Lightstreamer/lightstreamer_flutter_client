@@ -1,11 +1,11 @@
 # Lightstreamer Flutter Plugin
 
-A [Flutter](https://flutter.dev/) plugin for [Lightstreamer](https://lightstreamer.com/), built on top of [Android SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-java).
-The support of iOs environment will follow shortly.
+A [Flutter](https://flutter.dev/) plugin for [Lightstreamer](https://lightstreamer.com/), built on top of [Android Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-java)
+and of [Swift Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-swift).
 
 ## Target Android Platform
 
-The Plugin is basically a bridge linking Dart code and native code for Android and (shortly) iOS platforms.
+The Plugin is basically a bridge linking Dart code and native code for Android and iOS platforms.
 Messages are passed between the Dart application (UI) and host (platform) using platform channels; in particular one MethodChannel and three BasicMessageChannel. The MethodChannel is used to request actions prompted by the UI iteration such as opening and closing the connection with the Lightstreamer server and subscribing and unsubscribing particular Items.
 
  - The `com.lightstreamer.lightstreamer_flutter_client.status` BasicMessageChannel is used to send real-time updates to the application about the status of the connection with the Lightstreamer server.
@@ -137,5 +137,5 @@ A full running example app is included in the project under `example` folder.
 samples, guidance on mobile development, and a full API reference.
  - For help getting started with Lightstreamer, view
 [online documentation](https://lightstreamer.com/doc)
- - In particular refer to the [Andorid API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/)
+ - In particular refer to the [Android API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/) or to the [Swift API Client Reference](https://www.lightstreamer.com/api/ls-swift-client/latest/).
 
