@@ -17,9 +17,8 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   let ls = LightstreamerClient(serverAddress: nil, adapterSet: nil)
   
   var clientListener: MyClientListener!
-  var subListener: MySubListener!
-  var msgListener: MyClientMessageListener!
-  var mpnListener: MyMpnSubListener!
+  var activeSubListeners: [String:MySubListener] = [:]
+  var activeMpnListeners: [String:MyMpnSubListener] = [:]
 
   let category = OSLog(subsystem: "com.lightstreamer", category: "lightstreamer.flutter")
   
@@ -71,6 +70,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       let sub = activeMpnSubs.removeValue(forKey: sub_id)
       if sub != nil {
         ls.unsubscribeMPN(sub!)
+        activeMpnListeners.removeValue(forKey: sub_id)
       }
       
       result("Ok")
@@ -124,12 +124,13 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
             sub.triggerExpression = value
           }
           
-          mpnListener = MyMpnSubListener(subscribedata_channel, sub_id)
+          let mpnListener = MyMpnSubListener(subscribedata_channel, sub_id)
           sub.addDelegate(mpnListener)
 
           ls.subscribeMPN(sub, coalescing: true)
           
           activeMpnSubs[sub_id] = sub
+          activeMpnListeners[sub_id] = mpnListener
           
           result(sub_id)
           
@@ -152,6 +153,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       let sub = activeSubs.removeValue(forKey: sub_id)
       if sub != nil {
         ls.unsubscribe(sub!)
+        activeSubListeners.removeValue(forKey: sub_id)
       }
       
       result("Ok")
@@ -217,12 +219,13 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
             sub.commandSecondLevelFields = value.split(separator: ",").map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
           }
           
-          subListener = MySubListener(subscribedata_channel, sub_id, mode == .COMMAND)
+          let subListener = MySubListener(subscribedata_channel, sub_id, mode == .COMMAND)
           sub.addDelegate(subListener)
 
           ls.subscribe(sub)
           
           activeSubs[sub_id] = sub
+          activeSubListeners[sub_id] = subListener
           
           result(sub_id)
           
@@ -266,7 +269,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       }
       
       if addListnr {
-        msgListener = MyClientMessageListener(messagestatus_channel)
+        let msgListener = MyClientMessageListener(messagestatus_channel)
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: msgListener, enqueueWhileDisconnected: enq)
       } else {
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: nil, enqueueWhileDisconnected: enq)
@@ -293,6 +296,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   
   func disconnect(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
     ls.disconnect()
+    clientListener = nil
       
     result(getStatus())
   }
