@@ -14,19 +14,19 @@ class MyClientListener: ClientDelegate {
   
   func client(_ client: LightstreamerClient, didReceiveServerError errorCode: Int, withMessage errorMessage: String) {
     DispatchQueue.main.async {
-      self.channel.sendMessage("ServerError: \(errorCode) \(errorMessage)")
+      self.channel.sendMessage("ServerError:\(errorCode)\(errorMessage)")
     }
   }
   
   func client(_ client: LightstreamerClient, didChangeStatus status: LightstreamerClient.Status) {
     DispatchQueue.main.async {
-      self.channel.sendMessage("StatusChange: \(status)")
+      self.channel.sendMessage("StatusChange:\(status)")
     }
   }
   
   func client(_ client: LightstreamerClient, didChangeProperty property: String) {
     DispatchQueue.main.async {
-      self.channel.sendMessage("PropertyChange: \(property)")
+      self.channel.sendMessage("PropertyChange:\(property)")
     }
   }
 }
