@@ -16,16 +16,21 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   
   let ls = LightstreamerClient(serverAddress: nil, adapterSet: nil)
   
+  var clientListener: MyClientListener!
+  var subListener: MySubListener!
+  var msgListener: MyClientMessageListener!
+  var mpnListener: MyMpnSubListener!
+
   let category = OSLog(subsystem: "com.lightstreamer", category: "lightstreamer.flutter")
   
   init(_ registrar: FlutterPluginRegistrar) {
-    clientstatus_channel = FlutterBasicMessageChannel(name: "com.lightstreamer.lightstreamer_flutter_client.status", binaryMessenger: registrar.messenger())
-    messagestatus_channel = FlutterBasicMessageChannel(name: "com.lightstreamer.lightstreamer_flutter_client.messages", binaryMessenger: registrar.messenger())
-    subscribedata_channel = FlutterBasicMessageChannel(name: "com.lightstreamer.lightstreamer_flutter_client.realtime", binaryMessenger: registrar.messenger())
+    clientstatus_channel = FlutterBasicMessageChannel(name: "com.lightstreamer.lightstreamer_flutter_client.status", binaryMessenger: registrar.messenger(), codec: FlutterStringCodec.sharedInstance())
+    messagestatus_channel = FlutterBasicMessageChannel(name: "com.lightstreamer.lightstreamer_flutter_client.messages", binaryMessenger: registrar.messenger(), codec: FlutterStringCodec.sharedInstance())
+    subscribedata_channel = FlutterBasicMessageChannel(name: "com.lightstreamer.lightstreamer_flutter_client.realtime", binaryMessenger: registrar.messenger(), codec: FlutterStringCodec.sharedInstance())
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
-    //LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(level: ConsoleLogLevel.info))
+    //LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(level: ConsoleLogLevel.debug))
     
     let channel = FlutterMethodChannel(name: "com.lightstreamer.lightstreamer_flutter_client.method", binaryMessenger: registrar.messenger())
     let instance = SwiftLightstreamerFlutterClientPlugin(registrar)
@@ -119,7 +124,8 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
             sub.triggerExpression = value
           }
           
-          sub.addDelegate(MyMpnSubListener(subscribedata_channel, sub_id))
+          mpnListener = MyMpnSubListener(subscribedata_channel, sub_id)
+          sub.addDelegate(mpnListener)
 
           ls.subscribeMPN(sub, coalescing: true)
           
@@ -211,7 +217,8 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
             sub.commandSecondLevelFields = value.split(separator: ",").map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
           }
           
-          sub.addDelegate(MySubListener(subscribedata_channel, sub_id, mode == .COMMAND))
+          subListener = MySubListener(subscribedata_channel, sub_id, mode == .COMMAND)
+          sub.addDelegate(subListener)
 
           ls.subscribe(sub)
           
@@ -259,8 +266,8 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       }
       
       if addListnr {
-        let listener = MyClientMessageLisener(messagestatus_channel)
-        ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: listener, enqueueWhileDisconnected: enq)
+        msgListener = MyClientMessageListener(messagestatus_channel)
+        ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: msgListener, enqueueWhileDisconnected: enq)
       } else {
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: nil, enqueueWhileDisconnected: enq)
       }
@@ -390,7 +397,8 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       os_log("%@", log: category, type: .error, "Proxy not supported")
     }
     
-    ls.addDelegate(MyClientListener(clientstatus_channel))
+    clientListener = MyClientListener(clientstatus_channel)
+    ls.addDelegate(clientListener)
     ls.connect();
     
     result(getStatus())
