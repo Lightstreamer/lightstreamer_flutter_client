@@ -29,8 +29,6 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
-    //LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(level: ConsoleLogLevel.debug))
-    
     let channel = FlutterMethodChannel(name: "com.lightstreamer.lightstreamer_flutter_client.method", binaryMessenger: registrar.messenger())
     let instance = SwiftLightstreamerFlutterClientPlugin(registrar)
     registrar.addMethodCallDelegate(instance, channel: channel)
@@ -57,9 +55,15 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       mpnUnsubscribe(call, result)
     case "getStatus":
       result(getStatus())
+    case "enableLog":
+      enableLog()
     default:
       result(FlutterMethodNotImplemented)
     }
+  }
+  
+  func enableLog() {
+    LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(level: ConsoleLogLevel.debug))
   }
   
   func mpnUnsubscribe(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
