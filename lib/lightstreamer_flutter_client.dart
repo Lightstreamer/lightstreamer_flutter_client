@@ -243,6 +243,10 @@ class LightstreamerFlutterClient {
     return status;
   }
 
+  static void enableLog() {
+    _channel.invokeMethod('enableLog');
+  }
+
   static void setClientListener(Function listener) {
     lightstreamer_clientStatus_channel.setMessageHandler(_consumeClientStatus);
 
