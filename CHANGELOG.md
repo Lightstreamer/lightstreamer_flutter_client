@@ -1,3 +1,9 @@
+## 1.0.3
+
+### Bug Fixes:
+
+    - Fixed a bug in the Android implementation of the sendmessage functions that prevented it from properly returning a success result.
+
 ## 1.0.2
 
 ### Implemented enhancements:
@@ -27,4 +33,3 @@ iOS will be added next.
     - Publishing messages on the Lightstreamer Client Session by invoking sendMessage or sendMessageExt methods
     - Listen for sendmessage feedbacks using a  'com.lightstreamer.lightstreamer_flutter_client.messages' message channel
     - MPN module not supported yet
-

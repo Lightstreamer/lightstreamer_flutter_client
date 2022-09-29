@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
 
       status = await LightstreamerFlutterClient.connect(
-              "https://push.lightstreamer.com/", "", params) ??
+              "https://push.lightstreamer.com/", "DEMO", params) ??
           'Unknown client session status';
     } on PlatformException {
       status = 'Failed to start Lighstreamer connection.';
@@ -82,8 +82,6 @@ class _MyAppState extends State<MyApp> {
         "httpExtraHeadersOnSessionCreationOnly": "true",
         // "proxy": "{HTTP,localhost,19540,1,1}"
       };
-
-      Map<String, String> params2 = {"user": "prova1", "password": "qwerty!"};
 
       currentStatus = await LightstreamerFlutterClient.connect(
               "https://push.lightstreamer.com/", "DEMO", params) ??

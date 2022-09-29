@@ -289,19 +289,17 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
         }
       }
 
-      if (ls.getStatus().startsWith("CONNECTED:")) {
-        if (addListnr) {
-          ls.sendMessage(call.<String>argument("message"), seq, timeout, new MyClientMessageLisener(messagestatus_channel), enq);
-        } else {
-          ls.sendMessage(call.<String>argument("message"), seq, timeout, null, enq);
-        }
+      if (addListnr) {
+        ls.sendMessage(call.<String>argument("message"), seq, timeout, new MyClientMessageLisener(messagestatus_channel), enq);
+      } else {
+        ls.sendMessage(call.<String>argument("message"), seq, timeout, null, enq);
       }
+
+      result.success("OK");
     } else {
       System.out.println("No message passed. ");
 
       result.error("9", "No message", null);
-
-      return ;
     }
   }
 
@@ -309,15 +307,13 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
     if ( call.hasArgument("message") ) {
       System.out.println("message: " + call.<String>argument("message"));
 
-      if (ls.getStatus().startsWith("CONNECTED:")) {
-        ls.sendMessage(call.<String>argument("message"));
-      }
+      ls.sendMessage(call.<String>argument("message"));
+
+      result.success("Ok");
     } else {
       System.out.println("No message passed. ");
 
       result.error("10", "No message", null);
-
-      return ;
     }
   }
 

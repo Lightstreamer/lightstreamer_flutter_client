@@ -3,7 +3,7 @@
 A [Flutter](https://flutter.dev/) plugin for [Lightstreamer](https://lightstreamer.com/), built on top of [Android Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-java)
 and of [Swift Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-swift).
 
-## Target Android Platform
+## Target Android and iOS Platform
 
 The Plugin is basically a bridge linking Dart code and native code for Android and iOS platforms.
 Messages are passed between the Dart application (UI) and host (platform) using platform channels; in particular one MethodChannel and three BasicMessageChannel. The MethodChannel is used to request actions prompted by the UI iteration such as opening and closing the connection with the Lightstreamer server and subscribing and unsubscribing particular Items.
@@ -132,6 +132,7 @@ A full running example app is included in the project under `example` folder.
 
  - Package home: [pub.dev/packages/lightstreamer_flutter_client](https://pub.dev/packages/lightstreamer_flutter_client)
  - To add a package plugin to your Flutter project see: [Adding a package dependency to an app](https://flutter.dev/docs/development/packages-and-plugins/using-packages#adding-a-package-dependency-to-an-app)
+ - Check out [this demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter) showing the integration between Lightstreamer and Flutter App Development Toolkit. In particular the demo shows how to use the lightstreamer_flutter_client plugin package.
  - For help getting started with Flutter, view
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
