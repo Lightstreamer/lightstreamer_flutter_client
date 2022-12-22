@@ -140,3 +140,6 @@ samples, guidance on mobile development, and a full API reference.
 [online documentation](https://lightstreamer.com/doc)
  - In particular refer to the [Android API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/) or to the [Swift API Client Reference](https://www.lightstreamer.com/api/ls-swift-client/latest/).
 
+## Compatibility
+
+The Plugin requires Lightstremaer Server 7.3.0 or later
