@@ -1,3 +1,7 @@
+## 1.0.4
+
+Updated the Lightstreamer Swift Client dependency.
+
 ## 1.0.3
 
 ### Bug Fixes:

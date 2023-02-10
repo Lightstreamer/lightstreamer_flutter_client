@@ -142,4 +142,4 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Compatibility
 
-The Plugin requires Lightstremaer Server 7.3.0 or later
+The Plugin requires Lightstremaer Server 7.3.2 or later
