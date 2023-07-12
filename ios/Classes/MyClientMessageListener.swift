@@ -38,7 +38,7 @@ class MyClientMessageListener: ClientMessageDelegate {
     }
   }
   
-  func client(_ client: LightstreamerClient, didProcessMessage originalMessage: String) {
+  func client(_ client: LightstreamerClient, didProcessMessage originalMessage: String, withResponse response: String) {
     DispatchQueue.main.async {
       self.channel.sendMessage("Processed:\(originalMessage)")
     }
