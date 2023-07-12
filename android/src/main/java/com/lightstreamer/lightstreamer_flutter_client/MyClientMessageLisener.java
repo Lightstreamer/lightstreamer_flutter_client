@@ -93,7 +93,7 @@ public class MyClientMessageLisener implements ClientMessageListener {
     }
 
     @Override
-    public void onProcessed(final String originalMessage) {
+    public void onProcessed(final String originalMessage, String response) {
         try {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override

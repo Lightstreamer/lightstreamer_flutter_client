@@ -17,12 +17,12 @@ public class MyMpnSubListener  implements MpnSubscriptionListener {
     }
 
     @Override
-    public void onListenStart(MpnSubscription subscription) {
+    public void onListenStart() {
 
     }
 
     @Override
-    public void onListenEnd(MpnSubscription subscription) {
+    public void onListenEnd() {
 
     }
 
@@ -58,6 +58,11 @@ public class MyMpnSubListener  implements MpnSubscriptionListener {
 
     @Override
     public void onPropertyChanged(String propertyName) {
+
+    }
+
+    @Override
+    public void onModificationError(int code, String message, String propertyName) {
 
     }
 }

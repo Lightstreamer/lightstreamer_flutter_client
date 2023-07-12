@@ -14,6 +14,7 @@ import com.lightstreamer.client.LightstreamerClient;
 import com.lightstreamer.client.Proxy;
 import com.lightstreamer.client.Subscription;
 import com.lightstreamer.client.mpn.MpnSubscription;
+import com.lightstreamer.log.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,9 +84,15 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
       System.out.println("Get Status:" + ls.getStatus());
 
       result.success(ls.getStatus());
+    } else if (call.method.equals("enableLog")) {
+        enableLog();
     } else {
       result.notImplemented();
     }
+  }
+
+  private void enableLog() {
+    LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.DEBUG));
   }
 
   private void mpnUnsubscribe(MethodCall call, Result result) {
