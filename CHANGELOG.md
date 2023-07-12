@@ -1,14 +1,28 @@
+## XXXXXXX
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with code developed with the previous version.*<br/>
+*Made available on XXXXXXX 2023*
+
+Updated the following dependencies: Lightstreamer Swift Client to version 6.0 and Lightstreamer Android Client to version 5.0.
+
+
 ## 1.0.4
+*Compatible with Lightstreamer Server since 7.3.2*<br/>
+*Compatible with code developed with the previous version.*<br/>
 
 Updated the Lightstreamer Swift Client dependency.
 
 ## 1.0.3
+*Compatible with Lightstreamer Server since 7.2.0*<br/>
+*Compatible with code developed with the previous version.*<br/>
 
 ### Bug Fixes:
 
     - Fixed a bug in the Android implementation of the sendmessage functions that prevented it from properly returning a success result.
 
 ## 1.0.2
+*Compatible with Lightstreamer Server since 7.2.0*<br/>
+*Compatible with code developed with the previous version.*<br/>
 
 ### Implemented enhancements:
 
