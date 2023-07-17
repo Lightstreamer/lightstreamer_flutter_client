@@ -95,10 +95,16 @@ public class MyClientMessageLisener implements ClientMessageListener {
     @Override
     public void onProcessed(final String originalMessage, String response) {
         try {
+            String _msg = "Processed:" + originalMessage;
+            if (!response.isEmpty()) {
+                _msg += "\nResponse:" + response;
+            }
+            String msg = _msg;
+
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    _messages_channel.send(new StringBuilder().append("Processed:").append(originalMessage).toString());
+                    _messages_channel.send(msg);
                 }
             });
 
