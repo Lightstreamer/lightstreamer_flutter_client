@@ -71,9 +71,9 @@ In order to receive real-time updates from the Lightstreamer server the client n
       };
       subId = await LightstreamerFlutterClient.subscribe(
           "MERGE",
-          "item2,item7,item8".split(","),
-          "last_price,time,stock_name".split(","),
-          params);
+          itemList: "item2,item7,item8".split(","),
+          fieldList: "last_price,time,stock_name".split(","),
+          parameters: params);
 
       static_sub_id = subId as String;
 
@@ -83,7 +83,7 @@ In order to receive real-time updates from the Lightstreamer server the client n
     }
 ```
 
-The below code shows an example of implementation of the callback to listen for any real-time updates from your subcriptions:
+The below code shows an example of implementation of the callback to listen for any real-time updates from your subscriptions:
 
 ```dart
   void _values(String item, String fieldName, String fieldValue) {
@@ -142,4 +142,4 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Compatibility
 
-The Plugin requires Lightstremaer Server 7.3.2 or later
+The Plugin requires Lightstreamer Server 7.4.0 or later
