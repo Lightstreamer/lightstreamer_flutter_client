@@ -1,7 +1,10 @@
-## XXXXXXX
+## 1.1.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
-*Compatible with code developed with the previous version.*<br/>
-*Made available on XXXXXXX 2023*
+*Not compatible with code developed for the previous version.*<br/>
+*Made available on 18 Jul 2023*
+
+Method `LightstreamerFlutterClient.subscribe`: converted the second, third and fourth positional parameters in named parameters having the names *itemList*, *fieldList* and *parameters*.
+  Added the named parameters *itemGroup* and *fieldSchema*.
 
 Updated the following dependencies: Lightstreamer Swift Client to version 6.0 and Lightstreamer Android Client to version 5.0.
 
