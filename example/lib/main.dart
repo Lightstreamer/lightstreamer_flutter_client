@@ -152,9 +152,9 @@ class _MyAppState extends State<MyApp> {
 
       subId = await LightstreamerFlutterClient.subscribe(
           "MERGE",
-          mySubController.text.split(","),
-          "last_price,time,stock_name".split(","),
-          params);
+          itemList: mySubController.text.split(","),
+          fieldList: "last_price,time,stock_name".split(","),
+          parameters: params);
 
       // subId = await LightstreamerFlutterClient.subscribe("COMMAND",
       //     "portfolio1".split(","), "key,command,qty".split(","), params);

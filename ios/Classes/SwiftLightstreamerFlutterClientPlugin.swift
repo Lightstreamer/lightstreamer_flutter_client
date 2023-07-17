@@ -169,79 +169,74 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   func subscribe(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
     let arguments = call.arguments as! [String:Any]
     
-    if let param = arguments["mode"], let value = param as? String {
-      let mode = Subscription.Mode(rawValue: value)!
-      
-      if let param = arguments["itemList"], let value = param as? [String] {
-        let itemArr = value
-      
-        if let param = arguments["fieldList"], let value = param as? [String] {
-          let sub_id = "Ok\(prgs_sub)"
-          prgs_sub += 1
-          
-          let fieldArr = value
-          
-          let sub = Subscription(subscriptionMode: mode, items: itemArr, fields: fieldArr)
-          
-          if let param = arguments["dataAdapter"], let value = param as? String {
-            sub.dataAdapter = value
-          }
-          
-          if let param = arguments["requestedSnapshot"], let value = param as? String {
-            if value == "yes" {
-              sub.requestedSnapshot = .yes
-            } else if value == "no" {
-              sub.requestedSnapshot = .no
-            } else if let len = Int(value) {
-              sub.requestedSnapshot = .length(len)
-            }
-          }
-          
-          if let param = arguments["requestedBufferSize"], let value = param as? String {
-            if value == "unlimited" {
-              sub.requestedBufferSize = .unlimited
-            } else if let size = Int(value) {
-              sub.requestedBufferSize = .limited(size)
-            }
-          }
-          
-          if let param = arguments["requestedMaxFrequency"], let value = param as? String {
-            if value == "unlimited" {
-              sub.requestedMaxFrequency = .unlimited
-            } else if value == "unfiltered" {
-              sub.requestedMaxFrequency = .unfiltered
-            } else if let freq = Double(value) {
-              sub.requestedMaxFrequency = .limited(freq)
-            }
-          }
-          
-          if let param = arguments["commandSecondLevelDataAdapter"], let value = param as? String {
-            sub.commandSecondLevelDataAdapter = value
-          }
-          
-          if let param = arguments["commandSecondLevelFields"], let value = param as? String {
-            sub.commandSecondLevelFields = value.split(separator: ",").map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
-          }
-          
-          let subListener = MySubListener(subscribedata_channel, sub_id, mode == .COMMAND)
-          sub.addDelegate(subListener)
-
-          ls.subscribe(sub)
-          
-          activeSubs[sub_id] = sub
-          activeSubListeners[sub_id] = subListener
-          
-          result(sub_id)
-          
-        } else {
-          result(FlutterError(code: "6", message: "No Fields List specified", details: nil))
-        }
-      } else {
-        result(FlutterError(code: "7", message: "No Items List specified", details: nil))
-      }
-    } else {
-      result(FlutterError(code: "8", message: "No subscription mode specified", details: nil))
+    let mode = Subscription.Mode(rawValue: arguments["mode"] as! String)!
+    let sub = Subscription(subscriptionMode: mode)
+    
+    if let itemList = arguments["itemList"] as? [String] {
+      sub.items = itemList
     }
+    if let itemGroup = arguments["itemGroup"] as? String {
+      sub.itemGroup = itemGroup
+    }
+    if let fieldList = arguments["fieldList"] as? [String] {
+      sub.fields = fieldList
+    }
+    if let fieldSchema = arguments["fieldSchema"] as? String {
+      sub.fieldSchema = fieldSchema
+    }
+    
+    let sub_id = "Ok\(prgs_sub)"
+    prgs_sub += 1
+    
+    if let param = arguments["dataAdapter"], let value = param as? String {
+      sub.dataAdapter = value
+    }
+    
+    if let param = arguments["requestedSnapshot"], let value = param as? String {
+      if value == "yes" {
+        sub.requestedSnapshot = .yes
+      } else if value == "no" {
+        sub.requestedSnapshot = .no
+      } else if let len = Int(value) {
+        sub.requestedSnapshot = .length(len)
+      }
+    }
+    
+    if let param = arguments["requestedBufferSize"], let value = param as? String {
+      if value == "unlimited" {
+        sub.requestedBufferSize = .unlimited
+      } else if let size = Int(value) {
+        sub.requestedBufferSize = .limited(size)
+      }
+    }
+    
+    if let param = arguments["requestedMaxFrequency"], let value = param as? String {
+      if value == "unlimited" {
+        sub.requestedMaxFrequency = .unlimited
+      } else if value == "unfiltered" {
+        sub.requestedMaxFrequency = .unfiltered
+      } else if let freq = Double(value) {
+        sub.requestedMaxFrequency = .limited(freq)
+      }
+    }
+    
+    if let param = arguments["commandSecondLevelDataAdapter"], let value = param as? String {
+      sub.commandSecondLevelDataAdapter = value
+    }
+    
+    if let param = arguments["commandSecondLevelFields"], let value = param as? String {
+      sub.commandSecondLevelFields = value.split(separator: ",").map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
+    }
+    
+    let subListener = MySubListener(subscribedata_channel, sub_id, sub)
+    sub.addDelegate(subListener)
+    
+    ls.subscribe(sub)
+    
+    activeSubs[sub_id] = sub
+    activeSubListeners[sub_id] = subListener
+    
+    result(sub_id)
   }
   
   func sendMessageExt(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {

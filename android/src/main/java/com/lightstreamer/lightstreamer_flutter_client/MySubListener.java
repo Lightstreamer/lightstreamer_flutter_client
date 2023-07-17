@@ -14,16 +14,19 @@ import io.flutter.plugin.common.BasicMessageChannel;
 
 public class MySubListener implements SubscriptionListener {
 
-    private BasicMessageChannel<String> _subdata_channel;
+    private final BasicMessageChannel<String> _subdata_channel;
 
-    private String _subId = "";
+    private final String _subId;
 
-    private boolean _commandMode = false;
+    private final Subscription sub;
+    private Boolean isCommandMode;
+    private Boolean hasFieldNames;
+    private Integer keyPosition;
 
-    public MySubListener(BasicMessageChannel<String> subdata_channel, String subId, boolean comm) {
+    public MySubListener(BasicMessageChannel<String> subdata_channel, String subId, Subscription sub) {
         _subdata_channel = subdata_channel;
         _subId = subId;
-        _commandMode = comm;
+        this.sub = sub;
     }
 
     @Override
@@ -113,39 +116,48 @@ public class MySubListener implements SubscriptionListener {
 
     @Override
     public void onItemUpdate(ItemUpdate update) {
+        String uItem;
+        String itemName = update.getItemName() != null ? update.getItemName() : "" + update.getItemPos();
+        if (isCommandMode) {
+            String keyVal = update.getValue(keyPosition);
+            keyVal = keyVal != null ? keyVal : "";
+            uItem = itemName + "," + keyVal;
+        } else {
+            uItem = itemName;
+        }
 
-        System.out.println("====UPDATE====> " + update.getItemName());
+        if (hasFieldNames) {
+            for (Entry<String, String> field : update.getChangedFields().entrySet()) {
+                String uKey = field.getKey();
+                String uValue = field.getValue() != null ? field.getValue() : "";
+                try {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            _subdata_channel.send("onItemUpdate|" + _subId + "|" + uItem + "|" + uKey + "|" + uValue);
+                        }
+                    });
 
-        Iterator<Entry<String,String>> changedValues = update.getChangedFields().entrySet().iterator();
-        while(changedValues.hasNext()) {
-            Entry<String,String> field = changedValues.next();
-
-            final String uValue = field.getValue();
-            final String uKey = field.getKey();
-            final String uItem;
-
-
-            if (_commandMode) {
-                uItem = update.getItemName() + "," + update.getValue("key");
-            } else {
-                uItem = update.getItemName();
+                } catch (Exception e) {
+                    System.out.println("ERROR: " + e.getMessage());
+                }
             }
+        } else {
+            for (Entry<Integer, String> field : update.getChangedFieldsByPosition().entrySet()) {
+                String uKey = "" + field.getKey();
+                String uValue = field.getValue() != null ? field.getValue() : "";
+                try {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            _subdata_channel.send("onItemUpdate|" + _subId + "|" + uItem + "|" + uKey + "|" + uValue);
+                        }
+                    });
 
-            System.out.println("Field " + uKey + " changed: " + uValue);
-
-            try {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        _subdata_channel.send(new StringBuilder().append("onItemUpdate|").append(_subId).append("|").append(uItem).append("|").append(uKey).append("|").append(uValue).toString());
-                    }
-                });
-
-            } catch (Exception e) {
-                System.out.println("ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    System.out.println("ERROR: " + e.getMessage());
+                }
             }
-
-            System.out.println("<====UPDATE====");
         }
     }
 
@@ -161,7 +173,9 @@ public class MySubListener implements SubscriptionListener {
 
     @Override
     public void onSubscription() {
-        System.out.println("Now subscribed to the chat item, messages will now start coming in");
+        this.isCommandMode = "COMMAND".equals(sub.getMode());
+        this.hasFieldNames = sub.getFields() != null;
+        this.keyPosition = sub.getKeyPosition();
     }
 
     @Override

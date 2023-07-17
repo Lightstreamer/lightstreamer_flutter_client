@@ -4,12 +4,15 @@ import LightstreamerClient
 class MySubListener: SubscriptionDelegate {
   let channel: FlutterBasicMessageChannel
   let subId: String
-  let commandMode: Bool
+  let sub: Subscription
+  var isCommandMode: Bool!
+  var hasFieldNames: Bool!
+  var keyPosition: Int!
   
-  init(_ channel: FlutterBasicMessageChannel, _ subId: String, _ commandMode: Bool) {
+  init(_ channel: FlutterBasicMessageChannel, _ subId: String, _ sub: Subscription) {
     self.channel = channel
     self.subId = subId
-    self.commandMode = commandMode
+    self.sub = sub
   }
   
   func subscription(_ subscription: Subscription, didClearSnapshotForItemName itemName: String?, itemPos: UInt) {
@@ -43,16 +46,28 @@ class MySubListener: SubscriptionDelegate {
   }
   
   func subscription(_ subscription: Subscription, didUpdateItem update: ItemUpdate) {
-    for (uKey, uValue) in update.changedFields {
-      let uItem: String
-      if commandMode {
-        uItem = "\(update.itemName ?? ""),\(update.value(withFieldName: "key") ?? "")"
+    var uItem = ""
+    if isCommandMode {
+      if hasFieldNames {
+        uItem = "\(update.itemName ?? "\(update.itemPos)"),\(update.value(withFieldName: "key") ?? "")"
       } else {
-        uItem = update.itemName ?? ""
+        uItem = "\(update.itemName ?? "\(update.itemPos)"),\(update.value(withFieldPos: keyPosition) ?? "")"
       }
-      
-      DispatchQueue.main.async {
-        self.channel.sendMessage("onItemUpdate|\(self.subId)|\(uItem)|\(uKey)|\(uValue ?? "")")
+    } else {
+      uItem = update.itemName ?? "\(update.itemPos)"
+    }
+    
+    if hasFieldNames {
+      for (uKey, uValue) in update.changedFields {
+        DispatchQueue.main.async {
+          self.channel.sendMessage("onItemUpdate|\(self.subId)|\(uItem)|\(uKey)|\(uValue ?? "")")
+        }
+      }
+    } else {
+      for (uKey, uValue) in update.changedFieldsByPositions {
+        DispatchQueue.main.async {
+          self.channel.sendMessage("onItemUpdate|\(self.subId)|\(uItem)|\(uKey)|\(uValue ?? "")")
+        }
       }
     }
   }
@@ -61,7 +76,11 @@ class MySubListener: SubscriptionDelegate {
   
   func subscriptionDidAddDelegate(_ subscription: Subscription) {}
   
-  func subscriptionDidSubscribe(_ subscription: Subscription) {}
+  func subscriptionDidSubscribe(_ subscription: Subscription) {
+    self.isCommandMode = sub.mode == .COMMAND
+    self.hasFieldNames = sub.fields != nil
+    self.keyPosition = sub.keyPosition
+  }
   
   func subscription(_ subscription: Subscription, didFailWithErrorCode code: Int, message: String?) {
     DispatchQueue.main.async {

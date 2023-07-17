@@ -13,11 +13,13 @@ import io.flutter.plugin.common.StringCodec;
 import com.lightstreamer.client.LightstreamerClient;
 import com.lightstreamer.client.Proxy;
 import com.lightstreamer.client.Subscription;
+import com.lightstreamer.client.SubscriptionListener;
 import com.lightstreamer.client.mpn.MpnSubscription;
 import com.lightstreamer.log.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -187,62 +189,60 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
   }
 
   private void subscribe(MethodCall call, Result result) {
-    if ( call.hasArgument("mode") ) {
-      String mode = call.<String>argument("mode");
-      System.out.println("mode: " + mode);
-      if ( call.hasArgument("itemList") ) {
-        ArrayList<String> itemList = call.<ArrayList<String>>argument("itemList");
-        System.out.println("itemList: " + itemList);
-        String[] itemArr = new String[itemList.size()];
-        itemArr = itemList.toArray(itemArr);
+    try {
+      String mode = call.argument("mode");
+      Subscription sub = new Subscription(mode);
 
-        if ( call.hasArgument("fieldList") ) {
-          String sub_id = "Ok" + prgs_sub++;
-
-          ArrayList<String> fieldList = call.<ArrayList<String>>argument("fieldList");
-          System.out.println("fieldList: " + fieldList);
-          String[] fieldArr = new String[fieldList.size()];
-          fieldArr = fieldList.toArray(fieldArr);
-
-          Subscription sub = new Subscription(mode, itemArr, fieldArr);
-
-          if (call.hasArgument("dataAdapter"))
-            sub.setDataAdapter(call.<String>argument("dataAdapter"));
-
-          if (call.hasArgument("requestedSnapshot"))
-            sub.setRequestedSnapshot(call.<String>argument("requestedSnapshot"));
-
-          if (call.hasArgument("requestedBufferSize"))
-            sub.setRequestedBufferSize(call.<String>argument("requestedBufferSize"));
-
-          if (call.hasArgument("requestedMaxFrequency"))
-            sub.setRequestedMaxFrequency(call.<String>argument("requestedMaxFrequency"));
-
-          if (call.hasArgument("commandSecondLevelDataAdapter"))
-            sub.setCommandSecondLevelDataAdapter(call.<String>argument("commandSecondLevelDataAdapter"));
-
-          if ( call.hasArgument("commandSecondLevelFields") ) {
-            String sfieldList = call.<String>argument("commandSecondLevelFields");
-            System.out.println("commandSecondLevelFields: " + sfieldList);
-
-            sub.setCommandSecondLevelFields(sfieldList.split(","));
-          }
-
-          sub.addListener(new MySubListener(subscribedata_channel,sub_id,mode.equalsIgnoreCase("COMMAND")));
-
-          ls.subscribe(sub);
-
-          activeSubs.put(sub_id, sub);
-
-          result.success(sub_id);
-        } else {
-          result.error("6", "No Fields List specified", null);
-        }
-      } else {
-        result.error("7", "No Items List specified", null);
+      List<String> itemList = call.argument("itemList");
+      if (itemList != null) {
+        sub.setItems(itemList.toArray(new String[0]));
       }
-    } else {
-      result.error("8", "No subscription mode specified", null);
+      String itemGroup = call.argument("itemGroup");
+      if (itemGroup != null) {
+        sub.setItemGroup(itemGroup);
+      }
+      List<String> fieldList = call.argument("fieldList");
+      if (fieldList != null) {
+        sub.setFields(fieldList.toArray(new String[0]));
+      }
+      String fieldSchema = call.argument("fieldSchema");
+      if (fieldSchema != null) {
+        sub.setFieldSchema(fieldSchema);
+      }
+
+      String sub_id = "Ok" + prgs_sub++;
+
+      if (call.hasArgument("dataAdapter"))
+        sub.setDataAdapter(call.<String>argument("dataAdapter"));
+
+      if (call.hasArgument("requestedSnapshot"))
+        sub.setRequestedSnapshot(call.<String>argument("requestedSnapshot"));
+
+      if (call.hasArgument("requestedBufferSize"))
+        sub.setRequestedBufferSize(call.<String>argument("requestedBufferSize"));
+
+      if (call.hasArgument("requestedMaxFrequency"))
+        sub.setRequestedMaxFrequency(call.<String>argument("requestedMaxFrequency"));
+
+      if (call.hasArgument("commandSecondLevelDataAdapter"))
+        sub.setCommandSecondLevelDataAdapter(call.<String>argument("commandSecondLevelDataAdapter"));
+
+      if ( call.hasArgument("commandSecondLevelFields") ) {
+        String sfieldList = call.<String>argument("commandSecondLevelFields");
+        sub.setCommandSecondLevelFields(sfieldList.split(","));
+      }
+
+      SubscriptionListener subListener = new MySubListener(subscribedata_channel,sub_id,sub);
+      sub.addListener(subListener);
+
+      ls.subscribe(sub);
+
+      activeSubs.put(sub_id, sub);
+
+      result.success(sub_id);
+
+    } catch (Exception ex) {
+      result.error("61", ex.getMessage(), ex);
     }
   }
 

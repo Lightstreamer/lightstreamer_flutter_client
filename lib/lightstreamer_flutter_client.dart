@@ -138,6 +138,10 @@ class LightstreamerFlutterClient {
   // mode - String (MERGE, DISTINCT, COMMAND, RAW)
   // itemList - List<String>
   // fieldList - List<String>
+  // itemGroup - String
+  // fieldSchema - String
+  // NB one of itemList and itemGroup must be specified but not both
+  // NB one of fieldList and fieldSchema must be specified but not both
   // optional parameters:
   // dataAdapter - String
   // requestedSnapshot - String
@@ -146,48 +150,73 @@ class LightstreamerFlutterClient {
   // selector - String
   // commandSecondLevelDataAdapter - String
   // commandSecondLevelFields - List<String>
-  static Future<String?> subscribe(String mode, List<String> itemList,
-      List<String> fieldList, Map<String, String> parameters) async {
+  static Future<String?> subscribe(String mode, {List<String>? itemList, String? itemGroup, List<String>? fieldList, String? fieldSchema, Map<String, String>? parameters}) async {
     final String? status;
     Map<String, Object> arguments = {
       "mode": mode,
-      "itemList": itemList,
-      "fieldList": fieldList
     };
 
-    if (parameters.containsKey("dataAdapter")) {
-      arguments.putIfAbsent(
-          "dataAdapter", () => parameters.remove("dataAdapter") as Object);
+    if (itemList == null && itemGroup == null) {
+      throw ArgumentError("ItemList and ItemGroup can't be both null");
+    }
+    if (itemList != null && itemGroup != null) {
+      throw ArgumentError("ItemList and ItemGroup can't be both non-null");
     }
 
-    if (parameters.containsKey("requestedSnapshot")) {
+    if (fieldList == null && fieldSchema == null) {
+      throw ArgumentError("FieldList and FieldSchema can't be both null");
+    }
+    if (fieldList != null && fieldSchema != null) {
+      throw ArgumentError("FieldList and FieldSchema can't be both non-null");
+    }
+
+    if (itemList != null) {
+      arguments["itemList"] = itemList;
+    }
+    if (fieldList != null) {
+      arguments["fieldList"] = fieldList;
+    }
+    if (itemGroup != null) {
+      arguments["itemGroup"] = itemGroup;
+    }
+    if (fieldSchema != null) {
+      arguments["fieldSchema"] = fieldSchema;
+    }
+    Map<String, String> params = parameters ?? {};
+
+    if (params.containsKey("dataAdapter")) {
+      arguments.putIfAbsent(
+          "dataAdapter", () => params.remove("dataAdapter") as Object);
+    }
+
+    if (params.containsKey("requestedSnapshot")) {
       arguments.putIfAbsent("requestedSnapshot",
-          () => parameters.remove("requestedSnapshot") as Object);
+          () => params.remove("requestedSnapshot") as Object);
     }
 
-    if (parameters.containsKey("requestedBufferSize")) {
+    if (params.containsKey("requestedBufferSize")) {
       arguments.putIfAbsent("requestedBufferSize",
-          () => parameters.remove("requestedBufferSize") as Object);
+          () => params.remove("requestedBufferSize") as Object);
     }
 
-    if (parameters.containsKey("requestedMaxFrequency")) {
+    if (params.containsKey("requestedMaxFrequency")) {
       arguments.putIfAbsent("requestedMaxFrequency",
-          () => parameters.remove("requestedMaxFrequency") as Object);
+          () => params.remove("requestedMaxFrequency") as Object);
     }
 
-    if (parameters.containsKey("selector")) {
+    if (params.containsKey("selector")) {
       arguments.putIfAbsent(
-          "selector", () => parameters.remove("selector") as Object);
+          "selector", () => params.remove("selector") as Object);
     }
 
-    if (parameters.containsKey("commandSecondLevelDataAdapter")) {
+    if (params.containsKey("commandSecondLevelDataAdapter")) {
       arguments.putIfAbsent("commandSecondLevelDataAdapter",
-          () => parameters.remove("commandSecondLevelDataAdapter") as Object);
+          () => params.remove("commandSecondLevelDataAdapter") as Object);
     }
 
-    if (parameters.containsKey("commandSecondLevelFields")) {
+    if (params.containsKey("commandSecondLevelFields")) {
       arguments.putIfAbsent("commandSecondLevelFields",
-          () => parameters.remove("commandSecondLevelFields") as Object);
+          () => params.remove("commandSecondLevelFields") as Object);
     }
 
     status = await _channel.invokeMethod('subscribe', arguments);
