@@ -116,7 +116,7 @@ public class MySubListener implements SubscriptionListener {
 
     @Override
     public void onItemUpdate(ItemUpdate update) {
-        String uItem;
+        final String uItem;
         String itemName = update.getItemName() != null ? update.getItemName() : "" + update.getItemPos();
         if (isCommandMode) {
             String keyVal = update.getValue(keyPosition);
@@ -128,8 +128,8 @@ public class MySubListener implements SubscriptionListener {
 
         if (hasFieldNames) {
             for (Entry<String, String> field : update.getChangedFields().entrySet()) {
-                String uKey = field.getKey();
-                String uValue = field.getValue() != null ? field.getValue() : "";
+                final String uKey = field.getKey();
+                final String uValue = field.getValue() != null ? field.getValue() : "";
                 try {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
@@ -144,8 +144,8 @@ public class MySubListener implements SubscriptionListener {
             }
         } else {
             for (Entry<Integer, String> field : update.getChangedFieldsByPosition().entrySet()) {
-                String uKey = "" + field.getKey();
-                String uValue = field.getValue() != null ? field.getValue() : "";
+                final String uKey = "" + field.getKey();
+                final String uValue = field.getValue() != null ? field.getValue() : "";
                 try {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override

@@ -99,7 +99,7 @@ public class MyClientMessageLisener implements ClientMessageListener {
             if (!response.isEmpty()) {
                 _msg += "\nResponse:" + response;
             }
-            String msg = _msg;
+            final String msg = _msg;
 
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
