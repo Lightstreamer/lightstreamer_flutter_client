@@ -1,3 +1,11 @@
+## 1.1.1
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with code developed for the previous version.*<br/>
+*Made available on 24 Aug 2023*
+
+Fixed a bug that could cause a client error on iOS when the subscribed items or fields had names containing the character `+`.
+
+
 ## 1.1.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Not compatible with code developed for the previous version.*<br/>

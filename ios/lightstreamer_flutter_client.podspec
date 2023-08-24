@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'lightstreamer_flutter_client'
-  s.version          = '1.1.0'
+  s.version          = '1.1.1'
   s.summary          = 'A Flutter plugin for Lightstreamer.'
   s.homepage         = 'https://github.com/Lightstreamer/lightstreamer_flutter_client'
   s.license          = { :file => '../LICENSE' }
@@ -18,5 +18,5 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
   
-  s.dependency 'LightstreamerClient', '~> 6.0.0'
+  s.dependency 'LightstreamerClient', '~> 6.0.1'
 end
