@@ -1,6 +1,29 @@
+## 1.2.0
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 10*<br/>
+*Compatible with Dart 3.1.3*<br/>
+*Compatible with Flutter 1.20*<br/>
+*May not be compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.0.0*<br/>
+*Based on Lightstreamer Swift Client SDK 6.0.1*<br/>
+*Based on Lightstreamer Web Client SDK 9.0.0*<br/>
+*Made available on XXXXXXXXXX*
+
+Added support for Flutter Web based on Lightstreamer Web Client SDK 9.0.0.
+
+Raised the minimum Dart compatibility to version 3.1.3.
+
+
 ## 1.1.1
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
-*Compatible with code developed for the previous version.*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 10*<br/>
+*Compatible with Dart 2.12*<br/>
+*Compatible with Flutter 1.20*<br/>
+*Compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.0.0*<br/>
+*Based on Lightstreamer Swift Client SDK 6.0.1*<br/>
 *Made available on 24 Aug 2023*
 
 Fixed a bug that could cause a client error on iOS when the subscribed items or fields had names containing the character `+`.
