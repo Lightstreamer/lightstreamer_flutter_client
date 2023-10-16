@@ -49,7 +49,7 @@ extension _ClientListenerExt on _ClientListener {
 
 @JSExport()
 abstract class ClientListener {
-  void onStatusChange(status) {}
+  void onStatusChange(String status) {}
   void onListenEnd(Object dummy) {}
   void onListenStart(Object dummy) {}
   void onPropertyChange(String property) {}
