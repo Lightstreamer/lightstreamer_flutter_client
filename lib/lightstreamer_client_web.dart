@@ -23,7 +23,7 @@ extension LightstreamerClientExt on LightstreamerClient {
   @JS('sendMessage') external void _sendMessage(String msg, [String? sequence, int? delayTimeout, _ClientMessageListener? listener, bool? enqueueWhileDisconnected]);
   external void subscribe(Subscription subscription);
   external void unsubscribe(Subscription subscription);
-  external List<Subscription> getSubscriptions();
+  @JS('getSubscriptions') external List<dynamic> _getSubscriptions();
 
   void addListener(ClientListener listener) {
     _addListener(listener.asJSObject);
@@ -36,6 +36,9 @@ extension LightstreamerClientExt on LightstreamerClient {
   }
   void sendMessage(String msg, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) {
     _sendMessage(msg, sequence, delayTimeout, listener?.asJSObject, enqueueWhileDisconnected);
+  }
+  List<Subscription> getSubscriptions() {
+    return _getSubscriptions().cast<Subscription>();
   }
 }
 
