@@ -5,3 +5,4 @@
 .pub/
 
 build/
+example/web/lightstreamer-*.js

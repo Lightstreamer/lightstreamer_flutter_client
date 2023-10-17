@@ -295,3 +295,189 @@ class ConsoleLogLevel {
 @JS()
 @staticInterop
 class LoggerProvider {}
+
+@JS()
+@staticInterop
+class MpnDevice {
+  external factory MpnDevice(String token, String appId, String platform);
+}
+
+extension MpnDeviceExt on MpnDevice {
+  @JS('addListener') external void _addListener(_MpnDeviceListener listener);
+  @JS('getListeners') external List<dynamic> _getListeners();
+  @JS('removeListener') external void _removeListener(_MpnDeviceListener listener);
+  external String getApplicationId();
+  external String? getDeviceId();
+  external String getDeviceToken();
+  external String getPlatform();
+  external String? getPreviousDeviceToken();
+  external String getStatus();
+  external int getStatusTimestamp();
+  external bool isRegistered();
+  external bool isSuspended();
+
+  void addListener(MpnDeviceListener listener) {
+    _addListener(listener.asJSObject);
+  }
+  void removeListener(MpnDeviceListener listener) {
+    _removeListener(listener.asJSObject);
+  }
+  List<MpnDeviceListener> getListeners() {
+    return _getListeners().map((obj) => (obj as _MpnDeviceListener).asDartObject).toList();
+  }
+}
+
+@JS()
+@staticInterop
+class _MpnDeviceListener {}
+
+extension _MpnDeviceListenerExt on _MpnDeviceListener {
+  external MpnDeviceListener get asDartObject;
+}
+
+@JSExport()
+abstract class MpnDeviceListener {
+  void onListenEnd(Object dummy) {}
+  void onListenStart(Object dummy) {}
+  void onRegistered() {}
+  void onRegistrationFailed(int errorCode, String errorMessage) {}
+  void onResumed() {}
+  void onStatusChanged(String status, int timestamp) {}
+  void onSubscriptionsUpdated() {}
+  void onSuspended() {}
+
+  late final _MpnDeviceListener _that;
+  MpnDeviceListener() {
+    _that = createDartExport(this) as _MpnDeviceListener;
+  }
+  _MpnDeviceListener get asJSObject => _that;
+  MpnDeviceListener get asDartObject => this;
+}
+
+@JS()
+@staticInterop
+class MpnSubscription {
+  // TODO ctor overrides
+  external factory MpnSubscription(String mode, [List<String>? items, List<String>? fields]);
+}
+
+extension MpnSubscriptionExt on MpnSubscription {
+  @JS('addListener') external void _addListener(_MpnSubscriptionListener listener);
+  @JS('getListeners') external List<dynamic> _getListeners();
+  @JS('removeListener') external void _removeListener(_MpnSubscriptionListener listener);
+  external String? getDataAdapter();
+  external void setDataAdapter(String? dataAdapter);
+  @JS('getFields') external List<dynamic>? _getFields();
+  external void setFields(List<String>? fields);
+  external String? getFieldSchema();
+  external void setFieldSchema(String? schemaName);
+  external String? getItemGroup();
+  external void setItemGroup(String? groupName);
+  @JS('getItems') external List<dynamic>? _getItems();
+  external void setItems(List<String>? items);
+  external String getMode();
+  external String? getRequestedBufferSize();
+  external void setRequestedBufferSize(String? size);
+  external String? getRequestedMaxFrequency();
+  external void setRequestedMaxFrequency(String? freq);
+  external bool isActive();
+  external bool isSubscribed();
+  external bool isTriggered();
+
+  external String? getActualNotificationFormat();
+  external String? getActualTriggerExpression();
+  external void setTriggerExpression(String? trigger);
+  external String? getNotificationFormat();
+  external void setNotificationFormat(String format);
+  external String getStatus();
+  external int getStatusTimestamp();
+  external String? getSubscriptionId();
+  external String? getTriggerExpression();
+
+  void addListener(MpnSubscriptionListener listener) {
+    _addListener(listener.asJSObject);
+  }
+  void removeListener(MpnSubscriptionListener listener) {
+    _removeListener(listener.asJSObject);
+  }
+  List<MpnSubscriptionListener> getListeners() {
+    return _getListeners().map((obj) => (obj as _MpnSubscriptionListener).asDartObject).toList();
+  }
+  List<String>? getFields() {
+    return _getFields()?.cast<String>();
+  }
+  List<String>? getItems() {
+    return _getItems()?.cast<String>();
+  }
+}
+
+@JS()
+@staticInterop
+class _MpnSubscriptionListener {}
+
+extension _MpnSubscriptionListenerExt on _MpnSubscriptionListener {
+  external MpnSubscriptionListener get asDartObject;
+}
+
+@JSExport()
+abstract class MpnSubscriptionListener {
+  void onListenEnd(Object dummy) {}
+  void onListenStart(Object dummy) {}
+  void onModificationError(int errorCode, String errorMessage, String propertyName) {}
+  void onPropertyChanged(String propertyName) {}
+  void onStatusChanged(String status, int timestamp) {}
+  void onSubscription() {}
+  void onSubscriptionError(int errorCode, String errorMessage) {}
+  void onTriggered() {}
+  void onUnsubscription() {}
+  void onUnsubscriptionError(int errorCode, String errorMessage) {}
+
+  late final _MpnSubscriptionListener _that;
+  MpnSubscriptionListener() {
+    _that = createDartExport(this) as _MpnSubscriptionListener;
+  }
+  _MpnSubscriptionListener get asJSObject => _that;
+  MpnSubscriptionListener get asDartObject => this;
+}
+
+@JS()
+@staticInterop
+class FirebaseMpnBuilder {
+  external factory FirebaseMpnBuilder([String? notificationFormat]);
+}
+
+extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
+  external String build();
+  external String? getBody();
+  external Object? getData();
+  external Object? getHeaders();
+  external String? getIcon();
+  external String? getTitle();
+  external FirebaseMpnBuilder setBody(String? body);
+  external FirebaseMpnBuilder setData(Object? data);
+  external FirebaseMpnBuilder setHeaders(Object? headers);
+  external FirebaseMpnBuilder setIcon(String? icon);
+  external FirebaseMpnBuilder setTitle(String? title);
+}
+
+@JS()
+@staticInterop
+class SafariMpnBuilder {
+  external factory SafariMpnBuilder([String? notificationFormat]);
+}
+
+extension SafariMpnBuilderExt on SafariMpnBuilder {
+  external String build();
+  external String? getAction();
+  external String? getBody();
+  external String? getTitle();
+  @JS('getUrlArguments') external List<dynamic>? _getUrlArguments();
+  external SafariMpnBuilder setAction(String? action);
+  external SafariMpnBuilder setBody(String? body);
+  external SafariMpnBuilder setTitle(String? title);
+  external SafariMpnBuilder setUrlArguments(List<String>? urlArguments);
+
+  List<String>? getUrlArguments() {
+    return _getUrlArguments()?.cast<String>();
+  }
+}
