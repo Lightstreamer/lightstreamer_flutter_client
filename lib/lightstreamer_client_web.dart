@@ -449,15 +449,28 @@ class FirebaseMpnBuilder {
 extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
   external String build();
   external String? getBody();
-  external Object? getData();
-  external Object? getHeaders();
+  @JS('getData') external Object? _getData();
+  @JS('getHeaders') external Object? _getHeaders();
   external String? getIcon();
   external String? getTitle();
   external FirebaseMpnBuilder setBody(String? body);
-  external FirebaseMpnBuilder setData(Object? data);
-  external FirebaseMpnBuilder setHeaders(Object? headers);
+  @JS('setData') external FirebaseMpnBuilder _setData(Object? data);
+  @JS('setHeaders') external FirebaseMpnBuilder _setHeaders(Object? headers);
   external FirebaseMpnBuilder setIcon(String? icon);
   external FirebaseMpnBuilder setTitle(String? title);
+
+  Map<String, String>? getData() {
+    return (dartify(_getData()) as Map<dynamic, dynamic>).cast<String, String>();
+  }
+  void setData(Map<String, String>? data) {
+    _setData(jsify(data));
+  }
+  Map<String, String>? getHeaders() {
+    return (dartify(_getHeaders()) as Map<dynamic, dynamic>).cast<String, String>();
+  }
+  void setHeaders(Map<String, String>? headers) {
+    _setHeaders(jsify(headers));
+  }
 }
 
 @JS()
