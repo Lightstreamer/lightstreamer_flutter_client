@@ -40,6 +40,17 @@ extension LightstreamerClientExt on LightstreamerClient {
   List<Subscription> getSubscriptions() {
     return _getSubscriptions().cast<Subscription>();
   }
+
+  external void registerForMpn(MpnDevice device);
+  external void subscribeMpn(MpnSubscription subscription, bool coalescing);
+  external void unsubscribeMpn(MpnSubscription subscription);
+  external void unsubscribeMpnSubscriptions(String? filter);
+  @JS('getMpnSubscriptions') external List<dynamic> _getMpnSubscriptions(String? filter);
+  external MpnSubscription? findMpnSubscription(String subscriptionId);
+
+  List<MpnSubscription> getMpnSubscriptions(String? filter) {
+    return _getMpnSubscriptions(filter).cast<MpnSubscription>();
+  }
 }
 
 @JS()
