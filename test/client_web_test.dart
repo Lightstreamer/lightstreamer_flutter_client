@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:test/test.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
+import './utils.dart';
 
 class BaseClientListener extends ClientListener {
   void Function(String)? _onStatusChange;
@@ -22,14 +22,14 @@ class BaseSubscriptionListener extends SubscriptionListener {
 }
 
 void main() {
-  late Completer<String> completer;
+  late Expectations exps;
   late LightstreamerClient client;
   late BaseClientListener listener;
   late BaseSubscriptionListener subListener;
   LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
   setUp(() {
-    completer = new Completer();
+    exps = new Expectations();
     client = new LightstreamerClient("http://localhost:8080", "TEST");
     listener = new BaseClientListener();
     subListener = new BaseSubscriptionListener();
@@ -56,11 +56,11 @@ void main() {
     var expected = "CONNECTED:WS-STREAMING";
     listener._onStatusChange = (status) {
       if (status == expected) {
-        completer.complete(status);
+        exps.signal();
       }
     };
     client.connect();
-    await completer.future;
+    await exps.value();
     expect(expected, client.getStatus());
   });
 
@@ -72,11 +72,11 @@ void main() {
     var expected = "CONNECTED:WS-STREAMING";
     listener._onStatusChange = (status) {
       if (status == expected) {
-        completer.complete(status);
+        exps.signal();
       }
     };
     client.connect();
-    await completer.future;
+    await exps.value();
     expect(expected, client.getStatus());
   });
 
@@ -85,10 +85,10 @@ void main() {
     listener = new BaseClientListener();
     client.addListener(listener);
     listener._onServerError = (code, msg) {
-      completer.complete('$code $msg');
+      exps.signal('$code $msg');
     };
     client.connect();
-    expect("2 Requested Adapter Set not available", await completer.future);
+    await exps.value("2 Requested Adapter Set not available");
   });
 
   test('disconnect', () async {
@@ -97,11 +97,11 @@ void main() {
       if (status == "CONNECTED:" + transport) {
         client.disconnect();
       } else if (status == "DISCONNECTED") {
-        completer.complete(status);
+        exps.signal();
       }
     };
     client.connect();
-    await completer.future;
+    await exps.value();
     expect("DISCONNECTED", client.getStatus());
   });
 
@@ -110,14 +110,14 @@ void main() {
     sub.setDataAdapter("COUNT");
     sub.addListener(subListener);
     subListener._onSubscription = () {
-      completer.complete('');
+      exps.signal();
     };
     client.subscribe(sub);
     var subs = client.getSubscriptions();
     expect(1, subs.length);
     expect(sub == subs[0], isTrue);
     client.connect();
-    await completer.future;
+    await exps.value();
     expect(sub.isSubscribed(), isTrue);
   });
 
@@ -126,11 +126,11 @@ void main() {
     sub.setDataAdapter("COUNT");
     sub.addListener(subListener);
     subListener._onSubscriptionError = (code, msg) {
-      completer.complete('$code $msg');
+      exps.signal('$code $msg');
     };
     client.subscribe(sub);
     client.connect();
-    expect("24 Invalid mode for these items", await completer.future);
+    await exps.value("24 Invalid mode for these items");
   });
 
   test('subscribe command', () async {
@@ -138,11 +138,11 @@ void main() {
     sub.setDataAdapter("MULT_TABLE");
     sub.addListener(subListener);
     subListener._onSubscription = () {
-      completer.complete('');
+      exps.signal();
     };
     client.subscribe(sub);
     client.connect();
-    await completer.future;
+    await exps.value();
     expect(sub.isSubscribed(), isTrue);
     expect(1, sub.getKeyPosition());
     expect(4, sub.getCommandPosition());
@@ -161,7 +161,7 @@ void main() {
       var key = update.getValue("key") ?? "";
       var cmd = update.getValue("command") ?? "";
       if (regex.hasMatch(val) && key == "count" && cmd == "UPDATE") {
-        completer.complete('');
+        exps.signal();
       }
     };
     client.subscribe(sub);
@@ -169,7 +169,7 @@ void main() {
     expect(1, subs.length);
     expect(sub == subs[0], isTrue);
     client.connect();
-    await completer.future;
+    await exps.value();
     expect(sub.isSubscribed(), isTrue);
     expect(1, sub.getKeyPosition());
     expect(2, sub.getCommandPosition());
@@ -183,11 +183,11 @@ void main() {
       client.unsubscribe(sub);
     };
     subListener._onUnsubscription = () {
-      completer.complete('');
+      exps.signal();
     };
     client.subscribe(sub);
     client.connect();
-    await completer.future;
+    await exps.value();
     expect(sub.isSubscribed(), isFalse);
     expect(sub.isActive(), isFalse);
   });
@@ -197,10 +197,10 @@ void main() {
     sub.setDataAdapter("STRANGE_NAMES");
     sub.addListener(subListener);
     subListener._onSubscription = () {
-      completer.complete('');
+      exps.signal();
     };
     client.subscribe(sub);
     client.connect();
-    await completer.future;
+    await exps.value();
   });
 }
