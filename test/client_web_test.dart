@@ -1,11 +1,7 @@
-import 'package:test/test.dart';
+import 'package:test/test.dart' hide equals;
 import 'package:js/js_util.dart' as js;
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 import './utils.dart';
-
-void equals<T>(T expected, T actual) {
-  expect(actual, expected);
-}
 
 void main() {
   late Expectations exps;
@@ -42,7 +38,7 @@ void main() {
 
   test('connect', () async {
     var expected = "CONNECTED:WS-STREAMING";
-    listener._onStatusChange = (status) {
+    listener.fStatusChange = (status) {
       if (status == expected) {
         exps.signal();
       }
@@ -58,7 +54,7 @@ void main() {
     client.addListener(listener);
 
     var expected = "CONNECTED:WS-STREAMING";
-    listener._onStatusChange = (status) {
+    listener.fStatusChange = (status) {
       if (status == expected) {
         exps.signal();
       }
@@ -72,7 +68,7 @@ void main() {
     client = new LightstreamerClient("http://localhost:8080", "XXX");
     listener = new BaseClientListener();
     client.addListener(listener);
-    listener._onServerError = (code, msg) {
+    listener.fServerError = (code, msg) {
       exps.signal('$code $msg');
     };
     client.connect();
@@ -81,7 +77,7 @@ void main() {
 
   test('disconnect', () async {
     var transport = "WS-STREAMING";
-    listener._onStatusChange = (status) {
+    listener.fStatusChange = (status) {
       if (status == "CONNECTED:" + transport) {
         client.disconnect();
       } else if (status == "DISCONNECTED") {
@@ -97,7 +93,7 @@ void main() {
     var sub = new Subscription("MERGE", ["count"], ["count"]);
     sub.setDataAdapter("COUNT");
     sub.addListener(subListener);
-    subListener._onSubscription = () {
+    subListener.fSubscription = () {
       exps.signal();
     };
     client.subscribe(sub);
@@ -113,7 +109,7 @@ void main() {
     var sub = new Subscription("RAW", ["count"], ["count"]);
     sub.setDataAdapter("COUNT");
     sub.addListener(subListener);
-    subListener._onSubscriptionError = (code, msg) {
+    subListener.fSubscriptionError = (code, msg) {
       exps.signal('$code $msg');
     };
     client.subscribe(sub);
@@ -125,7 +121,7 @@ void main() {
     var sub = new Subscription("COMMAND", ["mult_table"], ["key", "value1", "value2", "command"]);
     sub.setDataAdapter("MULT_TABLE");
     sub.addListener(subListener);
-    subListener._onSubscription = () {
+    subListener.fSubscription = () {
       exps.signal();
     };
     client.subscribe(sub);
@@ -144,7 +140,7 @@ void main() {
     sub.setCommandSecondLevelFields(["count"]);
     sub.addListener(subListener);
     var regex = new RegExp('\\d+');
-    subListener._onItemUpdate = (update) {
+    subListener.fItemUpdate = (update) {
       var val = update.getValue("count") ?? "";
       var key = update.getValue("key") ?? "";
       var cmd = update.getValue("command") ?? "";
@@ -167,10 +163,10 @@ void main() {
     var sub = new Subscription("MERGE", ["count"], ["count"]);
     sub.setDataAdapter("COUNT");
     sub.addListener(subListener);
-    subListener._onSubscription = () {
+    subListener.fSubscription = () {
       client.unsubscribe(sub);
     };
-    subListener._onUnsubscription = () {
+    subListener.fUnsubscription = () {
       exps.signal();
     };
     client.subscribe(sub);
@@ -184,7 +180,7 @@ void main() {
     var sub = new Subscription("MERGE", ["strange:àìùòlè"], ["value🌐-", "value&+=\r\n%"]);
     sub.setDataAdapter("STRANGE_NAMES");
     sub.addListener(subListener);
-    subListener._onSubscription = () {
+    subListener.fSubscription = () {
       exps.signal();
     };
     client.subscribe(sub);
@@ -193,7 +189,7 @@ void main() {
   });
 
   test('bandwidth', () async {
-    listener._onPropertyChange = (prop) {
+    listener.fPropertyChange = (prop) {
       switch (prop) {
         case "realMaxBandwidth":
           exps.signal("realMaxBandwidth=" + (client.connectionOptions.getRealMaxBandwidth() ?? ""));
@@ -217,7 +213,7 @@ void main() {
     var sub = new Subscription("DISTINCT", ["clear_snapshot"], ["dummy"]);
     sub.setDataAdapter("CLEAR_SNAPSHOT");
     sub.addListener(subListener);
-    subListener._onClearSnapshot = (name, pos) {
+    subListener.fClearSnapshot = (name, pos) {
       exps.signal('$name $pos');
     };
     client.subscribe(sub);
@@ -236,11 +232,11 @@ void main() {
     equals("COUNT", sub.getDataAdapter());
     equals("MERGE", sub.getMode());
     sub.addListener(subListener);
-    subListener._onSubscription = () => exps.signal("onSubscription");
-    subListener._onItemUpdate = (_) => exps.signal("onItemUpdate");
-    subListener._onUnsubscription = () => exps.signal("onUnsubscription");
-    subListener._onRealMaxFrequency = (freq) => exps.signal('onRealMaxFrequency $freq');
-    listener._onPropertyChange = (prop) {
+    subListener.fSubscription = () => exps.signal("onSubscription");
+    subListener.fItemUpdate = (_) => exps.signal("onItemUpdate");
+    subListener.fUnsubscription = () => exps.signal("onUnsubscription");
+    subListener.fRealMaxFrequency = (freq) => exps.signal('onRealMaxFrequency $freq');
+    listener.fPropertyChange = (prop) {
       switch (prop) {
       case "clientIp":
         exps.signal("clientIp=" + client.connectionDetails.getClientIp()!);
@@ -275,11 +271,11 @@ void main() {
     client.sendMessage("test message (sequence)", "test_seq", 0, null, true);
     // no outcome expected
     msgListener = new BaseMessageListener();
-    msgListener._onProcessed = (msg,_) => exps.signal("onProcessed " + msg);
+    msgListener.fProcessed = (msg,_) => exps.signal("onProcessed " + msg);
     client.sendMessage("test message (listener)", null, -1, msgListener, true);
     await exps.value("onProcessed test message (listener)");
     msgListener = new BaseMessageListener();
-    msgListener._onProcessed = (msg,_) => exps.signal("onProcessed " + msg);
+    msgListener.fProcessed = (msg,_) => exps.signal("onProcessed " + msg);
     client.sendMessage("test message (sequence+listener)", "test_seq", -1, msgListener, true);
     await exps.value("onProcessed test message (sequence+listener)");
   });
@@ -287,13 +283,13 @@ void main() {
   test('message with return value', () async {
     client.connect();
     msgListener = new BaseMessageListener();
-    msgListener._onProcessed = (msg,resp) => exps.signal('onProcessed `$msg` `$resp`');
+    msgListener.fProcessed = (msg,resp) => exps.signal('onProcessed `$msg` `$resp`');
     client.sendMessage("give me a result", "test_seq", -1, msgListener, true);
     await exps.value("onProcessed `give me a result` `result:ok`");
   });
 
   test('message with special chars', () async {
-    msgListener._onProcessed = (msg,_) {
+    msgListener.fProcessed = (msg,_) {
       exps.signal(msg);
     };
     client.connect();
@@ -302,7 +298,7 @@ void main() {
   });
 
   test('unordered messages', () async {
-    msgListener._onProcessed = (msg,_) {
+    msgListener.fProcessed = (msg,_) {
       exps.signal(msg);
     };
     client.connect();
@@ -311,7 +307,7 @@ void main() {
   });
 
   test('message error', () async {
-    msgListener._onDeny = (msg, code, error) {
+    msgListener.fDeny = (msg, code, error) {
       exps.signal('$msg $code $error');
     };
     client.connect();
@@ -321,7 +317,7 @@ void main() {
 
   test('long message', () async {
     var msg = "{\"n\":\"MESSAGE_SEND\",\"c\":{\"u\":\"GEiIxthxD-1gf5Tk5O1NTw\",\"s\":\"S29120e92e162c244T2004863\",\"p\":\"localhost:3000/html/widget-responsive.html\",\"t\":\"2017-08-08T10:20:05.665Z\"},\"d\":\"{\\\"p\\\":\\\"🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐\\\"}\"}";
-    msgListener._onProcessed = (_,__) => exps.signal();
+    msgListener.fProcessed = (_,__) => exps.signal();
     client.connect();
     client.sendMessage(msg, "test_seq", -1, msgListener, false);
     await exps.value();
@@ -331,7 +327,7 @@ void main() {
     var sub = new Subscription("DISTINCT", ["end_of_snapshot"], ["value"]);
     sub.setRequestedSnapshot("yes");
     sub.setDataAdapter("END_OF_SNAPSHOT");
-    subListener._onEndOfSnapshot = (name, pos) {
+    subListener.fEndOfSnapshot = (name, pos) {
       exps.signal('$name $pos');
     };
     sub.addListener(subListener);
@@ -354,11 +350,11 @@ void main() {
     sub.setRequestedSnapshot("yes");
     sub.setDataAdapter("OVERFLOW");
     sub.setRequestedMaxFrequency("unfiltered");
-    subListener._onItemLostUpdates = (name, pos, lost) {
+    subListener.fItemLostUpdates = (name, pos, lost) {
       exps.signal('$name $pos');
       client.unsubscribe(sub);
     };
-    subListener._onUnsubscription = () {
+    subListener.fUnsubscription = () {
       exps.signal("onUnsubscription");
     };
     sub.addListener(subListener);
@@ -374,7 +370,7 @@ void main() {
     var sub = new Subscription("MERGE", ["count"], ["count"]);
     sub.setDataAdapter("COUNT");
     sub.addListener(subListener);
-    subListener._onRealMaxFrequency = (freq) {
+    subListener.fRealMaxFrequency = (freq) {
       exps.signal(freq!);
     };
     client.subscribe(sub);
@@ -386,7 +382,7 @@ void main() {
     var sub = new Subscription("MERGE", ["count"], ["count"]);
     sub.setDataAdapter("COUNT");
     sub.addListener(subListener);
-    subListener._onRealMaxFrequency = (freq) {
+    subListener.fRealMaxFrequency = (freq) {
       exps.signal("frequency=" + freq!);
     };
     sub.setRequestedMaxFrequency("unlimited");
@@ -411,7 +407,7 @@ void main() {
     sub.setRequestedSnapshot("no");
     sub.setDataAdapter("JSON_COUNT");
     sub.addListener(subListener);
-    subListener._onItemUpdate = (update) {
+    subListener.fItemUpdate = (update) {
       updates.add(update);
       exps.signal("onItemUpdate");
     };
@@ -434,7 +430,7 @@ void main() {
     sub.setRequestedSnapshot("no");
     sub.setDataAdapter("DIFF_COUNT");
     sub.addListener(subListener);
-    subListener._onItemUpdate = (update) {
+    subListener.fItemUpdate = (update) {
       updates.add(update);
       exps.signal("onItemUpdate");
     };
@@ -445,37 +441,4 @@ void main() {
     var u = updates[1];
     expect(u.getValue(1), matches('value=\\d+'));
   });
-}
-
-class BaseClientListener extends ClientListener {
-  void Function(String)? _onStatusChange;
-  void onStatusChange(String status) => _onStatusChange?.call(status);
-  void Function(int, String)? _onServerError;
-  void onServerError(int code, String msg) => _onServerError?.call(code, msg);
-  void Function(String)? _onPropertyChange;
-  void onPropertyChange(String property) => _onPropertyChange?.call(property);
-}
-class BaseSubscriptionListener extends SubscriptionListener {
-  void Function()? _onSubscription;
-  void onSubscription() => _onSubscription?.call();
-  void Function(int, String)? _onSubscriptionError;
-  void onSubscriptionError(int code, String msg) => _onSubscriptionError?.call(code, msg);
-  void Function(ItemUpdate)? _onItemUpdate;
-  void onItemUpdate(ItemUpdate update) => _onItemUpdate?.call(update);
-  void Function()? _onUnsubscription;
-  void onUnsubscription() => _onUnsubscription?.call();
-  void Function(String, int)? _onClearSnapshot;
-  void onClearSnapshot(String item, int pos) => _onClearSnapshot?.call(item, pos);
-  void Function(String?)? _onRealMaxFrequency;
-  void onRealMaxFrequency(String? frequency) => _onRealMaxFrequency?.call(frequency);
-  void Function(String, int)? _onEndOfSnapshot;
-  void onEndOfSnapshot(String name, int pos) => _onEndOfSnapshot?.call(name, pos);
-  void Function(String, int, int)? _onItemLostUpdates;
-  void onItemLostUpdates(String name, int pos, int lost) => _onItemLostUpdates?.call(name, pos, lost);
-}
-class BaseMessageListener extends ClientMessageListener {
-  void Function(String, String)? _onProcessed;
-  void onProcessed(String msg, String resp) => _onProcessed?.call(msg, resp);
-  void Function(String, int, String)? _onDeny;
-  void onDeny(String msg, int errorCode, String errorMessage) => _onDeny?.call(msg, errorCode, errorMessage);
 }
