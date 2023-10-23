@@ -2,14 +2,16 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 
-void equals<T>(T expected, T actual) {
-  expect(actual, expected);
-}
+void assertEqual<T>(T expected, T actual) => expect(actual, expected);
+void assertTrue(bool cnd) => expect(cnd, isTrue);
+void assertFalse(bool cnd) => expect(cnd, isFalse);
+void assertNull(Object? obj) => expect(obj, isNull);
+void assertNotNull(Object? obj) => expect(obj, isNotNull);
 
-enum _State { stStart, stAdd, stPop, stCreateFuture, stCompleteFuture}
+enum _State { s1, s2, s3, s4, s5, s6, s7, s8, s9, sa }
 
 class Expectations {
-  _State _state = _State.stStart;
+  _State _state = _State.s1;
   late Completer<void> _pendingFuture;
   late String _pendingExpected;
   List<String> _queue = [];
@@ -17,43 +19,113 @@ class Expectations {
   void signal([String actual = '']) {
     print('--> signal $actual');
     switch (_state) {
-      case _State.stCreateFuture:
-        _state = _State.stCompleteFuture;
-        if (_pendingExpected == actual) {
-          _pendingFuture.complete();
-        } else {
-          _pendingFuture.completeError('Expected $_pendingExpected but found $actual');
-        }
+      case _State.s3:
+        _s4(actual);
+      case _State.s6 || _State.s8 || _State.s9:
+       if (_pendingExpected == actual) {
+        _s7(actual);
+       } else {
+        _s8(actual);
+       }
       default:
-        _state = _State.stAdd;
-        _queue.add(actual);
+         _s2(actual);
     }
   }
 
   Future<void> value([String expected = '']) {
     switch (_state) {
-      case _State.stStart || _State.stCompleteFuture:
-       _state = _State.stCreateFuture;
-       _pendingExpected = expected;
-       _pendingFuture = new Completer();
-       return _pendingFuture.future;
-      case _State.stAdd || _State.stPop:
+      case _State.s1 || _State.s4 || _State.s7:
+        return _s3(expected);
+      case _State.s2:
+        return _s5(expected);
+      case _State.s5 || _State.sa:
         if (_queue.isEmpty) {
-          _state = _State.stCreateFuture;
-          _pendingExpected = expected;
-          _pendingFuture = new Completer();
-          return _pendingFuture.future;
+          return _s3(expected);
         } else {
-          _state = _State.stPop;
-          var actual = _queue.removeAt(0);
-          if (expected != actual) {
-            return Future<void>.error('Expected $expected but found $actual');
-          }
-          return Future<void>.value();
+          return _s5(expected);
         }
       default:
-        throw 'Unexpected case $_state';
+        throw 'Unexpected value($expected) in state $_state';
     }
+  }
+
+  Future<void> until(String expected) {
+    switch (_state) {
+      case _State.s1 || _State.s4 || _State.s7:
+        return _s6(expected);
+      case _State.s2 || _State.s5 || _State.sa:
+        if (_queue.contains(expected)) {
+          return _sa(expected);
+        } else {
+          return _s9(expected);
+        }
+      default:
+        throw 'Unexpected until($expected) in state $_state';
+    }
+  }
+
+  void _s2(String actual) {
+    _state = _State.s2;
+    _queue.add(actual);
+  }
+
+  Future<void> _s3(String expected) {
+    _state = _State.s3;
+    _pendingExpected = expected;
+    _pendingFuture = new Completer();
+    return _pendingFuture.future;
+  }
+
+  void _s4(String actual) {
+    _state = _State.s4;
+    if (_pendingExpected == actual) {
+      _pendingFuture.complete();
+    } else {
+      _pendingFuture.completeError('Expected $_pendingExpected but found $actual');
+    }
+  }
+
+  Future<void> _s5(String expected) {
+    _state = _State.s5;
+    var actual = _queue.removeAt(0);
+    if (expected == actual) {
+      return Future<void>.value();
+    } else {
+      return Future<void>.error('Expected $expected but found $actual');
+    }
+  }
+
+  Future<void> _s6(String expected) {
+    _state = _State.s6;
+    _pendingExpected = expected;
+    _pendingFuture = new Completer();
+    return _pendingFuture.future;
+  }
+
+  void _s7(String actual) {
+    _state = _State.s7;
+    _pendingFuture.complete();
+  }
+
+  void _s8(String actual) {
+    _state = _State.s8;
+  }
+
+  Future<void> _s9(String expected) {
+    _state = _State.s9;
+    _queue.clear();
+    _pendingExpected = expected;
+    _pendingFuture = new Completer();
+    return _pendingFuture.future;
+  }
+
+  Future<void> _sa(String expected) {
+    _state = _State.sa;
+    var actual = _queue.removeAt(0);
+    while (expected != actual) {
+      actual = _queue.removeAt(0);
+    }
+    return Future.value();
   }
 }
 
