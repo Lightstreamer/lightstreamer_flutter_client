@@ -26,16 +26,16 @@ extension LightstreamerClientExt on LightstreamerClient {
   @JS('getSubscriptions') external List<dynamic> _getSubscriptions();
 
   void addListener(ClientListener listener) {
-    _addListener(listener.asJSObject);
+    _addListener(listener._asJSObject);
   }
   void removeListener(ClientListener listener) {
-    _removeListener(listener.asJSObject);
+    _removeListener(listener._asJSObject);
   }
   List<ClientListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _ClientListener).asDartObject).toList();
+    return _getListeners().map((obj) => (obj as _ClientListener)._asDartObject).toList();
   }
   void sendMessage(String msg, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) {
-    _sendMessage(msg, sequence, delayTimeout, listener?.asJSObject, enqueueWhileDisconnected);
+    _sendMessage(msg, sequence, delayTimeout, listener?._asJSObject, enqueueWhileDisconnected);
   }
   List<Subscription> getSubscriptions() {
     return _getSubscriptions().cast<Subscription>();
@@ -58,7 +58,7 @@ extension LightstreamerClientExt on LightstreamerClient {
 class _ClientListener {}
 
 extension _ClientListenerExt on _ClientListener {
-  external ClientListener get asDartObject;
+  external ClientListener get _asDartObject;
 }
 
 @JSExport()
@@ -74,8 +74,8 @@ abstract class ClientListener {
   ClientListener() {
     _that = createDartExport(this) as _ClientListener;
   }
-  _ClientListener get asJSObject => _that;
-  ClientListener get asDartObject => this;
+  _ClientListener get _asJSObject => _that;
+  ClientListener get _asDartObject => this;
 }
 
 @JS()
@@ -83,7 +83,7 @@ abstract class ClientListener {
 class _ClientMessageListener {}
 
 extension _ClientMessageListenerExt on _ClientMessageListener {
-  external ClientMessageListener get asDartObject;
+  external ClientMessageListener get _asDartObject;
 }
 
 @JSExport()
@@ -98,8 +98,8 @@ abstract class ClientMessageListener {
   ClientMessageListener() {
     _that = createDartExport(this) as _ClientMessageListener;
   }
-  _ClientMessageListener get asJSObject => _that;
-  ClientMessageListener get asDartObject => this;
+  _ClientMessageListener get _asJSObject => _that;
+  ClientMessageListener get _asDartObject => this;
 }
 
 @JS()
@@ -107,7 +107,7 @@ abstract class ClientMessageListener {
 class _SubscriptionListener {}
 
 extension _SubscriptionListenerExt on _SubscriptionListener {
-  external SubscriptionListener get asDartObject;
+  external SubscriptionListener get _asDartObject;
 }
 
 @JSExport()
@@ -129,8 +129,8 @@ abstract class SubscriptionListener {
   SubscriptionListener() {
     _that = createDartExport(this) as _SubscriptionListener;
   }
-  _SubscriptionListener get asJSObject => _that;
-  SubscriptionListener get asDartObject => this;
+  _SubscriptionListener get _asJSObject => _that;
+  SubscriptionListener get _asDartObject => this;
 }
 
 typedef StringOrInt = Object;
@@ -200,13 +200,13 @@ extension SubscriptionExt on Subscription {
   external String? getCommandValue(StringOrInt itemNameOrPosition, String keyValue, StringOrInt fieldNameOrPosition);
 
   void addListener(SubscriptionListener listener) {
-    _addListener(listener.asJSObject);
+    _addListener(listener._asJSObject);
   }
   void removeListener(SubscriptionListener listener) {
-    _removeListener(listener.asJSObject);
+    _removeListener(listener._asJSObject);
   }
   List<SubscriptionListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _SubscriptionListener).asDartObject).toList();
+    return _getListeners().map((obj) => (obj as _SubscriptionListener)._asDartObject).toList();
   }
   List<String>? getFields() {
     return _getFields()?.cast<String>();
@@ -328,13 +328,13 @@ extension MpnDeviceExt on MpnDevice {
   external bool isSuspended();
 
   void addListener(MpnDeviceListener listener) {
-    _addListener(listener.asJSObject);
+    _addListener(listener._asJSObject);
   }
   void removeListener(MpnDeviceListener listener) {
-    _removeListener(listener.asJSObject);
+    _removeListener(listener._asJSObject);
   }
   List<MpnDeviceListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _MpnDeviceListener).asDartObject).toList();
+    return _getListeners().map((obj) => (obj as _MpnDeviceListener)._asDartObject).toList();
   }
 }
 
@@ -343,7 +343,7 @@ extension MpnDeviceExt on MpnDevice {
 class _MpnDeviceListener {}
 
 extension _MpnDeviceListenerExt on _MpnDeviceListener {
-  external MpnDeviceListener get asDartObject;
+  external MpnDeviceListener get _asDartObject;
 }
 
 @JSExport()
@@ -361,8 +361,8 @@ abstract class MpnDeviceListener {
   MpnDeviceListener() {
     _that = createDartExport(this) as _MpnDeviceListener;
   }
-  _MpnDeviceListener get asJSObject => _that;
-  MpnDeviceListener get asDartObject => this;
+  _MpnDeviceListener get _asJSObject => _that;
+  MpnDeviceListener get _asDartObject => this;
 }
 
 @JS()
@@ -406,13 +406,13 @@ extension MpnSubscriptionExt on MpnSubscription {
   external String? getTriggerExpression();
 
   void addListener(MpnSubscriptionListener listener) {
-    _addListener(listener.asJSObject);
+    _addListener(listener._asJSObject);
   }
   void removeListener(MpnSubscriptionListener listener) {
-    _removeListener(listener.asJSObject);
+    _removeListener(listener._asJSObject);
   }
   List<MpnSubscriptionListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _MpnSubscriptionListener).asDartObject).toList();
+    return _getListeners().map((obj) => (obj as _MpnSubscriptionListener)._asDartObject).toList();
   }
   List<String>? getFields() {
     return _getFields()?.cast<String>();
@@ -427,7 +427,7 @@ extension MpnSubscriptionExt on MpnSubscription {
 class _MpnSubscriptionListener {}
 
 extension _MpnSubscriptionListenerExt on _MpnSubscriptionListener {
-  external MpnSubscriptionListener get asDartObject;
+  external MpnSubscriptionListener get _asDartObject;
 }
 
 @JSExport()
@@ -447,8 +447,8 @@ abstract class MpnSubscriptionListener {
   MpnSubscriptionListener() {
     _that = createDartExport(this) as _MpnSubscriptionListener;
   }
-  _MpnSubscriptionListener get asJSObject => _that;
-  MpnSubscriptionListener get asDartObject => this;
+  _MpnSubscriptionListener get _asJSObject => _that;
+  MpnSubscriptionListener get _asDartObject => this;
 }
 
 @JS()
