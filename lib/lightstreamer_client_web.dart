@@ -368,7 +368,6 @@ abstract class MpnDeviceListener {
 @JS()
 @staticInterop
 class MpnSubscription {
-  // TODO ctor overrides
   external factory MpnSubscription(String mode, [List<String>? items, List<String>? fields]);
 }
 
