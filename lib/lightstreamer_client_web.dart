@@ -473,14 +473,14 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
   Map<String, String>? getData() {
     return (dartify(_getData()) as Map<dynamic, dynamic>).cast<String, String>();
   }
-  void setData(Map<String, String>? data) {
-    _setData(jsify(data));
+  FirebaseMpnBuilder setData(Map<String, String>? data) {
+    return _setData(jsify(data));
   }
   Map<String, String>? getHeaders() {
     return (dartify(_getHeaders()) as Map<dynamic, dynamic>).cast<String, String>();
   }
-  void setHeaders(Map<String, String>? headers) {
-    _setHeaders(jsify(headers));
+  FirebaseMpnBuilder setHeaders(Map<String, String>? headers) {
+    return _setHeaders(jsify(headers));
   }
 }
 
