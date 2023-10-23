@@ -64,8 +64,8 @@ extension _ClientListenerExt on _ClientListener {
 @JSExport()
 abstract class ClientListener {
   void onStatusChange(String status) {}
-  void onListenEnd(Object dummy) {}
-  void onListenStart(Object dummy) {}
+  void onListenEnd(void dummy) {}
+  void onListenStart(void dummy) {}
   void onPropertyChange(String property) {}
   void onServerError(int errorCode, String errorMessage) {}
   void onServerKeepalive() {}
@@ -118,8 +118,8 @@ abstract class SubscriptionListener {
   void onEndOfSnapshot(String itemName, int itemPos) {}
   void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) {}
   void onItemUpdate(ItemUpdate updateInfo) {}
-  void onListenEnd(Object dummy) {}
-  void onListenStart(Object dummy) {}
+  void onListenEnd(void dummy) {}
+  void onListenStart(void dummy) {}
   void onRealMaxFrequency(String? frequency) {}
   void onSubscription() {}
   void onSubscriptionError(int errorCode, String errorMessage) {}
@@ -348,8 +348,8 @@ extension _MpnDeviceListenerExt on _MpnDeviceListener {
 
 @JSExport()
 abstract class MpnDeviceListener {
-  void onListenEnd(Object dummy) {}
-  void onListenStart(Object dummy) {}
+  void onListenEnd(void dummy) {}
+  void onListenStart(void dummy) {}
   void onRegistered() {}
   void onRegistrationFailed(int errorCode, String errorMessage) {}
   void onResumed() {}
@@ -432,8 +432,8 @@ extension _MpnSubscriptionListenerExt on _MpnSubscriptionListener {
 
 @JSExport()
 abstract class MpnSubscriptionListener {
-  void onListenEnd(Object dummy) {}
-  void onListenStart(Object dummy) {}
+  void onListenEnd(void dummy) {}
+  void onListenStart(void dummy) {}
   void onModificationError(int errorCode, String errorMessage, String propertyName) {}
   void onPropertyChanged(String propertyName) {}
   void onStatusChanged(String status, int timestamp) {}
