@@ -1,4 +1,4 @@
-import 'package:test/test.dart' hide equals;
+import 'package:test/test.dart';
 import 'package:js/js_util.dart' as js;
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 import './utils.dart';
@@ -26,14 +26,14 @@ void main() {
 
   test('listeners', () {
     var ls = client.getListeners();
-    equals(1, ls.length);
-    equals(true, listener == ls[0]);
+    assertEqual(1, ls.length);
+    assertEqual(true, listener == ls[0]);
 
     var sub = new Subscription("MERGE", ["count"], ["count"]);
     sub.addListener(subListener);
     var subls = sub.getListeners();
-    equals(1, subls.length);
-    equals(true, subListener == subls[0]);
+    assertEqual(1, subls.length);
+    assertEqual(true, subListener == subls[0]);
   });
 
   test('connect', () async {
@@ -45,7 +45,7 @@ void main() {
     };
     client.connect();
     await exps.value();
-    equals(expected, client.getStatus());
+    assertEqual(expected, client.getStatus());
   });
 
   test('online server', () async {
@@ -61,7 +61,7 @@ void main() {
     };
     client.connect();
     await exps.value();
-    equals(expected, client.getStatus());
+    assertEqual(expected, client.getStatus());
   });
 
   test('error', () async {
@@ -86,7 +86,7 @@ void main() {
     };
     client.connect();
     await exps.value();
-    equals("DISCONNECTED", client.getStatus());
+    assertEqual("DISCONNECTED", client.getStatus());
   });
 
   test('subscribe', () async {
@@ -98,11 +98,11 @@ void main() {
     };
     client.subscribe(sub);
     var subs = client.getSubscriptions();
-    equals(1, subs.length);
-    equals(true, sub == subs[0]);
+    assertEqual(1, subs.length);
+    assertEqual(true, sub == subs[0]);
     client.connect();
     await exps.value();
-    equals(true, sub.isSubscribed());
+    assertEqual(true, sub.isSubscribed());
   });
 
   test('subscription error', () async {
@@ -127,9 +127,9 @@ void main() {
     client.subscribe(sub);
     client.connect();
     await exps.value();
-    equals(true, sub.isSubscribed());
-    equals(1, sub.getKeyPosition());
-    equals(4, sub.getCommandPosition());
+    assertEqual(true, sub.isSubscribed());
+    assertEqual(1, sub.getKeyPosition());
+    assertEqual(4, sub.getCommandPosition());
   });
 
   test('subscribe command 2 levels', () async {
@@ -150,13 +150,13 @@ void main() {
     };
     client.subscribe(sub);
     var subs = client.getSubscriptions();
-    equals(1, subs.length);
-    equals(true, sub == subs[0]);
+    assertEqual(1, subs.length);
+    assertEqual(true, sub == subs[0]);
     client.connect();
     await exps.value();
-    equals(true, sub.isSubscribed());
-    equals(1, sub.getKeyPosition());
-    equals(2, sub.getCommandPosition());
+    assertEqual(true, sub.isSubscribed());
+    assertEqual(1, sub.getKeyPosition());
+    assertEqual(2, sub.getCommandPosition());
   });
 
   test('unsubscribe', () async {
@@ -172,8 +172,8 @@ void main() {
     client.subscribe(sub);
     client.connect();
     await exps.value();
-    equals(false, sub.isSubscribed());
-    equals(false, sub.isActive());
+    assertEqual(false, sub.isSubscribed());
+    assertEqual(false, sub.isActive());
   });
 
   test('subscribe non-ascii', () async {
@@ -195,7 +195,7 @@ void main() {
           exps.signal("realMaxBandwidth=" + (client.connectionOptions.getRealMaxBandwidth() ?? ""));
       }
     };
-    equals("unlimited", client.connectionOptions.getRequestedMaxBandwidth());
+    assertEqual("unlimited", client.connectionOptions.getRequestedMaxBandwidth());
     client.connect();
     await exps.value("realMaxBandwidth=40"); // after the connection, the server sends the default bandwidth
     // request a bandwidth equal to 20.1: the request is accepted
@@ -222,15 +222,15 @@ void main() {
   });
 
   test('roundtrip', () async {
-    equals("TEST", client.connectionDetails.getAdapterSet());
-    equals("http://localhost:8080", client.connectionDetails.getServerAddress());
-    equals(50000000, client.connectionOptions.getContentLength());
-    equals(4000, client.connectionOptions.getRetryDelay());
-    equals(15000, client.connectionOptions.getSessionRecoveryTimeout());
+    assertEqual("TEST", client.connectionDetails.getAdapterSet());
+    assertEqual("http://localhost:8080", client.connectionDetails.getServerAddress());
+    assertEqual(50000000, client.connectionOptions.getContentLength());
+    assertEqual(4000, client.connectionOptions.getRetryDelay());
+    assertEqual(15000, client.connectionOptions.getSessionRecoveryTimeout());
     var sub = new Subscription("MERGE", ["count"], ["count"]);
     sub.setDataAdapter("COUNT");
-    equals("COUNT", sub.getDataAdapter());
-    equals("MERGE", sub.getMode());
+    assertEqual("COUNT", sub.getDataAdapter());
+    assertEqual("MERGE", sub.getMode());
     sub.addListener(subListener);
     subListener.fSubscription = () => exps.signal("onSubscription");
     subListener.fItemUpdate = (_) => exps.signal("onItemUpdate");
@@ -398,7 +398,7 @@ void main() {
   test('headers', () async {
     client.connectionOptions.setHttpExtraHeaders({"X-Header" : "header"});
     var hs = client.connectionOptions.getHttpExtraHeaders()!;
-    equals("header", hs["X-Header"]);
+    assertEqual("header", hs["X-Header"]);
   });
 
   test('json patch', () async {
@@ -418,8 +418,8 @@ void main() {
     var u = updates[1];
     var patch = u.getValueAsJSONPatchIfAvailable(1)!;
     patch = js.getProperty(patch, "0");
-    equals("replace", js.getProperty(patch, "op"));
-    equals("/value", js.getProperty(patch, "path"));
+    assertEqual("replace", js.getProperty(patch, "op"));
+    assertEqual("/value", js.getProperty(patch, "path"));
     expect(js.getProperty(patch, "value"), isA<int>());
     expect(u.getValue(1), isNotNull);
   });
