@@ -408,9 +408,21 @@ void main() {
       });
 
       test('headers', () async {
-        client.connectionOptions.setHttpExtraHeaders({"X-Header" : "header"});
+        client.connectionOptions.setHttpExtraHeaders({"hello" : "header"});
         var hs = client.connectionOptions.getHttpExtraHeaders()!;
-        assertEqual("header", hs["X-Header"]);
+        assertEqual("header", hs["hello"]);
+
+        var expected = "CONNECTED:" + transport;
+        listener.fStatusChange = (status) {
+          if (status == expected) exps.signal();
+        };
+        client.connect();
+        if (transport.startsWith("WS")){
+          // ws doesn't support extra headers
+          assertEqual("DISCONNECTED", client.getStatus());
+        } else {
+          await exps.value();
+        }
       });
 
       test('json patch', () async {
