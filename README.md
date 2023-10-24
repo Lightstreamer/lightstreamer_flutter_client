@@ -207,11 +207,11 @@ To receive notifications, you need to subscribe to a `MpnSubscription`: it conta
 var items = [ "item1","item2","item3" ];
 var fields = [ "stock_name","last_price","time" ];
 var sub = new MpnSubscription("MERGE",items,fields);
-var data = [ 
+var data = {
   "stock_name": "\${stock_name}",
   "last_price": "\${last_price}",
   "time": "\${time}",
-  "item": "item1" ];
+  "item": "item1" };
 String format = new MpnBuilder().data(data).build();
 sub.setNotificationFormat(format);
 sub.setTriggerExpression("Double.parseDouble(\$[2])>45.0");
