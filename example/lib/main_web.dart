@@ -1,7 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 
-void main() {
+late final String fcmToken;
+
+void main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  fcmToken = (await FirebaseMessaging.instance.getToken(vapidKey: "BGxHjswNaj-9T1cur3TJuyUCgL9yudMZDDcEV43zpSxnZDvS7KbqnwAGSRz9zWbqySTa0Oij-i29xxRWEF0WtA8"))!;
+
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  print('User granted permission: ${settings.authorizationStatus}');
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      print('Message also contained a notification: ${message.notification}');
+    }
+  });
+
   runApp(MyApp());
 }
 
@@ -41,12 +73,15 @@ class _MySubListener extends SubscriptionListener {
 class _MyHomePageState extends State<MyHomePage> {
   LightstreamerClient _client;
   Subscription? _sub = null;
+  MpnSubscription? _mpnSub = null;
+  late final MpnDevice _device;
 
   _MyHomePageState() : _client = new LightstreamerClient("https://push.lightstreamer.com", "DEMO") {
-    LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+    LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.INFO));
 
     var listener = new _MyClientListener();
     _client.addListener(listener);
+    _device = new MpnDevice(fcmToken, "com.lightstreamer.push_demo.android.fcm", "Google");
   }
 
   void _start() {
@@ -78,6 +113,41 @@ class _MyHomePageState extends State<MyHomePage> {
       _client.unsubscribe(sub);
       _sub = null;
     }
+  }
+
+  void _register() {
+    _client.registerForMpn(_device);
+  }
+
+  void _subscribeMpn() {
+    if (_mpnSub == null) {
+      var item = "item2";
+      var builder = new FirebaseMpnBuilder();
+      builder.setData({
+        "item": item,
+        "stockName": "\${stock_name}",
+        "lastPrice": "\${last_price}"
+      });
+      var notificationFormat = builder.build();
+      var sub = new MpnSubscription("MERGE", [item], ["stock_name", "last_price"]);
+      sub.setNotificationFormat(notificationFormat);
+      sub.setDataAdapter("QUOTE_ADAPTER");
+      _client.subscribeMpn(sub, true);
+      _mpnSub = sub;
+    }
+  }
+
+  void _unsubscribeMpn() {
+    if (_mpnSub != null) {
+      var sub = _mpnSub!;
+      _client.unsubscribeMpn(sub);
+      _mpnSub = null;
+    }
+  }
+
+  void _unsubscribeAllMpn() {
+    _client.unsubscribeMpnSubscriptions("ALL");
+    _mpnSub = null;
   }
 
   @override
@@ -112,6 +182,27 @@ class _MyHomePageState extends State<MyHomePage> {
                 ElevatedButton(
                   onPressed: _send,
                   child: Text('Send hello'),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: _register,
+                  child: Text('Register MPN'),
+                ),
+                ElevatedButton(
+                  onPressed: _subscribeMpn,
+                  child: Text('Subscribe MPN'),
+                ),
+                ElevatedButton(
+                  onPressed: _unsubscribeMpn,
+                  child: Text('Unsubscribe MPN'),
+                ),
+                ElevatedButton(
+                  onPressed: _unsubscribeAllMpn,
+                  child: Text('UnsubscribeAll MPN'),
                 ),
               ],
             ),

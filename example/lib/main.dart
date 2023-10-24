@@ -117,7 +117,7 @@ class _MyAppState extends State<MyApp> {
 
     try {
       result = await LightstreamerFlutterClient.getStatus() ?? ' -- ';
-    } on PlatformException catch (e) {
+    } on PlatformException {
       result = "Unknown";
     }
 
@@ -134,7 +134,7 @@ class _MyAppState extends State<MyApp> {
       //      "Hello World", "Sequence1", 5000, _clientmessages, true);
       await LightstreamerFlutterClient.sendMessageExt(
           myController.text, null, null, _clientmessages, true);
-    } on PlatformException catch (e) {
+    } on PlatformException {
       // ...
     }
   }
@@ -173,7 +173,7 @@ class _MyAppState extends State<MyApp> {
       static_sub_id = subId as String;
 
       LightstreamerFlutterClient.setSubscriptionListener(subId, _values);
-    } on PlatformException catch (e) {
+    } on PlatformException {
       // ...
     }
   }
@@ -201,7 +201,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _unsubscribe() async {
     try {
       await LightstreamerFlutterClient.unsubscribe(static_sub_id);
-    } on PlatformException catch (e) {
+    } on PlatformException {
       // ...
     }
   }
