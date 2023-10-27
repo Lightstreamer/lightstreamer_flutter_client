@@ -66,3 +66,6 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
+
+false_secrets:
+ - example/lib/firebase_options.dart
