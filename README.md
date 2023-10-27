@@ -137,7 +137,7 @@ A full running example app is included in the project under `example` folder.
 
 - Get the [Lightstreamer Client Web SDK](https://www.npmjs.com/package/lightstreamer-client-web)
 
-- Copy the file `lightstreamer-core.min.js` (or the file `lightstreamer-mpn.min.js` if you need the Web Push Notifications, see below) in the `web` folder of your Flutter app, 
+- Copy the file `lightstreamer-core.min.js` (or the file `lightstreamer-mpn.min.js` if you need the Web Push Notifications, see below) in the `web` folder of your Flutter app
 
 - Put the following line in the `<head>` section of the file `index.html` just before every other `<script>` element:
 
@@ -227,7 +227,7 @@ For more information see the [Firebase Cloud Messaging docs](https://firebase.go
 ## External Documentations
 
  - Package home: [pub.dev/packages/lightstreamer_flutter_client](https://pub.dev/packages/lightstreamer_flutter_client)
- - Check out [this demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter) showing the integration between Lightstreamer and Flutter App Development Toolkit. In particular the demo shows how to use the lightstreamer_flutter_client plugin package.
+ - Check out [this demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter) showing the integration between Lightstreamer and Flutter.
  - For help getting started with Lightstreamer, view the [online documentation](https://lightstreamer.com/doc).
  - In particular refer to the [Android API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/), the [Swift API Client Reference](https://www.lightstreamer.com/api/ls-swift-client/latest/) or the [Web API Client Reference](https://www.lightstreamer.com/api/ls-web-client/latest/).
 
