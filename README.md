@@ -224,12 +224,14 @@ The optional  trigger expression  lets you specify  when to send  the notificati
 
 For more information see the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messaging/flutter/client).
 
-## External Documentations
+## See Also
 
- - Package home: [pub.dev/packages/lightstreamer_flutter_client](https://pub.dev/packages/lightstreamer_flutter_client)
- - Check out [this demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter) showing the integration between Lightstreamer and Flutter.
- - For help getting started with Lightstreamer, view the [online documentation](https://lightstreamer.com/doc).
- - In particular refer to the [Android API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/), the [Swift API Client Reference](https://www.lightstreamer.com/api/ls-swift-client/latest/) or the [Web API Client Reference](https://www.lightstreamer.com/api/ls-web-client/latest/).
+ - [Package home](https://pub.dev/packages/lightstreamer_flutter_client)
+ - [Stock-List Demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter)
+ - [Android API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/)
+ - [Swift API Client Reference](https://www.lightstreamer.com/api/ls-swift-client/latest/)
+ - [Web API Client Reference](https://www.lightstreamer.com/api/ls-web-client/latest/)
+ - [Lightstreamer Docs](https://lightstreamer.com/doc)
 
 ## Compatibility
 

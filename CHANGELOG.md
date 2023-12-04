@@ -6,9 +6,9 @@
 *Compatible with Flutter 1.20*<br/>
 *May not be compatible with code developed for the previous version*<br/>
 *Based on Lightstreamer Android Client SDK 5.0.0*<br/>
-*Based on Lightstreamer Swift Client SDK 6.0.1*<br/>
+*Based on Lightstreamer Swift Client SDK 6.1.0*<br/>
 *Based on Lightstreamer Web Client SDK 9.0.0*<br/>
-*Made available on 27 Oct 2023*
+*Made available on 4 Dec 2023*
 
 Added support for Flutter Web based on Lightstreamer Web Client SDK 9.0.0.
 
