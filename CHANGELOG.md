@@ -1,4 +1,4 @@
-## 1.2.0-a.1
+## 1.2.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
 *Compatible with iOS 10*<br/>
