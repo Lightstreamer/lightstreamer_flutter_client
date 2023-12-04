@@ -1,41 +1,126 @@
 PODS:
-  - Alamofire (5.7.1)
-  - Flutter (1.0.0)
-  - lightstreamer_flutter_client (1.1.1):
+  - Alamofire (5.8.1)
+  - Firebase/CoreOnly (10.15.0):
+    - FirebaseCore (= 10.15.0)
+  - Firebase/Messaging (10.15.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 10.15.0)
+  - firebase_core (2.18.0):
+    - Firebase/CoreOnly (= 10.15.0)
     - Flutter
-    - LightstreamerClient (~> 6.0.1)
-  - LightstreamerClient (6.0.1):
-    - Alamofire (~> 5.2)
-    - RMJSONPatch (~> 1.0)
-    - Starscream (~> 4.0)
-  - RMJSONPatch (1.0.4)
+  - firebase_messaging (14.7.0):
+    - Firebase/Messaging (= 10.15.0)
+    - firebase_core
+    - Flutter
+  - FirebaseCore (10.15.0):
+    - FirebaseCoreInternal (~> 10.0)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GoogleUtilities/Logger (~> 7.8)
+  - FirebaseCoreInternal (10.18.0):
+    - "GoogleUtilities/NSData+zlib (~> 7.8)"
+  - FirebaseInstallations (10.18.0):
+    - FirebaseCore (~> 10.0)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GoogleUtilities/UserDefaults (~> 7.8)
+    - PromisesObjC (~> 2.1)
+  - FirebaseMessaging (10.15.0):
+    - FirebaseCore (~> 10.0)
+    - FirebaseInstallations (~> 10.0)
+    - GoogleDataTransport (~> 9.2)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.8)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GoogleUtilities/Reachability (~> 7.8)
+    - GoogleUtilities/UserDefaults (~> 7.8)
+    - nanopb (< 2.30910.0, >= 2.30908.0)
+  - Flutter (1.0.0)
+  - GoogleDataTransport (9.3.0):
+    - GoogleUtilities/Environment (~> 7.7)
+    - nanopb (< 2.30910.0, >= 2.30908.0)
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/AppDelegateSwizzler (7.12.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+  - GoogleUtilities/Environment (7.12.0):
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/Logger (7.12.0):
+    - GoogleUtilities/Environment
+  - GoogleUtilities/Network (7.12.0):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (7.12.0)"
+  - GoogleUtilities/Reachability (7.12.0):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/UserDefaults (7.12.0):
+    - GoogleUtilities/Logger
+  - lightstreamer_flutter_client (1.2.0):
+    - Flutter
+    - LightstreamerClient (~> 6.1.0)
+  - LightstreamerClient (6.1.0):
+    - Alamofire (~> 5.8.1)
+    - RMJSONPatch (~> 1.0.5)
+    - Starscream (~> 4.0.6)
+  - nanopb (2.30909.1):
+    - nanopb/decode (= 2.30909.1)
+    - nanopb/encode (= 2.30909.1)
+  - nanopb/decode (2.30909.1)
+  - nanopb/encode (2.30909.1)
+  - PromisesObjC (2.3.1)
+  - RMJSONPatch (1.0.5)
   - Starscream (4.0.6)
 
 DEPENDENCIES:
+  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
+  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
   - lightstreamer_flutter_client (from `.symlinks/plugins/lightstreamer_flutter_client/ios`)
 
 SPEC REPOS:
   trunk:
     - Alamofire
+    - Firebase
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - GoogleDataTransport
+    - GoogleUtilities
     - LightstreamerClient
+    - nanopb
+    - PromisesObjC
     - RMJSONPatch
     - Starscream
 
 EXTERNAL SOURCES:
+  firebase_core:
+    :path: ".symlinks/plugins/firebase_core/ios"
+  firebase_messaging:
+    :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
   lightstreamer_flutter_client:
     :path: ".symlinks/plugins/lightstreamer_flutter_client/ios"
 
 SPEC CHECKSUMS:
-  Alamofire: 0123a34370cb170936ae79a8df46cc62b2edeb88
+  Alamofire: 3ca42e259043ee0dc5c0cdd76c4bc568b8e42af7
+  Firebase: 66043bd4579e5b73811f96829c694c7af8d67435
+  firebase_core: 49fd2395e3fbbf63f453888c8e9f42f541f4c11c
+  firebase_messaging: f29609230a6f0759b72218d66ada60ed51c14a51
+  FirebaseCore: 2cec518b43635f96afe7ac3a9c513e47558abd2e
+  FirebaseCoreInternal: 8eb002e564b533bdcf1ba011f33f2b5c10e2ed4a
+  FirebaseInstallations: e842042ec6ac1fd2e37d7706363ebe7f662afea4
+  FirebaseMessaging: 0c0ae1eb722ef0c07f7801e5ded8dccd1357d6d4
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  lightstreamer_flutter_client: 388e75f19295eb5387e9d832fe54dc37e0f10379
-  LightstreamerClient: e0b437e54d486926293ca995fde44d0f7ff19f6c
-  RMJSONPatch: 60d351ad27d164352f8ea6b055c07c976f1bd2d1
+  GoogleDataTransport: 57c22343ab29bc686febbf7cbb13bad167c2d8fe
+  GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
+  lightstreamer_flutter_client: 496e9c7cb2aa7aff268a29a8148e6e8517a5f226
+  LightstreamerClient: 2be59f1da48fe1b8b9866c8f2fd723769c26a847
+  nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
+  PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
+  RMJSONPatch: 9d08c18158c5a224ec471d876457f65cdafb1ecb
   Starscream: fb2c4510bebf908c62bd383bcf05e673720e91fd
 
 PODFILE CHECKSUM: 3954d209f12d25091b352c79cb4f2eab7bcd84b5
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.14.3
