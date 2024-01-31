@@ -1,3 +1,21 @@
+## 1.3.1
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 10*<br/>
+*Compatible with Dart 3.1.3*<br/>
+*Compatible with Flutter 1.20*<br/>
+*Compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.1.1*<br/>
+*Based on Lightstreamer Swift Client SDK 6.1.1*<br/>
+*Based on Lightstreamer Web Client SDK 9.1.1*<br/>
+*Made available on 31 Jan 2024*
+
+Updated the following dependencies: 
+
+- Lightstreamer Android Client to version 5.1.1
+- Lightstreamer Swift Client to version 6.1.1
+
+
 ## 1.3.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
