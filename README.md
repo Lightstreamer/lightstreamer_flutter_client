@@ -235,4 +235,5 @@ For more information see the [Firebase Cloud Messaging docs](https://firebase.go
 
 ## Compatibility
 
-The Plugin requires Lightstreamer Server 7.4.0 or later
+* The Plugin requires Lightstreamer Server 7.4.0 or later
+* Please be advised that the minimum supported Android API level is 26. Ensure that your device is running Android 8.0 (Oreo) or a higher version to guarantee optimal performance and compatibility.
