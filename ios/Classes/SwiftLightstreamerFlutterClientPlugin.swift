@@ -17,6 +17,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
   let ls = LightstreamerClient(serverAddress: nil, adapterSet: nil)
   
   var clientListener: MyClientListener!
+  var msgListener: MyClientMessageListener!
   var activeSubListeners: [String:MySubListener] = [:]
   var activeMpnListeners: [String:MyMpnSubListener] = [:]
 
@@ -302,7 +303,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       }
       
       if addListnr {
-        let msgListener = MyClientMessageListener(messagestatus_channel, "-1", lsBridge)
+        msgListener = MyClientMessageListener(messagestatus_channel, "-1", lsBridge)
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: msgListener, enqueueWhileDisconnected: enq)
       } else {
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: nil, enqueueWhileDisconnected: enq)
