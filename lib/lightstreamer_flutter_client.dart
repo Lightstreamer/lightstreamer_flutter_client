@@ -357,22 +357,32 @@ class LightstreamerFlutterClient {
   }
 
   static Future<String> _consumeClientStatus(String? message) async {
-    String currentMessage = message as String;
+    try {
+      var data = jsonDecode(message!) as Map<String, dynamic>;
+      var id = data["id"];
+      var value = data["value"];
 
-    developer.log("Received message: " + currentMessage);
-
-    clientListener!(message);
-
+      if (id == "-1") {
+        clientListener?.call(value);
+      }
+    } catch(e, s) {
+      print("ERROR: $e\n$s");
+    }
     return "ok";
   }
 
   static Future<String> _consumeClientMessage(String? message) async {
-    String currentMessage = message as String;
+    try {
+      var data = jsonDecode(message!) as Map<String, dynamic>;
+      var id = data["id"];
+      var value = data["value"];
 
-    developer.log("Received message client: " + currentMessage);
-
-    messageListener!(message);
-
+      if (id == "-1") {
+        messageListener?.call(value);
+      }
+    } catch(e, s) {
+      print("ERROR: $e\n$s");
+    }
     return "ok";
   }
 }
