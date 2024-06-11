@@ -5,26 +5,31 @@ import android.os.Looper;
 
 import com.lightstreamer.client.ClientMessageListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import io.flutter.plugin.common.BasicMessageChannel;
 
 public class MyClientMessageLisener implements ClientMessageListener {
 
     private BasicMessageChannel<String> _messages_channel;
+    final String msgId;
 
-    public MyClientMessageLisener(BasicMessageChannel<String> messagestatus_channel) {
+    public MyClientMessageLisener(BasicMessageChannel<String> messagestatus_channel, String msgId) {
 
         _messages_channel = messagestatus_channel;
-
+        this.msgId = msgId;
     }
 
     @Override
     public void onAbort(final String originalMessage, boolean sentOnNetwork) {
         if (sentOnNetwork) {
             try {
+                String json = toJson(new StringBuilder().append("Abort:Sent:").append(originalMessage).toString());
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        _messages_channel.send(new StringBuilder().append("Abort:Sent:").append(originalMessage).toString());
+                        _messages_channel.send(json);
                     }
                 });
 
@@ -33,10 +38,11 @@ public class MyClientMessageLisener implements ClientMessageListener {
             }
         } else {
             try {
+                String json = toJson(new StringBuilder().append("Abort:NotSent:").append(originalMessage).toString());
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        _messages_channel.send(new StringBuilder().append("Abort:NotSent:").append(originalMessage).toString());
+                        _messages_channel.send(json);
                     }
                 });
 
@@ -50,10 +56,11 @@ public class MyClientMessageLisener implements ClientMessageListener {
     @Override
     public void onDeny(final String originalMessage, final int code, final String error) {
         try {
+            String json = toJson(new StringBuilder().append("Deny:").append(code).append(":").append(error).append(":").append(originalMessage).toString());
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    _messages_channel.send(new StringBuilder().append("Deny:").append(code).append(":").append(error).append(":").append(originalMessage).toString());
+                    _messages_channel.send(json);
                 }
             });
 
@@ -65,10 +72,11 @@ public class MyClientMessageLisener implements ClientMessageListener {
     @Override
     public void onDiscarded(final String originalMessage) {
         try {
+            String json = toJson(new StringBuilder().append("Discarded:").append(originalMessage).toString());
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    _messages_channel.send(new StringBuilder().append("Discarded:").append(originalMessage).toString());
+                    _messages_channel.send(json);
                 }
             });
 
@@ -80,10 +88,11 @@ public class MyClientMessageLisener implements ClientMessageListener {
     @Override
     public void onError(final String originalMessage) {
         try {
+            String json = toJson(new StringBuilder().append("Error:").append(originalMessage).toString());
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    _messages_channel.send(new StringBuilder().append("Error:").append(originalMessage).toString());
+                    _messages_channel.send(json);
                 }
             });
 
@@ -101,15 +110,27 @@ public class MyClientMessageLisener implements ClientMessageListener {
             }
             final String msg = _msg;
 
+            String json = toJson(msg);
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    _messages_channel.send(msg);
+                    _messages_channel.send(json);
                 }
             });
 
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
+        }
+    }
+
+    String toJson(String value) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("id", msgId);
+            json.put("value", value);
+            return json.toString();
+        } catch (JSONException e) {
+            return null;
         }
     }
 }
