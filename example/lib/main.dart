@@ -24,6 +24,7 @@ class _MyAppState extends State<MyApp> {
   String _status = 'Unknown';
   final myController = TextEditingController();
   final mySubController = TextEditingController();
+  final _client = LightstreamerClient();
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    LightstreamerFlutterClient.enableLog();
+    LightstreamerClient.enableLog();
 
     String status;
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -41,14 +42,13 @@ class _MyAppState extends State<MyApp> {
     try {
       Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
 
-      status = await LightstreamerFlutterClient.connect(
+      _client.setClientListener(_clientStatus);
+      status = await _client.connect(
               "https://push.lightstreamer.com/", "DEMO", params) ??
           'Unknown client session status';
     } on PlatformException {
       status = 'Failed to start Lighstreamer connection.';
     }
-
-    LightstreamerFlutterClient.setClientListener(_clientStatus);
 
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
@@ -83,7 +83,7 @@ class _MyAppState extends State<MyApp> {
         // "proxy": "{HTTP,localhost,19540,1,1}"
       };
 
-      currentStatus = await LightstreamerFlutterClient.connect(
+      currentStatus = await _client.connect(
               "https://push.lightstreamer.com/", "DEMO", params) ??
           'Unknown client session status';
     } on PlatformException catch (e) {
@@ -100,7 +100,7 @@ class _MyAppState extends State<MyApp> {
     String currentStatus;
 
     try {
-      currentStatus = await LightstreamerFlutterClient.disconnect() ??
+      currentStatus = await _client.disconnect() ??
           'Unknown client session status';
     } on PlatformException catch (e) {
       currentStatus =
@@ -116,7 +116,7 @@ class _MyAppState extends State<MyApp> {
     String result;
 
     try {
-      result = await LightstreamerFlutterClient.getStatus() ?? ' -- ';
+      result = await _client.getStatus() ?? ' -- ';
     } on PlatformException {
       result = "Unknown";
     }
@@ -128,11 +128,11 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _sendMessage() async {
     try {
-      // await LightstreamerFlutterClient.sendMessage(myController.text);
+      // await _client.sendMessage(myController.text);
 
-      // await LightstreamerFlutterClient.sendMessageExt(
+      // await _client.sendMessageExt(
       //      "Hello World", "Sequence1", 5000, _clientmessages, true);
-      await LightstreamerFlutterClient.sendMessageExt(
+      await _client.sendMessageExt(
           myController.text, null, null, _clientmessages, true);
     } on PlatformException {
       // ...
@@ -150,13 +150,13 @@ class _MyAppState extends State<MyApp> {
         // "commandSecondLevelFields": "stock_name,last_price,time"
       };
 
-      subId = await LightstreamerFlutterClient.subscribe(
+      subId = await _client.subscribe(
           "MERGE",
           itemList: mySubController.text.split(","),
           fieldList: "last_price,time,stock_name".split(","),
           parameters: params);
 
-      // subId = await LightstreamerFlutterClient.subscribe("COMMAND",
+      // subId = await _client.subscribe("COMMAND",
       //     "portfolio1".split(","), "key,command,qty".split(","), params);
 
       // Map<String, String> params2 = {
@@ -164,7 +164,7 @@ class _MyAppState extends State<MyApp> {
       //  "requestedMaxFrequency": "7",
       //  "requestedSnapshot": "yes"
       // };
-      // subId = await LightstreamerFlutterClient.subscribe(
+      // subId = await _client.subscribe(
       //    "DISTINCT",
       //    mySubController.text.split(","),
       //    "message,timestamp".split(","),
@@ -172,7 +172,7 @@ class _MyAppState extends State<MyApp> {
 
       static_sub_id = subId as String;
 
-      LightstreamerFlutterClient.setSubscriptionListener(subId, _values);
+      _client.setSubscriptionListener(subId, _values);
     } on PlatformException {
       // ...
     }
@@ -188,7 +188,9 @@ class _MyAppState extends State<MyApp> {
 
   void _clientStatus(String msg) {
     setState(() {
-      _status = msg;
+      if (msg.startsWith("StatusChange")) {
+        _status = msg.substring("StatusChange:".length);
+      }
     });
   }
 
@@ -200,7 +202,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _unsubscribe() async {
     try {
-      await LightstreamerFlutterClient.unsubscribe(static_sub_id);
+      await _client.unsubscribe(static_sub_id);
     } on PlatformException {
       // ...
     }
