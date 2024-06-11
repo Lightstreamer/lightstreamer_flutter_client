@@ -669,7 +669,8 @@ class LightstreamerBridge {
       sub.commandSecondLevelFields = value.split(separator: ",").map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
     }
     
-    let subId = "subid_\(_subIdGenerator += 1)"
+    let subId = "subid_\(_subIdGenerator)"
+    _subIdGenerator += 1
     
     let subListener = MySubListener(subscribedata_channel, subId, sub)
     _subMap[subId] = sub
@@ -764,7 +765,8 @@ class LightstreamerBridge {
         let itemArr = value
       
         if let param = arguments["fieldList"], let value = param as? [String] {
-          let sub_id = "mpnsubid_\(_mpnSubIdGenerator += 1)"
+          let sub_id = "mpnsubid_\(_mpnSubIdGenerator)"
+          _mpnSubIdGenerator += 1
           
           let fieldArr = value
           
