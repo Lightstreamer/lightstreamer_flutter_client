@@ -449,6 +449,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
 class LightstreamerBridge {
   let category = OSLog(subsystem: "com.lightstreamer", category: "lightstreamer.flutter")
 
+  // WARNING: Potential memory leak. Clients are added to the map but not removed.
   var _clientMap: [String:LightstreamerClient] = [:]
   var _listenerMap: [String:MyClientListener] = [:]
   

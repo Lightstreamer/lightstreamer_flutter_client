@@ -556,6 +556,7 @@ public class LightstreamerFlutterClientPlugin implements FlutterPlugin, MethodCa
 }
 
 class LightstreamerBridge {
+  // WARNING: Potential memory leak. Clients are added to the map but not removed.
   final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
   final Map<String, MyClientListener> _listenerMap = new HashMap<>();
 
@@ -566,8 +567,6 @@ class LightstreamerBridge {
   int _mpnSubIdGenerator = 0;
   final Map<String, MpnSubscription> _mpnSubMap = new HashMap<>();
   final Map<String, MyMpnSubListener> _mpnSubListenerMap = new HashMap<>();
-
-  final Map<String, MyClientMessageLisener> _msgListenerMap = new HashMap<>();
 
   boolean hasId(MethodCall call) {
     return call.hasArgument("id");
