@@ -4,10 +4,12 @@ import LightstreamerClient
 class MyClientMessageListener: ClientMessageDelegate {
   let channel: FlutterBasicMessageChannel
   let msgId: String
+  weak var _bridge: LightstreamerBridge?
   
-  init(_ messagestatus_channel: FlutterBasicMessageChannel, _ msgId: String) {
+  init(_ messagestatus_channel: FlutterBasicMessageChannel, _ msgId: String, _ bridge: LightstreamerBridge) {
     self.channel = messagestatus_channel
     self.msgId = msgId
+    self._bridge = bridge
   }
   
   func client(_ client: LightstreamerClient, didAbortMessage originalMessage: String, sentOnNetwork: Bool) {
@@ -22,6 +24,7 @@ class MyClientMessageListener: ClientMessageDelegate {
         self.channel.sendMessage(json)
       }
     }
+    _bridge?.disposeMessageListener(msgId)
   }
   
   func client(_ client: LightstreamerClient, didDenyMessage originalMessage: String, withCode code: Int, error: String) {
@@ -29,6 +32,7 @@ class MyClientMessageListener: ClientMessageDelegate {
     DispatchQueue.main.async {
       self.channel.sendMessage(json)
     }
+    _bridge?.disposeMessageListener(msgId)
   }
   
   func client(_ client: LightstreamerClient, didDiscardMessage originalMessage: String) {
@@ -36,6 +40,7 @@ class MyClientMessageListener: ClientMessageDelegate {
     DispatchQueue.main.async {
       self.channel.sendMessage(json)
     }
+    _bridge?.disposeMessageListener(msgId)
   }
   
   func client(_ client: LightstreamerClient, didFailMessage originalMessage: String) {
@@ -43,6 +48,7 @@ class MyClientMessageListener: ClientMessageDelegate {
     DispatchQueue.main.async {
       self.channel.sendMessage(json)
     }
+    _bridge?.disposeMessageListener(msgId)
   }
   
   func client(_ client: LightstreamerClient, didProcessMessage originalMessage: String, withResponse response: String) {
@@ -54,6 +60,7 @@ class MyClientMessageListener: ClientMessageDelegate {
       DispatchQueue.main.async {
           self.channel.sendMessage(json)
       }
+      _bridge?.disposeMessageListener(msgId)
   }
   
   func toJson(_ value: String) -> String {

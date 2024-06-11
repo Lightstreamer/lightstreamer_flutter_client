@@ -302,7 +302,7 @@ public class SwiftLightstreamerFlutterClientPlugin: NSObject, FlutterPlugin {
       }
       
       if addListnr {
-        let msgListener = MyClientMessageListener(messagestatus_channel, "-1")
+        let msgListener = MyClientMessageListener(messagestatus_channel, "-1", lsBridge)
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: msgListener, enqueueWhileDisconnected: enq)
       } else {
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: nil, enqueueWhileDisconnected: enq)
@@ -730,7 +730,7 @@ class LightstreamerBridge {
       }
       
       if addListnr {
-        let msgListener = MyClientMessageListener(messagestatus_channel, msgId)
+        let msgListener = MyClientMessageListener(messagestatus_channel, msgId, self)
         _msgListenerMap[msgId] = msgListener
         ls.sendMessage(msg, withSequence: seq, timeout: timeout, delegate: msgListener, enqueueWhileDisconnected: enq)
       } else {
@@ -742,6 +742,10 @@ class LightstreamerBridge {
     } else {
       result(FlutterError(code: "9", message: "No message", details: nil))
     }
+  }
+  
+  func disposeMessageListener(_ msgId: String) {
+    _msgListenerMap.removeValue(forKey: msgId)
   }
   
   func mpnSubscribe(_ call: FlutterMethodCall, _ result: @escaping FlutterResult, _ subscribedata_channel: FlutterBasicMessageChannel) {
