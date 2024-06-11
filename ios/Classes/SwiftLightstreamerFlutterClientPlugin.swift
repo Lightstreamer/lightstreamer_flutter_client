@@ -465,8 +465,10 @@ class LightstreamerBridge {
   var _msgListenerMap: [String:MyClientMessageListener] = [:]
   
   func hasId(_ call: FlutterMethodCall) -> Bool {
-    let arguments = call.arguments as! [String:Any]
-    return arguments["id"] != nil
+    if let arguments = call.arguments as? [String:Any] {
+      return arguments["id"] != nil
+    }
+    return false
   }
   
   func connect(_ call: FlutterMethodCall, _ result: @escaping FlutterResult, _ clientstatus_channel: FlutterBasicMessageChannel) {
