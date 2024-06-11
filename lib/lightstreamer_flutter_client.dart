@@ -584,9 +584,14 @@ class LightstreamerClient {
     return status;
   }
 
-  void setClientListener(Function listener) {
+  /// Sets a listener for this client. Removes any existing listener if the value is null.
+  void setClientListener(Function? listener) {
     lightstreamer_clientStatus_channel.setMessageHandler(_consumeClientStatus);
-    _listenerMap[_id] = listener;
+    if (listener != null) {
+      _listenerMap[_id] = listener;
+    } else {
+      _listenerMap.remove(_id);
+    }
   }
 
   // shared by all the clients
@@ -604,9 +609,14 @@ class LightstreamerClient {
     return "ok";
   }
 
-  void setSubscriptionListener(String subId, Function subListener) {
+  /// Sets a listener for this subscription. Removes any existing listener if the value is null.
+  void setSubscriptionListener(String subId, Function? subListener) {
     lightstreamer_realtime_channel.setMessageHandler(_consumeRTMessage);
-    _subListenerMap[subId] = subListener;
+    if (subListener != null) {
+      _subListenerMap[subId] = subListener;
+    } else {
+      _subListenerMap.remove(subId);
+    }
   }
 
   // shared by all the clients
@@ -659,7 +669,7 @@ class LightstreamerClient {
       var data = jsonDecode(message!) as Map<String, dynamic>;
       var id = data["id"];
       var value = data["value"];
-      var msgListener = _msgListenerMap[id];
+      var msgListener = _msgListenerMap.remove(id);
 
       msgListener?.call(value);
     } catch(e, s) {
