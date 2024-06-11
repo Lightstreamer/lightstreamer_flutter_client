@@ -62,7 +62,7 @@ PODS:
   - GoogleUtilities/UserDefaults (7.13.3):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - lightstreamer_flutter_client (1.4.0-dev.2):
+  - lightstreamer_flutter_client (1.4.0-dev.3):
     - Flutter
     - LightstreamerClient (~> 6.1.1)
   - LightstreamerClient (6.1.1):
@@ -122,7 +122,7 @@ SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
-  lightstreamer_flutter_client: ce742ba1b3d9ff0de37090bd04a499edcefa4590
+  lightstreamer_flutter_client: 6124b24a4c7b574a8270226da75049f807d46d4c
   LightstreamerClient: be68eea90c0848e930b4e3a65f87c22d024be2a3
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
