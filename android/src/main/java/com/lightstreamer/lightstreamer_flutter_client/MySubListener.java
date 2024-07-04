@@ -7,6 +7,9 @@ import com.lightstreamer.client.SubscriptionListener;
 import com.lightstreamer.client.Subscription;
 import com.lightstreamer.client.ItemUpdate;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -130,11 +133,21 @@ public class MySubListener implements SubscriptionListener {
             for (Entry<String, String> field : update.getChangedFields().entrySet()) {
                 final String uKey = field.getKey();
                 final String uValue = field.getValue() != null ? field.getValue() : "";
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("subId", _subId);
+                    json.put("itemName", uItem);
+                    json.put("fieldName", uKey);
+                    json.put("fieldValue", uValue);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+                String jsonStr = "onItemUpdate" + json.toString();
                 try {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            _subdata_channel.send("onItemUpdate|" + _subId + "|" + uItem + "|" + uKey + "|" + uValue);
+                            _subdata_channel.send(jsonStr);
                         }
                     });
 
@@ -146,11 +159,21 @@ public class MySubListener implements SubscriptionListener {
             for (Entry<Integer, String> field : update.getChangedFieldsByPosition().entrySet()) {
                 final String uKey = "" + field.getKey();
                 final String uValue = field.getValue() != null ? field.getValue() : "";
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("subId", _subId);
+                    json.put("itemName", uItem);
+                    json.put("fieldName", uKey);
+                    json.put("fieldValue", uValue);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+                String jsonStr = "onItemUpdate" + json.toString();
                 try {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            _subdata_channel.send("onItemUpdate|" + _subId + "|" + uItem + "|" + uKey + "|" + uValue);
+                            _subdata_channel.send(jsonStr);
                         }
                     });
 
