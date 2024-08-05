@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'dart:developer' as developer;
 
@@ -339,12 +340,13 @@ class LightstreamerFlutterClient {
     String currentValue = message as String;
 
     developer.log("Received message: " + currentValue);
-    List<String> l = currentValue.split("|");
-    if (l.first == "onItemUpdate") {
-      String subId = l[1];
-      String item = l[2];
-      String fname = l[3];
-      String fvalue = l.last;
+    if (currentValue.startsWith("onItemUpdate")) {
+      var json = currentValue.substring("onItemUpdate".length);
+      var data = jsonDecode(json) as Map<String, dynamic>;
+      String subId = data["subId"];
+      String item = data["itemName"];
+      String fname = data["fieldName"];
+      String fvalue = data["fieldValue"];
 
       if (subscriptionListeners.containsKey(subId)) {
         subscriptionListeners[subId]!(item, fname, fvalue);

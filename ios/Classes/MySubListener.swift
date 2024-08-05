@@ -59,14 +59,22 @@ class MySubListener: SubscriptionDelegate {
     
     if hasFieldNames {
       for (uKey, uValue) in update.changedFields {
+        let msg = ["subId": self.subId, "itemName": uItem, "fieldName": uKey, "fieldValue": uValue ?? ""]
+        let encoder = JSONEncoder()
+        let data = try! encoder.encode(msg)
+        let jsonStr = "onItemUpdate" + String(data: data, encoding: .utf8)!
         DispatchQueue.main.async {
-          self.channel.sendMessage("onItemUpdate|\(self.subId)|\(uItem)|\(uKey)|\(uValue ?? "")")
+          self.channel.sendMessage(jsonStr)
         }
       }
     } else {
       for (uKey, uValue) in update.changedFieldsByPositions {
+        let msg = ["subId": self.subId, "itemName": uItem, "fieldName": "\(uKey)", "fieldValue": uValue ?? ""]
+        let encoder = JSONEncoder()
+        let data = try! encoder.encode(msg)
+        let jsonStr = "onItemUpdate" + String(data: data, encoding: .utf8)!
         DispatchQueue.main.async {
-          self.channel.sendMessage("onItemUpdate|\(self.subId)|\(uItem)|\(uKey)|\(uValue ?? "")")
+          self.channel.sendMessage(jsonStr)
         }
       }
     }

@@ -1,3 +1,18 @@
+## 1.3.2
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 10*<br/>
+*Compatible with Dart 3.1.3*<br/>
+*Compatible with Flutter 1.20*<br/>
+*Compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.1.1*<br/>
+*Based on Lightstreamer Swift Client SDK 6.1.1*<br/>
+*Based on Lightstreamer Web Client SDK 9.1.1*<br/>
+*Made available on 4 Jul 2024*
+
+Fixed a bug where subscription listeners were not returning update values correctly if the server-sent fields contained the `|` character. This resulted in listeners returning only a portion of the field values.
+
+
 ## 1.3.1
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
