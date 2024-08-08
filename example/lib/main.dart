@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:lightstreamer_flutter_client/lightstreamer_flutter_client.dart';
-
-// ignore: non_constant_identifier_names
-String static_sub_id = "";
+import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 
 String _lastUpdate = " ---- ";
 
@@ -24,7 +21,7 @@ class _MyAppState extends State<MyApp> {
   String _status = 'Unknown';
   final myController = TextEditingController();
   final mySubController = TextEditingController();
-  final _client = LightstreamerClient();
+  late LightstreamerClient _client;
 
   @override
   void initState() {
@@ -32,150 +29,42 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    LightstreamerClient.enableLog();
+    // LightstreamerClient.enableLog();
 
-    String status;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      Map<String, String> params = {"user": "prova1", "password": "qwerty!"};
-
-      _client.setClientListener(_clientStatus);
-      status = await _client.connect(
-              "https://push.lightstreamer.com/", "DEMO", params) ??
-          'Unknown client session status';
-    } on PlatformException {
-      status = 'Failed to start Lighstreamer connection.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _status = status;
-    });
+    _client = await LightstreamerClient.create("https://push.lightstreamer.com/", "DEMO");
+    _client.addListener(_MyClientListener(this));
   }
 
   Future<void> _startRealTime() async {
-    String currentStatus;
-
-    try {
-      Map<String, String> params = {
-        "user": "prova1",
-        "password": "qwerty!",
-        "forcedTransport": "WS",
-        "firstRetryMaxDelay": "1500",
-        "retryDelay": "3850",
-        "idleTimeout": "5000",
-        "reconnectTimeout": "7500",
-        "stalledTimeout": "pioajasol",
-        "sessionRecoveryTimeout": "12500",
-        "keepaliveInterval": "5000",
-        "pollingInterval": "5700",
-        "reverseHeartbeatInterval": "8890",
-        "maxBandwidth": "10.1",
-        "httpExtraHeaders": "{x-lightstreamer: prova1, x-test: abcdef}",
-        "httpExtraHeadersOnSessionCreationOnly": "true",
-        // "proxy": "{HTTP,localhost,19540,1,1}"
-      };
-
-      currentStatus = await _client.connect(
-              "https://push.lightstreamer.com/", "DEMO", params) ??
-          'Unknown client session status';
-    } on PlatformException catch (e) {
-      currentStatus =
-          "Problems in starting a session with Lightstreamer: '${e.message}' .";
-    }
-
-    setState(() {
-      _status = currentStatus;
-    });
+    _client.connectionOptions.setKeepaliveInterval(10000);
+    _client.connect();
   }
 
   Future<void> _stopRealTime() async {
-    String currentStatus;
-
-    try {
-      currentStatus = await _client.disconnect() ??
-          'Unknown client session status';
-    } on PlatformException catch (e) {
-      currentStatus =
-          "Problems in starting a session with Lightstreamer: '${e.message}' .";
-    }
-
-    setState(() {
-      _status = currentStatus;
-    });
+    _client.disconnect();
   }
 
   Future<void> _getStatus() async {
-    String result;
-
-    try {
-      result = await _client.getStatus() ?? ' -- ';
-    } on PlatformException {
-      result = "Unknown";
-    }
-
+    String result = await _client.getStatus();
     setState(() {
       _status = result;
     });
   }
 
   Future<void> _sendMessage() async {
-    try {
-      // await _client.sendMessage(myController.text);
-
-      // await _client.sendMessageExt(
-      //      "Hello World", "Sequence1", 5000, _clientmessages, true);
-      await _client.sendMessageExt(
-          myController.text, null, null, _clientmessages, true);
-    } on PlatformException {
-      // ...
-    }
+    await _client.sendMessage(myController.text, null, null, _MyClientMessageListener(this), true);
   }
 
   Future<void> _subscribe() async {
-    String? subId = "";
-    try {
-      Map<String, String> params = {
-        "dataAdapter": "QUOTE_ADAPTER",
-        "requestedMaxFrequency": "7",
-        "requestedSnapshot": "yes",
-        // "commandSecondLevelDataAdapter": "QUOTE_ADAPTER",
-        // "commandSecondLevelFields": "stock_name,last_price,time"
-      };
-
-      subId = await _client.subscribe(
-          "MERGE",
-          itemList: mySubController.text.split(","),
-          fieldList: "last_price,time,stock_name".split(","),
-          parameters: params);
-
-      // subId = await _client.subscribe("COMMAND",
-      //     "portfolio1".split(","), "key,command,qty".split(","), params);
-
-      // Map<String, String> params2 = {
-      //  "dataAdapter": "CHAT",
-      //  "requestedMaxFrequency": "7",
-      //  "requestedSnapshot": "yes"
-      // };
-      // subId = await _client.subscribe(
-      //    "DISTINCT",
-      //    mySubController.text.split(","),
-      //    "message,timestamp".split(","),
-      //    params2);
-
-      static_sub_id = subId as String;
-
-      _client.setSubscriptionListener(subId, _values);
-    } on PlatformException {
-      // ...
-    }
+    var items = mySubController.text.split(",");
+    var fields = [ "last_price", "time", "stock_name" ];
+    var sub = Subscription("MERGE", items, fields);
+    sub.setDataAdapter("QUOTE_ADAPTER");
+    sub.setRequestedMaxFrequency("1");
+    sub.setRequestedSnapshot("yes");
+    sub.addListener(_MySubscriptionListener(this));
+    await _client.subscribe(sub);
   }
 
   void _values(String item, String fieldName, String fieldValue) {
@@ -188,9 +77,7 @@ class _MyAppState extends State<MyApp> {
 
   void _clientStatus(String msg) {
     setState(() {
-      if (msg.startsWith("StatusChange")) {
-        _status = msg.substring("StatusChange:".length);
-      }
+      _status = msg;
     });
   }
 
@@ -201,10 +88,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _unsubscribe() async {
-    try {
-      await _client.unsubscribe(static_sub_id);
-    } on PlatformException {
-      // ...
+    for (var sub in await _client.getSubscriptions()) {
+      await _client.unsubscribe(sub);
     }
   }
 
@@ -283,5 +168,66 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+}
+
+class _MyClientListener extends ClientListener {
+  final _MyAppState _state;
+
+  _MyClientListener(_MyAppState state) : _state = state;
+
+  @override
+  void onServerError(int errorCode, String errorMessage) {
+    _state._clientStatus('ERROR $errorCode: $errorMessage');
+  }
+
+  @override
+  void onStatusChange(String status) {
+    _state._clientStatus(status);
+  }
+}
+
+class _MySubscriptionListener extends SubscriptionListener {
+  final _MyAppState _state;
+
+  _MySubscriptionListener(_MyAppState state) : _state = state;
+
+  @override
+  void onItemUpdate(ItemUpdate update) {
+    var itemName = update.getItemName()!;
+    for (var field in update.getFields().entries) {
+      _state._values(itemName, field.key, field.value);
+    }
+  }
+
+  @override
+  void onSubscriptionError(int errorCode, String errorMessage) {
+    _state._clientStatus('ERROR $errorCode: $errorMessage');
+  }
+}
+
+class _MyClientMessageListener extends ClientMessageListener {
+  final _MyAppState _state;
+
+  _MyClientMessageListener(_MyAppState state) : _state = state;
+
+  void onAbort(String originalMessage, bool sentOnNetwork) {
+    _state._clientmessages('ERROR: Message aborted: $originalMessage');
+  }
+
+  void onDeny(String originalMessage, int errorCode, String errorMessage) {
+    _state._clientmessages('ERROR: Message denied: $errorCode - $errorMessage');
+  }
+
+  void onDiscarded(String originalMessage) {
+    _state._clientmessages('ERROR: Message discarded: $originalMessage');
+  }
+
+  void onError(String originalMessage) {
+    _state._clientmessages('ERROR: Message error: $originalMessage');
+  }
+
+  void onProcessed(String originalMessage, String response) {
+    _state._clientmessages('SUCCESS: Message processed: $originalMessage $response');
   }
 }
