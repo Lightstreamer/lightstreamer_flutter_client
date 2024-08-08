@@ -32,8 +32,8 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.lightstreamer.lightstreamer_flutter_client
-        pluginClass: LightstreamerFlutterClientPlugin
+        package: com.lightstreamer.flutter
+        pluginClass: LightstreamerFlutterPlugin
       ios:
         pluginClass: SwiftLightstreamerFlutterClientPlugin
       web:

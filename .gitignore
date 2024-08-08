@@ -6,3 +6,4 @@
 
 build/
 example/web/lightstreamer-*.js
+.vscode/
