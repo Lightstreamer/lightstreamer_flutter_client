@@ -407,6 +407,8 @@ class LightstreamerClient {
   // TODO avoid memory leak
   static Map<String, LightstreamerClient> _clientMap = {};
   static Map<String, Subscription> _subMap = {};
+  static int _msgIdGenerator = 0;
+  static Map<String, ClientMessageListener> _msgListenerMap = {}; 
 
   final String _id;
   late final ConnectionDetails connectionDetails;
@@ -482,6 +484,21 @@ class LightstreamerClient {
     return res;
   }
 
+  Future<void> sendMessage(String message, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) async {
+    var arguments = <String, dynamic>{
+      'message': message,
+      'sequence': sequence,
+      'delayTimeout': delayTimeout,
+      'enqueueWhileDisconnected': enqueueWhileDisconnected
+    };
+    if (listener != null) {
+      var msgId = 'msg${_msgIdGenerator++}';
+      arguments['msgId'] = msgId;
+      _msgListenerMap[msgId] = listener;
+    }
+    return await _invokeMethod('sendMessage', arguments);
+  }
+
   void addListener(ClientListener listener) {
     if (!_listeners.contains(listener)) {
       _listeners.add(listener);
@@ -520,14 +537,85 @@ class LightstreamerClient {
         _subscriptionListenerOnUnsubscription(call);
       case "SubscriptionListener.onRealMaxFrequency":
         _subscriptionListenerOnRealMaxFrequency(call);
+        
       case "ClientListener.onStatusChange":
         _clientListenerOnStatusChange(call);
       case "ClientListener.onPropertyChange":
         _clientListenerOnPropertyChange(call);
       case "ClientListener.onServerError":
         _clientListenerOnServerError(call);
+
+      case "ClientMessageListener.onAbort":
+        _messageListenerOnAbort(call);
+      case "ClientMessageListener.onDeny":
+        _messageListenerOnDeny(call);
+      case "ClientMessageListener.onDiscarded":
+        _messageListenerOnDiscarded(call);
+      case "ClientMessageListener.onError":
+        _messageListenerOnError(call);
+      case "ClientMessageListener.onProcessed":
+        _messageListenerOnProcessed(call);
     }
     return Future.value();
+  }
+
+  static void _messageListenerOnAbort(MethodCall call) {
+   var arguments = call.arguments;
+    String msgId = arguments['msgId'];
+    String originalMessage = arguments['originalMessage'];
+    bool sentOnNetwork = arguments['sentOnNetwork'];
+    // TODO null check
+    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
+    scheduleMicrotask(() {
+      listener.onAbort(originalMessage, sentOnNetwork);
+    });
+  }
+
+  static void _messageListenerOnDeny(MethodCall call) {
+    var arguments = call.arguments;
+    String msgId = arguments['msgId'];
+    String originalMessage = arguments['originalMessage'];
+    int errorCode = arguments['errorCode'];
+    String errorMessage = arguments['errorMessage'];
+    // TODO null check
+    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
+    scheduleMicrotask(() {
+      listener.onDeny(originalMessage, errorCode, errorMessage);
+    });
+  }
+
+  static void _messageListenerOnDiscarded(MethodCall call) {
+    var arguments = call.arguments;
+    String msgId = arguments['msgId'];
+    String originalMessage = arguments['originalMessage'];
+    // TODO null check
+    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
+    scheduleMicrotask(() {
+      listener.onDiscarded(originalMessage);
+    });
+  }
+
+  static void _messageListenerOnError(MethodCall call) {
+    var arguments = call.arguments;
+    String msgId = arguments['msgId'];
+    String originalMessage = arguments['originalMessage'];
+    // TODO null check
+    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
+    scheduleMicrotask(() {
+      listener.onError(originalMessage);
+    });
+  }
+
+  static void _messageListenerOnProcessed(MethodCall call) {
+    var arguments = call.arguments;
+    String msgId = arguments['msgId'];
+    String originalMessage = arguments['originalMessage'];
+    String response = arguments['response'];
+    // TODO null check
+    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
+    scheduleMicrotask(() {
+      listener.onProcessed(originalMessage, response);
+    });
   }
 
   static void _clientListenerOnStatusChange(MethodCall call) {
@@ -809,4 +897,12 @@ class SubscriptionListener {
   void onSubscription() {}
   void onSubscriptionError(int errorCode, String errorMessage) {}
   void onUnsubscription() {}
+}
+
+class ClientMessageListener {
+  void onAbort(String originalMessage, bool sentOnNetwork) {}
+  void onDeny(String originalMessage, int errorCode, String errorMessage) {}
+  void onDiscarded(String originalMessage) {}
+  void onError(String originalMessage) {}
+  void onProcessed(String originalMessage, String response) {}
 }

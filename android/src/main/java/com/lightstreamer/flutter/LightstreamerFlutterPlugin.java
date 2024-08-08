@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.lightstreamer.client.ClientListener;
+import com.lightstreamer.client.ClientMessageListener;
 import com.lightstreamer.client.ItemUpdate;
 import com.lightstreamer.client.LightstreamerClient;
 import com.lightstreamer.client.Subscription;
@@ -83,6 +84,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 break;
             case "LightstreamerClient.getSubscriptions":
                 getSubscriptions(call, result);
+                break;
+            case "LightstreamerClient.sendMessage":
+                sendMessage(call, result);
                 break;
             case "ConnectionDetails.getServerInstanceAddress":
                 Details_getServerInstanceAddress(call, result);
@@ -239,6 +243,23 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             }
         }
         result.success(res);
+    }
+
+    void sendMessage(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String msgId = call.argument("msgId");
+        String message = call.argument("message");
+        String sequence = call.argument("sequence");
+        Integer _delayTimeout = call.argument("delayTimeout");
+        int delayTimeout = _delayTimeout == null ? -1 : _delayTimeout;
+        Boolean _enqueueWhileDisconnected = call.argument("enqueueWhileDisconnected");
+        boolean enqueueWhileDisconnected = _enqueueWhileDisconnected == null ? false : _enqueueWhileDisconnected;
+        ClientMessageListener listener = null;
+        if (msgId != null) {
+            listener = new MyClientMessageListener(msgId, this);
+        }
+        client.sendMessage(message, sequence, delayTimeout, listener, enqueueWhileDisconnected);
+        result.success(null);
     }
 
     void Details_getServerInstanceAddress(MethodCall call, MethodChannel.Result result) {
@@ -462,5 +483,60 @@ class MySubscriptionListener implements SubscriptionListener {
         arguments.put("subId", _subId);
         _loop.post(() ->
                 _plugin._listenerChannel.invokeMethod("SubscriptionListener." + method, arguments));
+    }
+}
+
+class MyClientMessageListener implements ClientMessageListener {
+    final String _msgId;
+    final LightstreamerFlutterPlugin _plugin;
+    final Handler _loop = new Handler(Looper.getMainLooper());
+
+    MyClientMessageListener(String msgId, LightstreamerFlutterPlugin plugin) {
+        this._msgId = msgId;
+        this._plugin = plugin;
+    }
+    @Override
+    public void onAbort(@NonNull String originalMessage, boolean sentOnNetwork) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("originalMessage", originalMessage);
+        arguments.put("sentOnNetwork", sentOnNetwork);
+        invoke("onAbort", arguments);
+    }
+
+    @Override
+    public void onDeny(@NonNull String originalMessage, int errorCode, @NonNull String errorMessage) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("originalMessage", originalMessage);
+        arguments.put("errorCode", errorCode);
+        arguments.put("errorMessage", errorMessage);
+        invoke("onDeny", arguments);
+    }
+
+    @Override
+    public void onDiscarded(@NonNull String originalMessage) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("originalMessage", originalMessage);
+        invoke("onDiscarded", arguments);
+    }
+
+    @Override
+    public void onError(@NonNull String originalMessage) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("originalMessage", originalMessage);
+        invoke("onError", arguments);
+    }
+
+    @Override
+    public void onProcessed(@NonNull String originalMessage, @NonNull String response) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("originalMessage", originalMessage);
+        arguments.put("response", response);
+        invoke("onProcessed", arguments);
+    }
+
+    void invoke(String method, Map<String, Object> arguments) {
+        arguments.put("msgId", _msgId);
+        _loop.post(() ->
+                _plugin._listenerChannel.invokeMethod("ClientMessageListener." + method, arguments));
     }
 }
