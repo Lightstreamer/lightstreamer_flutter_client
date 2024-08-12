@@ -1,9 +1,11 @@
-import 'dart:async';
+import 'package:lightstreamer_flutter_client/src/native_bridge.dart';
+import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
 
-import 'package:flutter/services.dart';
+export 'package:lightstreamer_flutter_client/src/client_listeners.dart';
 
 class ConnectionDetails {
   final String _id;
+  final NativeBridge _bridge;
   String? _adapterSet;
   String? _serverAddress;
   String? _user;
@@ -18,7 +20,7 @@ class ConnectionDetails {
     };
   }
 
-  ConnectionDetails._(String clientId) : _id = clientId;
+  ConnectionDetails._(String clientId, NativeBridge bridge) : _id = clientId, _bridge = bridge;
 
   String? getAdapterSet() {
     return _adapterSet;
@@ -67,13 +69,14 @@ class ConnectionDetails {
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
-    return await LightstreamerClient._methodChannel.invokeMethod('ConnectionDetails.$method', arguments);
+    return await _bridge.invokeMethod('ConnectionDetails.$method', arguments);
   }
 }
 
 class ConnectionOptions {
   // TODO keep in sync
   final String _id;
+  final NativeBridge _bridge;
   int _contentLength = 50000000;
   int _firstRetryMaxDelay = 100;
   String? _forcedTransport;
@@ -112,7 +115,7 @@ class ConnectionOptions {
     };
   }
 
-  ConnectionOptions._(String clientId) : _id = clientId;
+  ConnectionOptions._(String clientId, NativeBridge bridge) : _id = clientId, _bridge = bridge;
 
   int getContentLength() {
     return _contentLength;
@@ -249,7 +252,7 @@ class ConnectionOptions {
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
-    return await LightstreamerClient._methodChannel.invokeMethod('ConnectionOptions.$method', arguments);
+    return await _bridge.invokeMethod('ConnectionOptions.$method', arguments);
   }
 }
 
@@ -402,31 +405,22 @@ class Subscription {
 class LightstreamerClient {
   // TODO move into a singleton
   static int _idGenerator = 0;
-  static const MethodChannel _methodChannel = MethodChannel('com.lightstreamer.flutter/methods');
-  static const MethodChannel _listenerChannel = MethodChannel('com.lightstreamer.flutter/listeners');
-  // TODO avoid memory leak
-  static Map<String, LightstreamerClient> _clientMap = {};
-  static Map<String, Subscription> _subMap = {};
-  static int _msgIdGenerator = 0;
-  static Map<String, ClientMessageListener> _msgListenerMap = {}; 
 
-  final String _id;
+  late final String _id;
+  final NativeBridge _bridge = NativeBridge.instance;
   late final ConnectionDetails connectionDetails;
   late final ConnectionOptions connectionOptions;
   final List<ClientListener> _listeners = [];
 
   LightstreamerClient._() : _id = '${_idGenerator++}' {
-    connectionDetails = ConnectionDetails._(_id);
-    connectionOptions = ConnectionOptions._(_id);
+    connectionDetails = ConnectionDetails._(_id, _bridge);
+    connectionOptions = ConnectionOptions._(_id, _bridge);
   }
 
   // TODO factory method or initialization method?
   static Future<LightstreamerClient> create(String? serverAddress, String? adapterSet) async {
     var client = LightstreamerClient._();
-    
-    // TODO init only one time
-    _listenerChannel.setMethodCallHandler(_listenerChannelHandler);
-    _clientMap[client._id] = client;
+    client._bridge.clientHandler.addClient(client._id, client);
 
     client.connectionDetails.setServerAddress(serverAddress);
     client.connectionDetails.setAdapterSet(adapterSet);
@@ -435,7 +429,7 @@ class LightstreamerClient {
       "serverAddress": serverAddress,
       "adapterSet": adapterSet
     };
-    await _methodChannel.invokeMethod('LightstreamerClient.create', arguments);
+    await client._bridge.invokeMethod('LightstreamerClient.create', arguments);
     return client;
   }
 
@@ -459,8 +453,7 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'subscription': sub._toMap()
     };
-    // TODO what if sub is already there?
-    _subMap[sub._id] = sub;
+    _bridge.subscriptionHandler.addSubscription(sub._id, sub);
     return await _invokeMethod('subscribe', arguments);
   }
 
@@ -468,15 +461,15 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'subId': sub._id
     };
-    _subMap.remove(sub._id);
+    _bridge.subscriptionHandler.removeSubscription(sub._id);
     return await _invokeMethod('unsubscribe', arguments);
   }
 
   Future<List<Subscription>> getSubscriptions() async {
-    List<Object?> subIds = await _invokeMethod('getSubscriptions');
+    List<String> subIds = (await _invokeMethod('getSubscriptions')).cast<String>();
     List<Subscription> res = [];
     for (var subId in subIds) {
-      var sub = _subMap[subId];
+      var sub = _bridge.subscriptionHandler.getSubscription(subId);
       if (sub != null) {
         res.add(sub);
       }
@@ -492,9 +485,8 @@ class LightstreamerClient {
       'enqueueWhileDisconnected': enqueueWhileDisconnected
     };
     if (listener != null) {
-      var msgId = 'msg${_msgIdGenerator++}';
+      var msgId = _bridge.messageHandler.addListener(listener);
       arguments['msgId'] = msgId;
-      _msgListenerMap[msgId] = listener;
     }
     return await _invokeMethod('sendMessage', arguments);
   }
@@ -513,396 +505,9 @@ class LightstreamerClient {
     return _listeners.toList();
   }
 
-  static Future<dynamic> _listenerChannelHandler(MethodCall call) {
-    // TODO use a logger
-    print('event on channel com.lightstreamer.flutter/listeners: ${call.method} ${call.arguments}');
-    switch (call.method) {
-      case "SubscriptionListener.onItemUpdate":
-        _subscriptionListenerOnItemUpdate(call);
-      case "SubscriptionListener.onSubscriptionError":
-        _subscriptionListenerOnSubscriptionError(call);
-      case "SubscriptionListener.onClearSnapshot":
-        _subscriptionListenerOnClearSnapshot(call);
-      case "SubscriptionListener.onCommandSecondLevelItemLostUpdates":
-        _subscriptionListenerOnCommandSecondLevelItemLostUpdates(call);
-      case "SubscriptionListener.onCommandSecondLevelSubscriptionError":
-        _subscriptionListenerOnCommandSecondLevelSubscriptionError(call);
-      case "SubscriptionListener.onEndOfSnapshot":
-        _subscriptionListenerOnEndOfSnapshot(call);
-      case "SubscriptionListener.onItemLostUpdates":
-        _subscriptionListenerOnItemLostUpdate(call);
-      case "SubscriptionListener.onSubscription":
-        _subscriptionListenerOnSubscription(call);
-      case "SubscriptionListener.onUnsubscription":
-        _subscriptionListenerOnUnsubscription(call);
-      case "SubscriptionListener.onRealMaxFrequency":
-        _subscriptionListenerOnRealMaxFrequency(call);
-        
-      case "ClientListener.onStatusChange":
-        _clientListenerOnStatusChange(call);
-      case "ClientListener.onPropertyChange":
-        _clientListenerOnPropertyChange(call);
-      case "ClientListener.onServerError":
-        _clientListenerOnServerError(call);
-
-      case "ClientMessageListener.onAbort":
-        _messageListenerOnAbort(call);
-      case "ClientMessageListener.onDeny":
-        _messageListenerOnDeny(call);
-      case "ClientMessageListener.onDiscarded":
-        _messageListenerOnDiscarded(call);
-      case "ClientMessageListener.onError":
-        _messageListenerOnError(call);
-      case "ClientMessageListener.onProcessed":
-        _messageListenerOnProcessed(call);
-    }
-    return Future.value();
-  }
-
-  static void _messageListenerOnAbort(MethodCall call) {
-   var arguments = call.arguments;
-    String msgId = arguments['msgId'];
-    String originalMessage = arguments['originalMessage'];
-    bool sentOnNetwork = arguments['sentOnNetwork'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onAbort(originalMessage, sentOnNetwork);
-    });
-  }
-
-  static void _messageListenerOnDeny(MethodCall call) {
-    var arguments = call.arguments;
-    String msgId = arguments['msgId'];
-    String originalMessage = arguments['originalMessage'];
-    int errorCode = arguments['errorCode'];
-    String errorMessage = arguments['errorMessage'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onDeny(originalMessage, errorCode, errorMessage);
-    });
-  }
-
-  static void _messageListenerOnDiscarded(MethodCall call) {
-    var arguments = call.arguments;
-    String msgId = arguments['msgId'];
-    String originalMessage = arguments['originalMessage'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onDiscarded(originalMessage);
-    });
-  }
-
-  static void _messageListenerOnError(MethodCall call) {
-    var arguments = call.arguments;
-    String msgId = arguments['msgId'];
-    String originalMessage = arguments['originalMessage'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onError(originalMessage);
-    });
-  }
-
-  static void _messageListenerOnProcessed(MethodCall call) {
-    var arguments = call.arguments;
-    String msgId = arguments['msgId'];
-    String originalMessage = arguments['originalMessage'];
-    String response = arguments['response'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onProcessed(originalMessage, response);
-    });
-  }
-
-  static void _clientListenerOnStatusChange(MethodCall call) {
-    var arguments = call.arguments;
-    String id = arguments['id'];
-    String status = arguments['status'];
-    // TODO check null
-    LightstreamerClient client = _clientMap[id]!;
-    for (var l in client._listeners) {
-      scheduleMicrotask(() {
-        l.onStatusChange(status);
-      });
-    }
-  }
-
-  static void _clientListenerOnPropertyChange(MethodCall call) {
-    var arguments = call.arguments;
-    String id = arguments['id'];
-    String property = arguments['property'];
-    // TODO check null
-    LightstreamerClient client = _clientMap[id]!;
-    for (var l in client._listeners) {
-      scheduleMicrotask(() {
-        l.onPropertyChange(property);
-      });
-    }
-  }
-
-  static void _clientListenerOnServerError(MethodCall call) {
-    var arguments = call.arguments;
-    String id = arguments['id'];
-    int errorCode = arguments['errorCode'];
-    String errorMessage = arguments['errorMessage'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    for (var l in client._listeners) {
-      scheduleMicrotask(() {
-        l.onServerError(errorCode, errorMessage);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnClearSnapshot(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    String itemName = arguments['itemName'];
-    int itemPos = arguments['itemPos'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onClearSnapshot(itemName, itemPos);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnCommandSecondLevelItemLostUpdates(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    int lostUpdates = arguments['lostUpdates'];
-    String key = arguments['key'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onCommandSecondLevelItemLostUpdates(lostUpdates, key);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnCommandSecondLevelSubscriptionError(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    int code = arguments['code'];
-    String message = arguments['message'];
-    String key = arguments['key'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onCommandSecondLevelSubscriptionError(code, message, key);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnEndOfSnapshot(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    String itemName = arguments['itemName'];
-    int itemPos = arguments['itemPos'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onEndOfSnapshot(itemName, itemPos);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnItemLostUpdate(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    String itemName = arguments['itemName'];
-    int itemPos = arguments['itemPos'];
-    int lostUpdates = arguments['lostUpdates'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onItemLostUpdates(itemName, itemPos, lostUpdates);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnItemUpdate(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    ItemUpdate update = ItemUpdate._(call);
-    // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onItemUpdate(update);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnSubscription(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onSubscription();
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnSubscriptionError(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    int errorCode = arguments['errorCode'];
-    String errorMessage = arguments['errorMessage'];
-    // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onSubscriptionError(errorCode, errorMessage);
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnUnsubscription(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onUnsubscription();
-      });
-    }
-  }
-
-  static void _subscriptionListenerOnRealMaxFrequency(MethodCall call) {
-    var arguments = call.arguments;
-    String subId = arguments['subId'];
-    String? frequency = arguments['frequency'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub._listeners) {
-      scheduleMicrotask(() {
-        l.onRealMaxFrequency(frequency);
-      });
-    }
-  }
-
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
-    return await LightstreamerClient._methodChannel.invokeMethod('LightstreamerClient.$method', arguments);
+    return await _bridge.invokeMethod('LightstreamerClient.$method', arguments);
   }
-}
-
-interface class ItemUpdate {
-  final String? _itemName;
-  final int _itemPos;
-  final bool _isSnapshot;
-  final Map<String, String> _changedFields;
-  final Map<String, String> _fields;
-  final Map<String, String> _jsonFields;
-  final Map<int, String> _changedFieldsByPosition;
-  final Map<int, String> _fieldsByPosition;
-  final Map<int, String> _jsonFieldsByPosition;
-
-  ItemUpdate._(MethodCall call) :
-    _itemName = call.arguments['itemName'],
-    _itemPos = call.arguments['itemPos'],
-    _isSnapshot = call.arguments['isSnapshot'],
-    _changedFields = (call.arguments['changedFields'] as Map<Object?, Object?>).cast(),
-    _fields = (call.arguments['fields'].cast() as Map<Object?, Object?>).cast(),
-    _jsonFields = (call.arguments['jsonFields'] as Map<Object?, Object?>).cast(),
-    _changedFieldsByPosition = (call.arguments['changedFieldsByPosition'] as Map<Object?, Object?>).cast(),
-    _fieldsByPosition = (call.arguments['fieldsByPosition'] as Map<Object?, Object?>).cast(),
-    _jsonFieldsByPosition = (call.arguments['jsonFieldsByPosition'] as Map<Object?, Object?>).cast();
-
-  String? getItemName() {
-    return _itemName;
-  }
-
-  int getItemPos() {
-    return _itemPos;
-  }
-
-  bool isSnapshot() {
-    return _isSnapshot;
-  }
-
-  String? getValue(String fieldName) {
-    return _fields[fieldName];
-  }
-
-  String? getValueByPosition(int fieldPosition) {
-    return _fieldsByPosition[fieldPosition];
-  }
-
-  bool isValueChanged(String fieldName) {
-    return _changedFields.containsKey(fieldName);
-  }
-
-  bool isValueChangedByPosition(int fieldPosition) {
-    return _changedFieldsByPosition.containsKey(fieldPosition);
-  }
-
-  String? getValueAsJSONPatchIfAvailable(String fieldName) {
-    return _jsonFields[fieldName];
-  }
-
-  String? getValueAsJSONPatchIfAvailableByPosition(int fieldPosition) {
-    return _jsonFieldsByPosition[fieldPosition];
-  }
-
-  Map<String,String> getChangedFields() {
-    return {..._changedFields};
-  }
-
-  Map<int,String> getChangedFieldsByPosition() {
-    return {..._changedFieldsByPosition};
-  }
-
-  Map<String,String> getFields() {
-    return {..._fields};
-  }
-
-  Map<int,String> getFieldsByPosition() {
-    return {..._fieldsByPosition};
-  }
-}
-
-class ClientListener {
-  void onStatusChange(String status) {}
-  void onPropertyChange(String property) {}
-  void onServerError(int errorCode, String errorMessage) {}
-  void onListenEnd() {}
-  void onListenStart() {}
-}
-
-class SubscriptionListener {
-  void onClearSnapshot(String itemName, int itemPos) {}
-  void onCommandSecondLevelItemLostUpdates(int lostUpdates, String key) {}
-  void onCommandSecondLevelSubscriptionError(int errorCode, String errorMessage, String key) {}
-  void onEndOfSnapshot(String itemName, int itemPos) {}
-  void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) {}
-  void onItemUpdate(ItemUpdate update) {}
-  void onListenEnd(void dummy) {}
-  void onListenStart(void dummy) {}
-  void onRealMaxFrequency(String? frequency) {}
-  void onSubscription() {}
-  void onSubscriptionError(int errorCode, String errorMessage) {}
-  void onUnsubscription() {}
-}
-
-class ClientMessageListener {
-  void onAbort(String originalMessage, bool sentOnNetwork) {}
-  void onDeny(String originalMessage, int errorCode, String errorMessage) {}
-  void onDiscarded(String originalMessage) {}
-  void onError(String originalMessage) {}
-  void onProcessed(String originalMessage, String response) {}
 }
