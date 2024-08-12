@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
-import 'dart:convert';
 
 const MethodChannel _channel = const MethodChannel('com.lightstreamer.lightstreamer_flutter_client.method');
 const lightstreamer_clientStatus_channel = BasicMessageChannel<String>('com.lightstreamer.lightstreamer_flutter_client.status', StringCodec());
