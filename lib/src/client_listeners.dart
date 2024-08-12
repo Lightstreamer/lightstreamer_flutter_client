@@ -1,7 +1,5 @@
 import 'package:lightstreamer_flutter_client/src/item_update.dart';
 
-export 'package:lightstreamer_flutter_client/src/item_update.dart';
-
 class ClientListener {
   void onStatusChange(String status) {}
   void onPropertyChange(String property) {}
