@@ -418,8 +418,6 @@ class LightstreamerClient {
   // TODO factory method or initialization method?
   static Future<LightstreamerClient> create(String? serverAddress, String? adapterSet) async {
     var client = LightstreamerClient._();
-    client._bridge.addClient(client._id, client);
-
     client.connectionDetails.setServerAddress(serverAddress);
     client.connectionDetails.setAdapterSet(adapterSet);
     var arguments = <String, dynamic>{
@@ -427,7 +425,7 @@ class LightstreamerClient {
       "serverAddress": serverAddress,
       "adapterSet": adapterSet
     };
-    await client._bridge.invokeMethod('LightstreamerClient.create', arguments);
+    await client._bridge.client_create(client._id, client, arguments);
     return client;
   }
 
@@ -451,28 +449,18 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'subscription': sub._toMap()
     };
-    _bridge.subscriptionHandler.addSubscription(sub._id, sub);
-    return await _invokeMethod('subscribe', arguments);
+    return await _bridge.client_subscribe(_id, sub._id, sub, arguments);
   }
 
   Future<void> unsubscribe(Subscription sub) async {
     var arguments = <String, dynamic>{
       'subId': sub._id
     };
-    _bridge.subscriptionHandler.removeSubscription(sub._id);
-    return await _invokeMethod('unsubscribe', arguments);
+    return await _bridge.client_unsubscribe(_id, sub._id, arguments);
   }
 
   Future<List<Subscription>> getSubscriptions() async {
-    List<String> subIds = (await _invokeMethod('getSubscriptions')).cast<String>();
-    List<Subscription> res = [];
-    for (var subId in subIds) {
-      var sub = _bridge.subscriptionHandler.getSubscription(subId);
-      if (sub != null) {
-        res.add(sub);
-      }
-    }
-    return res;
+    return await _bridge.client_getSubscriptions(_id);
   }
 
   Future<void> sendMessage(String message, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) async {
@@ -482,11 +470,7 @@ class LightstreamerClient {
       'delayTimeout': delayTimeout,
       'enqueueWhileDisconnected': enqueueWhileDisconnected
     };
-    if (listener != null) {
-      var msgId = _bridge.messageHandler.addListener(listener);
-      arguments['msgId'] = msgId;
-    }
-    return await _invokeMethod('sendMessage', arguments);
+    return await _bridge.client_sendMessage(_id, listener, arguments);
   }
 
   void addListener(ClientListener listener) {
