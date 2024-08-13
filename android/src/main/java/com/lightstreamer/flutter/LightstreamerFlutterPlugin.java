@@ -1,5 +1,6 @@
 package com.lightstreamer.flutter;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -7,12 +8,17 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.lightstreamer.client.ClientListener;
 import com.lightstreamer.client.ClientMessageListener;
 import com.lightstreamer.client.ItemUpdate;
 import com.lightstreamer.client.LightstreamerClient;
 import com.lightstreamer.client.Subscription;
 import com.lightstreamer.client.SubscriptionListener;
+import com.lightstreamer.client.mpn.MpnDevice;
+import com.lightstreamer.client.mpn.MpnDeviceListener;
 import com.lightstreamer.log.ConsoleLogLevel;
 import com.lightstreamer.log.ConsoleLoggerProvider;
 
@@ -32,14 +38,18 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     // WARNING: Potential memory leak. Clients are added to the map but not removed.
     final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
     final Map<String, Subscription> _subMap = new HashMap<>();
+    // maps client id to MpnDevice
+    final Map<String, MpnDevice> _mpnDeviceMap = new HashMap<>();
     MethodChannel _methodChannel;
     MethodChannel _listenerChannel;
+    Context _appContext;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         // TODO disable the logger
-        LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+        LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.DEBUG));
 
+        _appContext = binding.getApplicationContext();
         _methodChannel = new MethodChannel(binding.getBinaryMessenger(), "com.lightstreamer.flutter/methods");
         _methodChannel.setMethodCallHandler(this);
         _listenerChannel = new MethodChannel(binding.getBinaryMessenger(), "com.lightstreamer.flutter/listeners");
@@ -50,19 +60,10 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         _methodChannel.setMethodCallHandler(null);
     }
 
-//    final Map<String> _methods = Map.ofEntries(
-//            "LightstreamerClient.create", create,
-//            "LightstreamerClient.connect", connect
-//            "LightstreamerClient.disconnect",
-//            "ConnectionDetails.getAdapterSet",
-//            "ConnectionDetails.setAdapterSet",
-//            "ConnectionDetails.getServerAddress",
-//            "ConnectionDetails.setServerAddress"
-//    );
-
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
         logMethod(call);
+        // TODO optimize switch
         switch (call.method) {
             case "LightstreamerClient.create":
                 create(call, result);
@@ -88,6 +89,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             case "LightstreamerClient.sendMessage":
                 sendMessage(call, result);
                 break;
+            case "LightstreamerClient.registerForMpn":
+                registerForMpn(call, result);
+                break;
             case "ConnectionDetails.getServerInstanceAddress":
                 Details_getServerInstanceAddress(call, result);
                 break;
@@ -102,6 +106,33 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 break;
             case "ConnectionOptions.getRealMaxBandwidth":
                 ConnectionOptions_getRealMaxBandwidth(call, result);
+                break;
+            case "MpnDevice.getApplicationId":
+                MpnDevice_getApplicationId(call, result);
+                break;
+            case "MpnDevice.getDeviceId":
+                MpnDevice_getDeviceId(call, result);
+                break;
+            case "MpnDevice.getDeviceToken":
+                MpnDevice_getDeviceToken(call, result);
+                break;
+            case "MpnDevice.getPlatform":
+                MpnDevice_getPlatform(call, result);
+                break;
+            case "MpnDevice.getPreviousDeviceToken":
+                MpnDevice_getPreviousDeviceToken(call, result);
+                break;
+            case "MpnDevice.getStatus":
+                MpnDevice_getStatus(call, result);
+                break;
+            case "MpnDevice.getStatusTimestamp":
+                MpnDevice_getStatusTimestamp(call, result);
+                break;
+            case "MpnDevice.isRegistered":
+                MpnDevice_isRegistered(call, result);
+                break;
+            case "MpnDevice.isSuspended":
+                MpnDevice_isSuspended(call, result);
                 break;
             default:
                 Log.e(TAG, "Unknown method " + call.method);
@@ -262,6 +293,26 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
+    void registerForMpn(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String id = call.argument("id");
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
+            @Override
+            public void onComplete(@NonNull Task<String> task) {
+                if (!task.isSuccessful()) {
+                    // TODO manage error
+                    return;
+                }
+                String token = task.getResult();
+                MpnDevice device = new MpnDevice(_appContext, token);
+                device.addListener(new MyMpnDeviceListener(id, LightstreamerFlutterPlugin.this));
+                client.registerForMpn(device);
+                _mpnDeviceMap.put(id, device); // TODO what if already assigned?
+            }
+        });
+        result.success(null);
+    }
+
     void Details_getServerInstanceAddress(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String res = client.connectionDetails.getServerInstanceAddress();
@@ -289,6 +340,78 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void ConnectionOptions_getRealMaxBandwidth(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String res = client.connectionOptions.getRealMaxBandwidth();
+        result.success(res);
+    }
+
+    void MpnDevice_getApplicationId(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.getApplicationId();
+        result.success(res);
+    }
+
+    void MpnDevice_getDeviceId(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.getDeviceId();
+        result.success(res);
+    }
+
+    void MpnDevice_getDeviceToken(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.getDeviceToken();
+        result.success(res);
+    }
+
+    void MpnDevice_getPlatform(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.getPlatform();
+        result.success(res);
+    }
+
+    void MpnDevice_getPreviousDeviceToken(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.getPreviousDeviceToken();
+        result.success(res);
+    }
+
+    void MpnDevice_getStatus(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.getStatus();
+        result.success(res);
+    }
+
+    void MpnDevice_getStatusTimestamp(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.getStatusTimestamp();
+        result.success(res);
+    }
+
+    void MpnDevice_isRegistered(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.isRegistered();
+        result.success(res);
+    }
+
+    void MpnDevice_isSuspended(MethodCall call, MethodChannel.Result result) {
+        String id = call.argument("id");
+        // TODO null check
+        MpnDevice device = _mpnDeviceMap.get(id);
+        Object res = device.isSuspended();
         result.success(res);
     }
 
@@ -538,5 +661,68 @@ class MyClientMessageListener implements ClientMessageListener {
         arguments.put("msgId", _msgId);
         _loop.post(() ->
                 _plugin._listenerChannel.invokeMethod("ClientMessageListener." + method, arguments));
+    }
+}
+
+class MyMpnDeviceListener implements MpnDeviceListener {
+    final String _clientId;
+    final LightstreamerFlutterPlugin _plugin;
+    final Handler _loop = new Handler(Looper.getMainLooper());
+
+    MyMpnDeviceListener(String clientId, LightstreamerFlutterPlugin plugin) {
+        this._clientId = clientId;
+        this._plugin = plugin;
+    }
+
+    @Override
+    public void onListenStart() {}
+
+    @Override
+    public void onListenEnd() {}
+
+    @Override
+    public void onRegistered() {
+        invoke("onRegistered");
+    }
+
+    @Override
+    public void onSuspended() {
+        invoke("onSuspended");
+    }
+
+    @Override
+    public void onResumed() {
+        invoke("onResumed");
+    }
+
+    @Override
+    public void onStatusChanged(@NonNull String status, long timestamp) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("status", status);
+        arguments.put("timestamp", timestamp);
+        invoke("onStatusChanged", arguments);
+    }
+
+    @Override
+    public void onRegistrationFailed(int code, @NonNull String message) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("errorCode", code);
+        arguments.put("errorMessage", message);
+        invoke("onRegistrationFailed", arguments);
+    }
+
+    @Override
+    public void onSubscriptionsUpdated() {
+        invoke("onSubscriptionsUpdated");
+    }
+
+    void invoke(String method, Map<String, Object> arguments) {
+        arguments.put("id", _clientId);
+        _loop.post(() ->
+                _plugin._listenerChannel.invokeMethod("MpnDeviceListener." + method, arguments));
+    }
+
+    void invoke(String method) {
+       invoke(method, new HashMap<>());
     }
 }

@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
+import 'package:lightstreamer_flutter_client/src/native_bridge.dart';
 
 class ClientHandler {
-  // TODO possible memory leak
-  final Map<String, LightstreamerClient> _clientMap = {};
+  final NativeBridge _bridge;
 
-  void addClient(String clientId, LightstreamerClient client) {
-    _clientMap[clientId] = client;
-  }
+  ClientHandler(NativeBridge bridge) : _bridge = bridge;
 
   void handle(String method, MethodCall call) {
     switch (method) {
@@ -29,7 +27,7 @@ class ClientHandler {
     String id = arguments['id'];
     String status = arguments['status'];
     // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
+    LightstreamerClient client = _bridge.getClient(id)!;
     for (var l in client.getListeners()) {
       scheduleMicrotask(() {
         l.onStatusChange(status);
@@ -42,7 +40,7 @@ class ClientHandler {
     String id = arguments['id'];
     String property = arguments['property'];
     // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
+    LightstreamerClient client = _bridge.getClient(id)!;
     for (var l in client.getListeners()) {
       scheduleMicrotask(() {
         l.onPropertyChange(property);
@@ -56,7 +54,7 @@ class ClientHandler {
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
     // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
+    LightstreamerClient client = _bridge.getClient(id)!;
     for (var l in client.getListeners()) {
       scheduleMicrotask(() {
         l.onServerError(errorCode, errorMessage);

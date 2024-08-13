@@ -30,3 +30,14 @@ class ClientMessageListener {
   void onError(String originalMessage) {}
   void onProcessed(String originalMessage, String response) {}
 }
+
+class MpnDeviceListener {
+  void onListenEnd() {}
+  void onListenStart() {}
+  void onRegistered() {}
+  void onRegistrationFailed(int errorCode, String errorMessage) {}
+  void onResumed() {}
+  void onStatusChanged(String status, int timestamp) {}
+  void onSubscriptionsUpdated() {}
+  void onSuspended() {}
+}

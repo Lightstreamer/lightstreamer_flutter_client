@@ -418,7 +418,7 @@ class LightstreamerClient {
   // TODO factory method or initialization method?
   static Future<LightstreamerClient> create(String? serverAddress, String? adapterSet) async {
     var client = LightstreamerClient._();
-    client._bridge.clientHandler.addClient(client._id, client);
+    client._bridge.addClient(client._id, client);
 
     client.connectionDetails.setServerAddress(serverAddress);
     client.connectionDetails.setAdapterSet(adapterSet);
@@ -503,9 +503,87 @@ class LightstreamerClient {
     return _listeners.toList();
   }
 
+  MpnDevice? _mpnDevice;
+
+  MpnDevice? getMpnDevice() {
+    return _mpnDevice;
+  }
+
+  Future<void> registerForMpn(MpnDevice device) async {
+    // TODO what if already registered
+    _mpnDevice = device;
+    device._client = this;
+    return await _invokeMethod('registerForMpn');
+  }
+
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
     return await _bridge.invokeMethod('LightstreamerClient.$method', arguments);
+  }
+}
+
+class MpnDevice {
+  final List<MpnDeviceListener> _listeners = [];
+  LightstreamerClient? _client;
+
+  void addListener(MpnDeviceListener listener) {
+    if (!_listeners.contains(listener)) {
+      _listeners.add(listener);
+    }
+  }
+
+  void removeListener(MpnDeviceListener listener) {
+    _listeners.remove(listener);
+  }
+
+  List<MpnDeviceListener> getListeners() {
+    return _listeners.toList();
+  }
+
+  Future<String> getApplicationId() async {
+    return await _invokeMethod('getApplicationId');
+  }
+
+  Future<String?> getDeviceId() async {
+    return await _invokeMethod('getDeviceId');
+  }
+
+  Future<String> getDeviceToken() async {
+    return await _invokeMethod('getDeviceToken');
+  }
+
+  Future<String> getPlatform() async {
+    return await _invokeMethod('getPlatform');
+  }
+
+  Future<String?> getPreviousDeviceToken() async {
+    return await _invokeMethod('getPreviousDeviceToken');
+  }
+
+  Future<String> getStatus() async {
+    return await _invokeMethod('getStatus');
+  }
+
+  Future<int> getStatusTimestamp() async {
+    return await _invokeMethod('getStatusTimestamp');
+  }
+
+  Future<bool> isRegistered() async {
+    return await _invokeMethod('isRegistered');
+  }
+
+  Future<bool> isSuspended() async {
+    return await _invokeMethod('isSuspended');
+  }
+
+  Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
+    var client = _client;
+    if (client == null) {
+      throw Exception("This MPN device has not been registered by any client yet");
+    }
+    Map<String, dynamic> arguments = {};
+    arguments["id"] = client._id;
+    return await client._bridge.invokeMethod('MpnDevice.$method', arguments);
   }
 }
