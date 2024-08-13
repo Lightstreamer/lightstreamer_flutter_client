@@ -516,6 +516,18 @@ class LightstreamerClient {
     return await _invokeMethod('registerForMpn');
   }
 
+  Future<void> subscribeMpn(MpnSubscription subscription, bool coalescing) async {
+    // TODO
+  }
+
+  Future<void> unsubscribeMpn(MpnSubscription subscription) async {
+    // TODO
+  }
+
+  // TODO getMpnSubscriptions
+  // TODO unsubscribeMpnSubscriptions
+  // TODO findMpnSubscription
+
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
@@ -586,4 +598,123 @@ class MpnDevice {
     arguments["id"] = client._id;
     return await client._bridge.invokeMethod('MpnDevice.$method', arguments);
   }
+}
+
+class MpnSubscription {
+  static int _idGenerator = 0;
+  final String _id;
+
+  final List<MpnSubscriptionListener> _listeners = [];
+  final String _mode;
+  List<String>? _items;
+  List<String>? _fields;
+  String? _group;
+  String? _schema;
+  String? _dataAdapter;
+  String? _bufferSize;
+  String? _requestedMaxFrequency;
+  String? _trigger;
+  String? _notificationFormat;
+
+  Map<String, dynamic> _toMap() {
+    return {
+      'id': _id,
+      'mode': _mode,
+      'items': _items,
+      'fields': _fields,
+      'group': _group,
+      'schema': _schema,
+      'dataAdapter': _dataAdapter,
+      'bufferSize': _bufferSize,
+      'requestedMaxFrequency': _requestedMaxFrequency,
+      'trigger': _trigger,
+      'notificationFormat': _notificationFormat
+    };
+  }
+
+  MpnSubscription(String mode, [ List<String>? items, List<String>? fields ]) : 
+    _id = 'sub${_idGenerator++}',
+    _mode = mode, 
+    _items = items?.toList(), 
+    _fields = fields?.toList();
+
+  void addListener(MpnSubscriptionListener listener) {
+    if (!_listeners.contains(listener)) {
+      _listeners.add(listener);
+    }
+  }
+
+  void removeListener(MpnSubscriptionListener listener) {
+    _listeners.remove(listener);
+  }
+
+  List<MpnSubscriptionListener> getListeners() {
+    return _listeners.toList();
+  }
+
+  String? getDataAdapter() {
+    return _dataAdapter;
+  }
+  void setDataAdapter(String? dataAdapter) {
+    _dataAdapter = dataAdapter;
+  }
+  List<String>? getFields() {
+    return _fields?.toList();
+  }
+  void setFields(List<String>? fields) {
+    _fields = fields?.toList();
+  }
+  String? getFieldSchema() {
+    return _schema;
+  }
+  void setFieldSchema(String? schemaName) {
+    _schema = schemaName;
+  }
+  String? getItemGroup() {
+    return _group;
+  }
+  void setItemGroup(String? groupName) {
+    _group = groupName;
+  }
+  List<String>? _getItems() {
+    return _items?.toList();
+  }
+  void setItems(List<String>? items) {
+    _items = items?.toList();
+  }
+  String getMode() {
+    return _mode;
+  }
+  String? getRequestedBufferSize() {
+    return _bufferSize;
+  }
+  void setRequestedBufferSize(String? size) {
+    _bufferSize = size;
+  }
+  String? getRequestedMaxFrequency() {
+    return _requestedMaxFrequency;
+  }
+  void setRequestedMaxFrequency(String? freq) {
+    _requestedMaxFrequency = freq;
+  }
+  String? getTriggerExpression() {
+    return _trigger;
+  }
+  void setTriggerExpression(String? trigger) {
+    _trigger = trigger;
+  }
+  String? getNotificationFormat() {
+    return _notificationFormat;
+  }
+  void setNotificationFormat(String format) {
+    _notificationFormat = format;
+  }
+  // TODO isActive
+  // TODO isSubscribed
+  // TODO isTriggered
+  // TODO getActualNotificationFormat
+  // TODO getActualTriggerExpression
+  // TODO getStatus
+  // TODO getStatusTimestamp
+  // TODO getSubscriptionId
 }

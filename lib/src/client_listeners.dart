@@ -41,3 +41,16 @@ class MpnDeviceListener {
   void onSubscriptionsUpdated() {}
   void onSuspended() {}
 }
+
+class MpnSubscriptionListener {
+  void onListenEnd() {}
+  void onListenStart() {}
+  void onModificationError(int errorCode, String errorMessage, String propertyName) {}
+  void onPropertyChanged(String propertyName) {}
+  void onStatusChanged(String status, int timestamp) {}
+  void onSubscription() {}
+  void onSubscriptionError(int errorCode, String errorMessage) {}
+  void onTriggered() {}
+  void onUnsubscription() {}
+  void onUnsubscriptionError(int errorCode, String errorMessage) {}
+}
