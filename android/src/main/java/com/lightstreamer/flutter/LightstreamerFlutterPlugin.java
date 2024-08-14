@@ -24,10 +24,13 @@ import com.lightstreamer.client.mpn.MpnSubscriptionListener;
 import com.lightstreamer.log.ConsoleLogLevel;
 import com.lightstreamer.log.ConsoleLoggerProvider;
 
+import java.net.HttpCookie;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -110,6 +113,12 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             case "LightstreamerClient.findMpnSubscription":
                 findMpnSubscription(call, result);
                 break;
+            case "LightstreamerClient.addCookies":
+                addCookies(call, result);
+                break;
+            case "LightstreamerClient.getCookies":
+                getCookies(call, result);
+                break;
             case "ConnectionDetails.getServerInstanceAddress":
                 Details_getServerInstanceAddress(call, result);
                 break;
@@ -169,6 +178,22 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String id = call.argument("id");
         client.addListener(new MyClientListener(id, this));
         result.success(null);
+    }
+
+    void addCookies(MethodCall call, MethodChannel.Result result) {
+        String uri = call.argument("uri");
+        List<String> cookies = call.argument("cookies");
+        URI uri_ = URI.create(uri);
+        List<HttpCookie> cookies_ = cookies.stream().flatMap(c -> HttpCookie.parse(c).stream()).collect(Collectors.toList());
+        LightstreamerClient.addCookies(uri_, cookies_);
+        result.success(null);
+    }
+
+    void getCookies(MethodCall call, MethodChannel.Result result) {
+        String uri = call.argument("uri");
+        URI uri_ = URI.create(uri);
+        List<String> res = LightstreamerClient.getCookies(uri_).stream().map(LightstreamerFlutterPlugin::cookieToString).collect(Collectors.toList());
+        result.success(res);
     }
 
     void connect(MethodCall call, MethodChannel.Result result) {
@@ -542,6 +567,31 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     void logMethod(MethodCall call) {
         Log.i(TAG, "event on channel com.lightstreamer.flutter/methods: " + call.method + " " + call.arguments().toString());
+    }
+
+    static String cookieToString(HttpCookie c) {
+        StringBuilder result = new StringBuilder();
+        result.append(c.getName());
+        result.append("=");
+        result.append(c.getValue());
+        if (c.getDomain() != null) {
+            result.append("; domain=");
+            result.append(c.getDomain());
+        }
+        if (c.getPath() != null) {
+            result.append("; path=");
+            result.append(c.getPath());
+        }
+        if (c.getMaxAge() > 0) {
+            result.append("; Max-Age=").append(c.getMaxAge());
+        }
+        if (c.getSecure()) {
+            result.append("; secure");
+        }
+        if (c.isHttpOnly()) {
+            result.append("; HttpOnly");
+        }
+        return result.toString();
     }
 }
 

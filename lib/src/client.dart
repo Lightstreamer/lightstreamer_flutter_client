@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:lightstreamer_flutter_client/src/native_bridge.dart';
 import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
 
@@ -427,6 +428,22 @@ class LightstreamerClient {
     };
     await client._bridge.client_create(client._id, client, arguments);
     return client;
+  }
+
+  static Future<void> addCookies(String uri, List<Cookie> cookies) async {
+    var arguments = <String, dynamic>{
+      'uri': uri,
+      'cookies': cookies.map((e) => e.toString()).toList()
+    };
+    return await NativeBridge.instance.invokeMethod('LightstreamerClient.addCookies', arguments);
+  }
+
+  static Future<List<Cookie>> getCookies(String uri) async {
+    var arguments = <String, dynamic>{
+      'uri': uri
+    };
+    List<String> cookies = (await NativeBridge.instance.invokeMethod('LightstreamerClient.getCookies', arguments)).cast<String>();
+    return cookies.map((e) => Cookie.fromSetCookieValue(e)).toList();
   }
 
   Future<void> connect() async {
