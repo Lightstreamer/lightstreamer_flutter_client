@@ -19,6 +19,8 @@ import com.lightstreamer.client.Subscription;
 import com.lightstreamer.client.SubscriptionListener;
 import com.lightstreamer.client.mpn.MpnDevice;
 import com.lightstreamer.client.mpn.MpnDeviceListener;
+import com.lightstreamer.client.mpn.MpnSubscription;
+import com.lightstreamer.client.mpn.MpnSubscriptionListener;
 import com.lightstreamer.log.ConsoleLogLevel;
 import com.lightstreamer.log.ConsoleLoggerProvider;
 
@@ -38,6 +40,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     // WARNING: Potential memory leak. Clients are added to the map but not removed.
     final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
     final Map<String, Subscription> _subMap = new HashMap<>();
+    final Map<String, MpnSubscription> _mpnSubMap = new HashMap<>();
     // maps client id to MpnDevice
     final Map<String, MpnDevice> _mpnDeviceMap = new HashMap<>();
     MethodChannel _methodChannel;
@@ -91,6 +94,21 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 break;
             case "LightstreamerClient.registerForMpn":
                 registerForMpn(call, result);
+                break;
+            case "LightstreamerClient.subscribeMpn":
+                subscribeMpn(call, result);
+                break;
+            case "LightstreamerClient.unsubscribeMpn":
+                unsubscribeMpn(call, result);
+                break;
+            case "LightstreamerClient.unsubscribeMpnSubscriptions":
+                unsubscribeMpnSubscriptions(call, result);
+                break;
+            case "LightstreamerClient.getMpnSubscriptions":
+                getMpnSubscriptions(call, result);
+                break;
+            case "LightstreamerClient.findMpnSubscription":
+                findMpnSubscription(call, result);
                 break;
             case "ConnectionDetails.getServerInstanceAddress":
                 Details_getServerInstanceAddress(call, result);
@@ -311,6 +329,102 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             }
         });
         result.success(null);
+    }
+
+    void subscribeMpn(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        Map<String, Object> options = call.argument("subscription");
+        String mpnSubId = (String) options.get("id");
+        List<String> items = (List<String>) options.get("items");
+        List<String> fields = (List<String>) options.get("fields");
+        String group = (String) options.get("group");
+        String schema = (String) options.get("schema");
+        String dataAdapter = (String) options.get("dataAdapter");
+        String bufferSize = (String) options.get("bufferSize");
+        String requestedMaxFrequency = (String) options.get("requestedMaxFrequency");
+        String trigger = (String) options.get("trigger");
+        String format = (String) options.get("notificationFormat");
+        boolean coalescing = (boolean) call.argument("coalescing");
+        MpnSubscription sub = new MpnSubscription((String) options.get("mode"));
+        // TODO what if already in _subMap?
+        _mpnSubMap.put(mpnSubId, sub);
+        if (items != null) {
+            sub.setItems(items.toArray(new String[0]));
+        }
+        if (fields != null) {
+            sub.setFields(fields.toArray(new String[0]));
+        }
+        if (group != null) {
+            sub.setItemGroup(group);
+        }
+        if (schema != null) {
+            sub.setFieldSchema(schema);
+        }
+        if (dataAdapter != null) {
+            sub.setDataAdapter(dataAdapter);
+        }
+        if (bufferSize != null) {
+            sub.setRequestedBufferSize(bufferSize);
+        }
+        if (requestedMaxFrequency != null) {
+            sub.setRequestedMaxFrequency(requestedMaxFrequency);
+        }
+        if (trigger != null) {
+            sub.setTriggerExpression(trigger);
+        }
+        if (format != null) {
+            sub.setNotificationFormat(format);
+        }
+        sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
+        client.subscribe(sub, coalescing);
+        result.success(null);
+    }
+
+    void unsubscribeMpn(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String mpnSubId = call.argument("mpnSubId");
+        MpnSubscription sub = _mpnSubMap.get(mpnSubId);
+        _mpnSubMap.remove(mpnSubId);
+        // TODO what if null?
+        client.unsubscribe(sub);
+        result.success(null);
+    }
+
+    void unsubscribeMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String filter = (String) call.argument("filter");
+        // TODO how to avoid _mpnSubMap memory leak?
+        client.unsubscribeMpnSubscriptions(filter);
+        result.success(null);
+    }
+
+    void getMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
+        // TODO improve performance
+        LightstreamerClient client = getClient(call);
+        String filter = (String) call.argument("filter");
+        List<MpnSubscription> subs = client.getMpnSubscriptions(filter);
+        List<String> res = new ArrayList<>();
+        for (Map.Entry<String, MpnSubscription> e : _mpnSubMap.entrySet()) {
+            if (subs.contains(e.getValue())) {
+                res.add(e.getKey());
+            }
+        }
+        result.success(res);
+    }
+
+    void findMpnSubscription(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String subscriptionId = (String) call.argument("subscriptionId");
+        MpnSubscription sub = client.findMpnSubscription(subscriptionId);
+        String res = null;
+        for (Map.Entry<String, MpnSubscription> e : _mpnSubMap.entrySet()) {
+            // TODO what if more than one?
+            if (sub == e.getValue()) {
+                res = e.getKey();
+                break;
+            }
+        }
+        result.success(res);
     }
 
     void Details_getServerInstanceAddress(MethodCall call, MethodChannel.Result result) {
@@ -724,5 +838,88 @@ class MyMpnDeviceListener implements MpnDeviceListener {
 
     void invoke(String method) {
        invoke(method, new HashMap<>());
+    }
+}
+
+class MyMpnSubscriptionListener implements MpnSubscriptionListener {
+    final String _mpnSubId;
+    final MpnSubscription _sub;
+    final LightstreamerFlutterPlugin _plugin;
+    final Handler _loop = new Handler(Looper.getMainLooper());
+
+    MyMpnSubscriptionListener(String mpnSubId, MpnSubscription sub, LightstreamerFlutterPlugin plugin) {
+        this._mpnSubId = mpnSubId;
+        this._sub = sub;
+        this._plugin = plugin;
+    }
+
+    @Override
+    public void onListenStart() {}
+
+    @Override
+    public void onListenEnd() {}
+
+    @Override
+    public void onSubscription() {
+        Map<String, Object> arguments = new HashMap<>();
+        invoke("onSubscription", arguments);
+    }
+
+    @Override
+    public void onUnsubscription() {
+        Map<String, Object> arguments = new HashMap<>();
+        invoke("onUnsubscription", arguments);
+    }
+
+    @Override
+    public void onSubscriptionError(int code, @Nullable String message) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("errorCode", code);
+        arguments.put("errorMessage", message);
+        invoke("onSubscriptionError", arguments);
+    }
+
+    @Override
+    public void onUnsubscriptionError(int code, @Nullable String message) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("errorCode", code);
+        arguments.put("errorMessage", message);
+        invoke("onUnsubscriptionError", arguments);
+    }
+
+    @Override
+    public void onTriggered() {
+        Map<String, Object> arguments = new HashMap<>();
+        invoke("onTriggered", arguments);
+    }
+
+    @Override
+    public void onStatusChanged(@NonNull String status, long timestamp) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("status", status);
+        arguments.put("timestamp", timestamp);
+        invoke("onStatusChanged", arguments);
+    }
+
+    @Override
+    public void onPropertyChanged(@NonNull String propertyName) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("property", propertyName);
+        invoke("onPropertyChanged", arguments);
+    }
+
+    @Override
+    public void onModificationError(int code, String message, String propertyName) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("errorCode", code);
+        arguments.put("errorMessage", message);
+        arguments.put("propertyName", propertyName);
+        invoke("onModificationError", arguments);
+    }
+
+    void invoke(String method, Map<String, Object> arguments) {
+        arguments.put("mpnSubId", _mpnSubId);
+        _loop.post(() ->
+                _plugin._listenerChannel.invokeMethod("MpnSubscriptionListener." + method, arguments));
     }
 }

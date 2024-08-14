@@ -500,17 +500,41 @@ class LightstreamerClient {
     return await _invokeMethod('registerForMpn');
   }
 
-  Future<void> subscribeMpn(MpnSubscription subscription, bool coalescing) async {
-    // TODO
+  Future<void> subscribeMpn(MpnSubscription sub, bool coalescing) async {
+    var arguments = <String, dynamic>{
+      'subscription': sub._toMap(),
+      'coalescing': coalescing
+    };
+    return await _bridge.client_subscribeMpn(_id, sub._id, sub, arguments);
   }
 
-  Future<void> unsubscribeMpn(MpnSubscription subscription) async {
-    // TODO
+  Future<void> unsubscribeMpn(MpnSubscription sub) async {
+    var arguments = <String, dynamic>{
+      'mpnSubId': sub._id
+    };
+    return await _bridge.client_unsubscribeMpn(_id, sub._id, arguments);
   }
 
-  // TODO getMpnSubscriptions
-  // TODO unsubscribeMpnSubscriptions
-  // TODO findMpnSubscription
+  Future<void> unsubscribeMpnSubscriptions([ String? filter ]) async {
+    var arguments = <String, dynamic>{
+      'filter': filter
+    };
+    return await _invokeMethod('unsubscribeMpnSubscriptions', arguments);
+  }
+
+  Future<List<MpnSubscription>> getMpnSubscriptions([ String? filter ]) async {
+    var arguments = <String, dynamic>{
+      'filter': filter
+    };
+    return await _bridge.client_getMpnSubscriptions(_id, arguments);
+  }
+
+  Future<MpnSubscription?> findMpnSubscription(String subscriptionId) async {
+    var arguments = <String, dynamic>{
+      'subscriptionId': subscriptionId
+    };
+    return await _bridge.client_findMpnSubscription(_id, arguments);
+  }
 
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
@@ -617,7 +641,7 @@ class MpnSubscription {
   }
 
   MpnSubscription(String mode, [ List<String>? items, List<String>? fields ]) : 
-    _id = 'sub${_idGenerator++}',
+    _id = 'mpnsub${_idGenerator++}',
     _mode = mode, 
     _items = items?.toList(), 
     _fields = fields?.toList();
