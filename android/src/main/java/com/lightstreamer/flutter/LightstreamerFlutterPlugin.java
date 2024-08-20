@@ -134,6 +134,12 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             case "ConnectionOptions.getRealMaxBandwidth":
                 ConnectionOptions_getRealMaxBandwidth(call, result);
                 break;
+//            case "ConnectionOptions.getRequestedMaxBandwidth":
+//                ConnectionOptions_getRequestedMaxBandwidth(call, result);
+//                break;
+//            case "ConnectionOptions.setRequestedMaxBandwidth":
+//                ConnectionOptions_setRequestedMaxBandwidth(call, result);
+//                break;
             case "MpnDevice.getApplicationId":
                 MpnDevice_getApplicationId(call, result);
                 break;
@@ -160,6 +166,24 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 break;
             case "MpnDevice.isSuspended":
                 MpnDevice_isSuspended(call, result);
+                break;
+            case "Subscription.getCommandPosition":
+                Subscription_getCommandPosition(call, result);
+                break;
+            case "Subscription.getKeyPosition":
+                Subscription_getKeyPosition(call, result);
+                break;
+//            case "Subscription.getRequestedMaxFrequency":
+//                Subscription_getRequestedMaxFrequency(call, result);
+//                break;
+//            case "Subscription.setRequestedMaxFrequency":
+//                Subscription_setRequestedMaxFrequency(call, result);
+//                break;
+            case "Subscription.isActive":
+                Subscription_isActive(call, result);
+                break;
+            case "Subscription.isSubscribed":
+                Subscription_isSubscribed(call, result);
                 break;
             default:
                 Log.e(TAG, "Unknown method " + call.method);
@@ -482,6 +506,19 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(res);
     }
 
+//    void ConnectionOptions_getRequestedMaxBandwidth(MethodCall call, MethodChannel.Result result) {
+//        LightstreamerClient client = getClient(call);
+//        String res = client.connectionOptions.getRequestedMaxBandwidth();
+//        result.success(res);
+//    }
+//
+//    void ConnectionOptions_setRequestedMaxBandwidth(MethodCall call, MethodChannel.Result result) {
+//        LightstreamerClient client = getClient(call);
+//        String newVal = call.argument("newVal");
+//        client.connectionOptions.setRequestedMaxBandwidth(newVal);
+//        result.success(null);
+//    }
+
     void MpnDevice_getApplicationId(MethodCall call, MethodChannel.Result result) {
         String id = call.argument("id");
         // TODO null check
@@ -551,6 +588,55 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         // TODO null check
         MpnDevice device = _mpnDeviceMap.get(id);
         Object res = device.isSuspended();
+        result.success(res);
+    }
+
+    void Subscription_getCommandPosition(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = _subMap.get(subId);
+        // TODO null check
+        Object res = sub.getCommandPosition();
+        result.success(res);
+    }
+
+    void Subscription_getKeyPosition(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = _subMap.get(subId);
+        // TODO null check
+        Object res = sub.getKeyPosition();
+        result.success(res);
+    }
+
+//    void Subscription_getRequestedMaxFrequency(MethodCall call, MethodChannel.Result result) {
+//        String subId = call.argument("subId");
+//        Subscription sub = _subMap.get(subId);
+//        // TODO null check
+//        Object res = sub.getRequestedMaxFrequency();
+//        result.success(res);
+//    }
+//
+//    void Subscription_setRequestedMaxFrequency(MethodCall call, MethodChannel.Result result) {
+//        String subId = call.argument("subId");
+//        String newVal = call.argument("newVal");
+//        Subscription sub = _subMap.get(subId);
+//        // TODO null check
+//        sub.setRequestedMaxFrequency(newVal);
+//        result.success(null);
+//    }
+
+    void Subscription_isActive(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = _subMap.get(subId);
+        // TODO null check
+        Object res = sub.isActive();
+        result.success(res);
+    }
+
+    void Subscription_isSubscribed(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = _subMap.get(subId);
+        // TODO null check
+        Object res = sub.isSubscribed();
         result.success(res);
     }
 

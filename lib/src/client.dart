@@ -274,6 +274,10 @@ class Subscription {
   List<String>? _fields2;
   String? _schema2;
 
+  // _active is true when the subscribe method has been called and the unsubscribe method has not been called in the meantime;
+  // _active is false when the unsubscribe method has been called and the subscribe method has not been called in the meantime
+  bool _active = false;
+
   Map<String, dynamic> _toMap() {
     return {
       'id': _id,
@@ -313,9 +317,18 @@ class Subscription {
     return _listeners.toList();
   }
 
-  // TODO listeners
-  // TODO external int getCommandPosition();
-  // TODO external int getKeyPosition();
+  Future<int> getCommandPosition() async {
+    if (!_active) {
+      throw Exception('Subscription is not active');
+    }
+    return await _invokeMethod('getCommandPosition', -1);
+  }
+   Future<int> getKeyPosition() async {
+    if (!_active) {
+      throw Exception('Subscription is not active');
+    }
+    return await _invokeMethod('getKeyPosition', -1);
+  }
   String? getCommandSecondLevelDataAdapter() {
     return _dataAdapter2;
   }
@@ -391,14 +404,22 @@ class Subscription {
   void setSelector(String? selector) {
     _selector = selector;
   }
-  // TODO bool isActive() {
-  // }
-  // TODO bool isSubscribed() {
-  // }
+  Future<bool> isActive() async {
+    return await _invokeMethod('isActive', false);
+  }
+  Future<bool> isSubscribed() async {
+    return await _invokeMethod('isSubscribed', false);
+  }
   // TODO String? getValue(StringOrInt itemNameOrPosition, StringOrInt fieldNameOrPosition) {
   // }
   // TODO String? getCommandValue(StringOrInt itemNameOrPosition, String keyValue, StringOrInt fieldNameOrPosition) {
   // }
+
+  Future<T> _invokeMethod<T>(String method, T defaultValue, [ Map<String, dynamic>? arguments ]) async {
+    arguments = arguments ?? {};
+    arguments["subId"] = _id;
+    return _active ? await NativeBridge.instance.invokeMethod('Subscription.$method', arguments) : defaultValue;
+  }
 }
 
 class LightstreamerClient {
@@ -466,14 +487,16 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'subscription': sub._toMap()
     };
-    return await _bridge.client_subscribe(_id, sub._id, sub, arguments);
+    await _bridge.client_subscribe(_id, sub._id, sub, arguments);
+    sub._active = true;
   }
 
   Future<void> unsubscribe(Subscription sub) async {
     var arguments = <String, dynamic>{
       'subId': sub._id
     };
-    return await _bridge.client_unsubscribe(_id, sub._id, arguments);
+    await _bridge.client_unsubscribe(_id, sub._id, arguments);
+    sub._active = false;
   }
 
   Future<List<Subscription>> getSubscriptions() async {

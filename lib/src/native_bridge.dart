@@ -38,7 +38,8 @@ class NativeBridge {
   }
 
   Future<void> client_unsubscribe(String clientId, String subId, Map<String, dynamic> arguments) async {
-    _subMap.remove(subId);
+    // TODO memory leak
+    // _subMap.remove(subId);
     return await _invokeClientMethod(clientId, 'unsubscribe', arguments);
   }
 
