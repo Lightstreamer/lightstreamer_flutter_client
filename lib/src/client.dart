@@ -1,6 +1,10 @@
 import 'dart:io';
-import 'package:lightstreamer_flutter_client/src/native_bridge.dart';
+import 'dart:async';
+import 'package:flutter/services.dart';
+import 'package:lightstreamer_flutter_client/src/item_update.dart';
 import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
+
+part 'native_bridge.dart';
 
 class ConnectionDetails {
   final String _id;
@@ -642,7 +646,7 @@ class MpnDevice {
     if (client == null) {
       throw Exception("This MPN device has not been registered by any client yet");
     }
-    Map<String, dynamic> arguments = {};
+    arguments = arguments ?? {};
     arguments["id"] = client._id;
     return await client._bridge.invokeMethod('MpnDevice.$method', arguments);
   }
@@ -653,7 +657,7 @@ class MpnSubscription {
   final String _id;
 
   final List<MpnSubscriptionListener> _listeners = [];
-  final String _mode;
+  String _mode;
   List<String>? _items;
   List<String>? _fields;
   String? _group;
@@ -663,6 +667,14 @@ class MpnSubscription {
   String? _requestedMaxFrequency;
   String? _trigger;
   String? _notificationFormat;
+  //
+  String? _actualNotificationFormat;
+  String? _actualTrigger;
+  //
+  int _statusTs = 0;
+  String _status = 'UNKNOWN';
+  //
+  String? _subscriptionId;
 
   Map<String, dynamic> _toMap() {
     return {
@@ -724,7 +736,7 @@ class MpnSubscription {
   void setItemGroup(String? groupName) {
     _group = groupName;
   }
-  List<String>? _getItems() {
+  List<String>? getItems() {
     return _items?.toList();
   }
   void setItems(List<String>? items) {
@@ -748,21 +760,51 @@ class MpnSubscription {
   String? getTriggerExpression() {
     return _trigger;
   }
-  void setTriggerExpression(String? trigger) {
+  Future<void> setTriggerExpression(String? trigger) async {
     _trigger = trigger;
+    var arguments = <String, dynamic> {
+      'trigger': trigger
+    };
+    return await _invokeMethod('setTriggerExpression', arguments);
   }
   String? getNotificationFormat() {
     return _notificationFormat;
   }
-  void setNotificationFormat(String format) {
+  Future<void> setNotificationFormat(String format) async {
     _notificationFormat = format;
+    var arguments = <String, dynamic> {
+      'notificationFormat': format
+    };
+    return await _invokeMethod('setNotificationFormat', arguments);
   }
-  // TODO isActive
-  // TODO isSubscribed
-  // TODO isTriggered
-  // TODO getActualNotificationFormat
-  // TODO getActualTriggerExpression
-  // TODO getStatus
-  // TODO getStatusTimestamp
-  // TODO getSubscriptionId
+  bool isActive() {
+    return _status != 'UNKNOWN';
+  }
+  bool isSubscribed() {
+    return _status == 'SUBSCRIBED' || _status == 'TRIGGERED';
+  }
+  bool isTriggered() {
+    return _status == 'TRIGGERED';
+  }
+  String? getActualNotificationFormat() {
+    return _actualNotificationFormat;
+  }
+  String? getActualTriggerExpression() {
+    return _actualTrigger;
+  }
+  String getStatus() {
+    return _status;
+  }
+  int getStatusTimestamp() {
+    return _statusTs;
+  }
+  String? getSubscriptionId() {
+    return _subscriptionId;
+  }
+
+  Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
+    arguments = arguments ?? {};
+    arguments["mpnSubId"] = _id;
+    return await NativeBridge.instance.invokeMethod('MpnSubscription.$method', arguments);
+  }
 }

@@ -1,7 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
-import 'dart:async';
-import 'package:flutter/services.dart';
-import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
+
+part of 'client.dart';
 
 class NativeBridge {
   static final instance = NativeBridge._();
@@ -71,7 +70,8 @@ class NativeBridge {
   }
 
   Future<void> client_unsubscribeMpn(String clientId, String mpnSubId, Map<String, dynamic> arguments) async {
-    _mpnSubMap.remove(mpnSubId);
+    // TODO memory leak
+    // _mpnSubMap.remove(mpnSubId);
     return await _invokeClientMethod(clientId, 'unsubscribeMpn', arguments);
   }
 
@@ -622,6 +622,8 @@ class NativeBridge {
     int timestamp = arguments['timestamp'];
      // TODO null check
     MpnSubscription sub = _mpnSubMap[mpnSubId]!;
+    sub._status = status;
+    sub._subscriptionId = arguments['subscriptionId'];
     for (var l in sub.getListeners()) {
       scheduleMicrotask(() {
         l.onStatusChanged(status, timestamp);
@@ -633,8 +635,28 @@ class NativeBridge {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
     String property = arguments['property'];
-     // TODO null check
+    // TODO null check
     MpnSubscription sub = _mpnSubMap[mpnSubId]!;
+    switch (property) {
+      case "status_timestamp":
+        sub._statusTs = arguments['value'];
+      case "mode":
+        sub._mode = arguments['value'];
+      case "adapter":
+        sub._dataAdapter = arguments['value'];
+      case "group":
+        sub._group = arguments['value'];
+      case "schema":
+        sub._schema = arguments['value'];
+      case "notification_format":
+        sub._actualNotificationFormat = arguments['value'];
+      case "trigger":
+        sub._actualTrigger = arguments['value'];
+      case "requested_buffer_size":
+        sub._bufferSize = arguments['value'];
+      case "requested_max_frequency":
+        sub._requestedMaxFrequency = arguments['value'];
+    }
     for (var l in sub.getListeners()) {
       scheduleMicrotask(() {
         l.onPropertyChanged(property);

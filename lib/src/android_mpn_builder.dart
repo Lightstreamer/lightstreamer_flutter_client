@@ -1,4 +1,4 @@
-import 'package:lightstreamer_flutter_client/src/native_bridge.dart';
+import 'package:lightstreamer_flutter_client/src/client.dart';
 
 class AndroidMpnBuilder {
   String? _collapseKey;

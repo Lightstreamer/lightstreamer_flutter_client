@@ -189,6 +189,12 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             case "AndroidMpnBuilder.build":
                 AndroidMpnBuilder_build(call, result);
                 break;
+            case "MpnSubscription.setTriggerExpression":
+                MpnSubscription_setTriggerExpression(call, result);
+                break;
+            case "MpnSubscription.setNotificationFormat":
+                MpnSubscription_setNotificationFormat(call, result);
+                break;
             default:
                 Log.e(TAG, "Unknown method " + call.method);
                 result.notImplemented();
@@ -379,9 +385,10 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 device.addListener(new MyMpnDeviceListener(id, LightstreamerFlutterPlugin.this));
                 client.registerForMpn(device);
                 _mpnDeviceMap.put(id, device); // TODO what if already assigned?
+
+                result.success(null);
             }
         });
-        result.success(null);
     }
 
     void subscribeMpn(MethodCall call, MethodChannel.Result result) {
@@ -616,7 +623,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         builder.collapseKey(collapseKey);
         builder.priority(priority);
         builder.timeToLive(timeToLive);
-        builder.timeToLive(title);
+        builder.title(title);
         builder.titleLocKey(titleLocKey);
         builder.titleLocArguments(titleLocArguments);
         builder.body(body);
@@ -679,6 +686,30 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         // TODO null check
         Object res = sub.isSubscribed();
         result.success(res);
+    }
+
+    void MpnSubscription_setTriggerExpression(MethodCall call, MethodChannel.Result result) {
+        String mpnSubId = call.argument("mpnSubId");
+        MpnSubscription sub = _mpnSubMap.get(mpnSubId);
+        if (sub == null) {
+            Log.w(TAG, "MpnSubscription with id " + mpnSubId + " not found");
+            result.success(null);
+            return;
+        }
+        sub.setTriggerExpression(call.argument("trigger"));
+        result.success(null);
+    }
+
+    void MpnSubscription_setNotificationFormat(MethodCall call, MethodChannel.Result result) {
+        String mpnSubId = call.argument("mpnSubId");
+        MpnSubscription sub = _mpnSubMap.get(mpnSubId);
+        if (sub == null) {
+            Log.w(TAG, "MpnSubscription with id " + mpnSubId + " not found");
+            result.success(null);
+            return;
+        }
+        sub.setNotificationFormat(call.argument("notificationFormat"));
+        result.success(null);
     }
 
     LightstreamerClient getClient(MethodCall call) {
@@ -1075,6 +1106,7 @@ class MyMpnSubscriptionListener implements MpnSubscriptionListener {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("status", status);
         arguments.put("timestamp", timestamp);
+        arguments.put("subscriptionId", "UNKNOWN".equals(status) ? null : _sub.getSubscriptionId());
         invoke("onStatusChanged", arguments);
     }
 
@@ -1082,6 +1114,35 @@ class MyMpnSubscriptionListener implements MpnSubscriptionListener {
     public void onPropertyChanged(@NonNull String propertyName) {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("property", propertyName);
+        switch (propertyName) {
+            case "status_timestamp":
+                arguments.put("value", _sub.getStatusTimestamp());
+                break;
+            case "mode":
+                arguments.put("value", _sub.getMode());
+                break;
+            case "adapter":
+                arguments.put("value", _sub.getDataAdapter());
+                break;
+            case "group":
+                arguments.put("value", _sub.getItemGroup());
+                break;
+            case "schema":
+                arguments.put("value", _sub.getFieldSchema());
+                break;
+            case "notification_format":
+                arguments.put("value", _sub.getActualNotificationFormat());
+                break;
+            case "trigger":
+                arguments.put("value", _sub.getActualTriggerExpression());
+                break;
+            case "requested_buffer_size":
+                arguments.put("value", _sub.getRequestedBufferSize());
+                break;
+            case "requested_max_frequency":
+                arguments.put("value", _sub.getRequestedMaxFrequency());
+                break;
+        }
         invoke("onPropertyChanged", arguments);
     }
 
