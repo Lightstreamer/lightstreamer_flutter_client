@@ -17,6 +17,7 @@ import com.lightstreamer.client.ItemUpdate;
 import com.lightstreamer.client.LightstreamerClient;
 import com.lightstreamer.client.Subscription;
 import com.lightstreamer.client.SubscriptionListener;
+import com.lightstreamer.client.mpn.MpnBuilder;
 import com.lightstreamer.client.mpn.MpnDevice;
 import com.lightstreamer.client.mpn.MpnDeviceListener;
 import com.lightstreamer.client.mpn.MpnSubscription;
@@ -184,6 +185,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 break;
             case "Subscription.isSubscribed":
                 Subscription_isSubscribed(call, result);
+                break;
+            case "AndroidMpnBuilder.build":
+                AndroidMpnBuilder_build(call, result);
                 break;
             default:
                 Log.e(TAG, "Unknown method " + call.method);
@@ -588,6 +592,43 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         // TODO null check
         MpnDevice device = _mpnDeviceMap.get(id);
         Object res = device.isSuspended();
+        result.success(res);
+    }
+
+    void AndroidMpnBuilder_build(MethodCall call, MethodChannel.Result result) {
+        String collapseKey = call.argument("collapseKey");
+        String priority = call.argument("priority");
+        String timeToLive = call.argument("timeToLive");
+        String title = call.argument("title");
+        String titleLocKey = call.argument("titleLocKey");
+        List<String> titleLocArguments = call.argument("titleLocArguments");
+        String body = call.argument("body");
+        String bodyLocKey = call.argument("bodyLocKey");
+        List<String> bodyLocArguments = call.argument("bodyLocArguments");
+        String icon = call.argument("icon");
+        String sound = call.argument("sound");
+        String tag = call.argument("tag");
+        String color = call.argument("color");
+        String clickAction = call.argument("clickAction");
+        Map<String, String> data = call.argument("data");
+        String notificationFormat = call.argument("notificationFormat");
+        MpnBuilder builder = notificationFormat == null ? new MpnBuilder() : new MpnBuilder(notificationFormat);
+        builder.collapseKey(collapseKey);
+        builder.priority(priority);
+        builder.timeToLive(timeToLive);
+        builder.timeToLive(title);
+        builder.titleLocKey(titleLocKey);
+        builder.titleLocArguments(titleLocArguments);
+        builder.body(body);
+        builder.bodyLocKey(bodyLocKey);
+        builder.bodyLocArguments(bodyLocArguments);
+        builder.icon(icon);
+        builder.sound(sound);
+        builder.tag(tag);
+        builder.color(color);
+        builder.clickAction(clickAction);
+        builder.data(data);
+        String res = builder.build();
         result.success(res);
     }
 
