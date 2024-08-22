@@ -220,6 +220,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void setLoggerProvider(MethodCall call, MethodChannel.Result result) {
         int level = call.argument("level");
         LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(level));
+        result.success(null);
     }
 
     void addCookies(MethodCall call, MethodChannel.Result result) {
