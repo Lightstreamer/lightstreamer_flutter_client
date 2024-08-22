@@ -122,7 +122,9 @@ class NativeBridge {
       case 'MpnSubscriptionListener':
         _MpnSubscriptionListener_handle(method, call);
       default:
-        // TODO default
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error("Unknown method ${call.method}", null);
+        }
     }
     return Future.value();
   }
@@ -136,7 +138,9 @@ class NativeBridge {
       case "onServerError":
         _ClientListener_onServerError(call);
       default:
-        // TODO default
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error("Unknown method ${call.method}", null);
+        }
     }
   }
 
@@ -193,7 +197,9 @@ class NativeBridge {
       case "onProcessed":
         _ClientMessageListener_onProcessed(call);
       default:
-        // TODO default
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error("Unknown method ${call.method}", null);
+        }
     }
   }
   
@@ -279,7 +285,9 @@ class NativeBridge {
       case "onRealMaxFrequency":
         _SubscriptionListener_onRealMaxFrequency(call);
       default:
-        // TODO default
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error("Unknown method ${call.method}", null);
+        }
     }
   }
 
@@ -434,7 +442,9 @@ class NativeBridge {
       case "onSuspended":
         _MpnDeviceListener_onSuspended(call);
       default:
-        // TODO default
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error("Unknown method ${call.method}", null);
+        }
     }
   }
   
@@ -551,7 +561,9 @@ class NativeBridge {
       case "onModificationError":
         _MpnSubscriptionListener_onModificationError(call);
       default:
-        // TODO default
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error("Unknown method ${call.method}", null);
+        }
     }
   }
 
