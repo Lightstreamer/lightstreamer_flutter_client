@@ -62,8 +62,38 @@ void main() {
       tearDown(() async {
         await _cleanup();
         devListener._onStatusChanged = (status, ts) => exps.signal("onStatusChanged " + status);
-        client.disconnect();
-        await exps.until("onStatusChanged UNKNOWN");
+        if ((await client.getStatus()) != "DISCONNECTED") {
+          client.disconnect();
+          await exps.until("onStatusChanged UNKNOWN");
+        }
+      });
+
+      test('listeners', () async {
+        var ls = device.getListeners();
+        assertEqual(1, ls.length);
+        assertEqual(true, devListener == ls[0]);
+
+        var cl2 = BaseDeviceListener();
+        cl2.fListenStart = () => exps.signal('MpnDeviceListener.onListenStart');
+        cl2.fListenEnd = () => exps.signal('MpnDeviceListener.onListenEnd');
+        device.addListener(cl2);
+        await exps.value('MpnDeviceListener.onListenStart');
+        device.removeListener(cl2);
+        await exps.value('MpnDeviceListener.onListenEnd');
+
+        var sub = new MpnSubscription("MERGE", ["count"], ["count"]);
+        sub.addListener(subListener);
+        var subls = sub.getListeners();
+        assertEqual(1, subls.length);
+        assertEqual(true, subListener == subls[0]);
+
+        var sl2 = BaseMpnSubscriptionListener();
+        sl2.fListenStart = () => exps.signal('MpnSubscriptionListener.onListenStart');
+        sl2.fListenEnd = () => exps.signal('MpnSubscriptionListener.onListenEnd');
+        sub.addListener(sl2);
+        await exps.value('MpnSubscriptionListener.onListenStart');
+        sub.removeListener(sl2);
+        await exps.value('MpnSubscriptionListener.onListenEnd');
       });
 
       /**
@@ -804,6 +834,10 @@ class BaseDeviceListener extends MpnDeviceListener {
   void onStatusChanged(String status, int ts) => _onStatusChanged?.call(status, ts);
   void Function(int, String)? _onRegistrationFailed;
   void onRegistrationFailed(int code, String msg) => _onRegistrationFailed?.call(code, msg);
+  void Function()? fListenStart;
+  void onListenStart() => fListenStart?.call();
+  void Function()? fListenEnd;
+  void onListenEnd() => fListenEnd?.call();
 }
 
 class BaseMpnSubscriptionListener extends MpnSubscriptionListener {
@@ -821,4 +855,8 @@ class BaseMpnSubscriptionListener extends MpnSubscriptionListener {
   void onTriggered() => _onTriggered?.call();
   void Function(int, String, String)? _onModificationError;
   void onModificationError(int code, String msg, String prop) => _onModificationError?.call(code, msg, prop);
+  void Function()? fListenStart;
+  void onListenStart() => fListenStart?.call();
+  void Function()? fListenEnd;
+  void onListenEnd() => fListenEnd?.call();
 }

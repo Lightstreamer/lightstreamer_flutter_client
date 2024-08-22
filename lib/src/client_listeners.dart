@@ -15,8 +15,8 @@ class SubscriptionListener {
   void onEndOfSnapshot(String itemName, int itemPos) {}
   void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) {}
   void onItemUpdate(ItemUpdate update) {}
-  void onListenEnd(void dummy) {}
-  void onListenStart(void dummy) {}
+  void onListenEnd() {}
+  void onListenStart() {}
   void onRealMaxFrequency(String? frequency) {}
   void onSubscription() {}
   void onSubscriptionError(int errorCode, String errorMessage) {}

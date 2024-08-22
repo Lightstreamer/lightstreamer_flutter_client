@@ -40,11 +40,27 @@ void main() {
         assertEqual(1, ls.length);
         assertEqual(true, listener == ls[0]);
 
+        var cl2 = BaseClientListener();
+        cl2.fListenStart = () => exps.signal('ClientListener.onListenStart');
+        cl2.fListenEnd = () => exps.signal('ClientListener.onListenEnd');
+        client.addListener(cl2);
+        await exps.value('ClientListener.onListenStart');
+        client.removeListener(cl2);
+        await exps.value('ClientListener.onListenEnd');
+
         var sub = new Subscription("MERGE", ["count"], ["count"]);
         sub.addListener(subListener);
         var subls = sub.getListeners();
         assertEqual(1, subls.length);
         assertEqual(true, subListener == subls[0]);
+
+        var sl2 = BaseSubscriptionListener();
+        sl2.fListenStart = () => exps.signal('SubscriptionListener.onListenStart');
+        sl2.fListenEnd = () => exps.signal('SubscriptionListener.onListenEnd');
+        sub.addListener(sl2);
+        await exps.value('SubscriptionListener.onListenStart');
+        sub.removeListener(sl2);
+        await exps.value('SubscriptionListener.onListenEnd');
       });
 
       test('connect', () async {

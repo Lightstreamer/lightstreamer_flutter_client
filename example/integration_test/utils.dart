@@ -136,6 +136,10 @@ class BaseClientListener extends ClientListener {
   void onServerError(int code, String msg) => fServerError?.call(code, msg);
   void Function(String)? fPropertyChange;
   void onPropertyChange(String property) => fPropertyChange?.call(property);
+  void Function()? fListenStart;
+  void onListenStart() => fListenStart?.call();
+  void Function()? fListenEnd;
+  void onListenEnd() => fListenEnd?.call();
 }
 
 class BaseSubscriptionListener extends SubscriptionListener {
@@ -155,6 +159,10 @@ class BaseSubscriptionListener extends SubscriptionListener {
   void onEndOfSnapshot(String name, int pos) => fEndOfSnapshot?.call(name, pos);
   void Function(String, int, int)? fItemLostUpdates;
   void onItemLostUpdates(String name, int pos, int lost) => fItemLostUpdates?.call(name, pos, lost);
+  void Function()? fListenStart;
+  void onListenStart() => fListenStart?.call();
+  void Function()? fListenEnd;
+  void onListenEnd() => fListenEnd?.call();
 }
 
 class BaseMessageListener extends ClientMessageListener {

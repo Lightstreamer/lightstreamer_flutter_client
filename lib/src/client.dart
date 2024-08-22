@@ -310,11 +310,19 @@ class Subscription {
   void addListener(SubscriptionListener listener) {
     if (!_listeners.contains(listener)) {
       _listeners.add(listener);
+      scheduleMicrotask(() {
+        listener.onListenStart();
+      });
     }
   }
 
   void removeListener(SubscriptionListener listener) {
-    _listeners.remove(listener);
+    var found = _listeners.remove(listener);
+    if (found) {
+      scheduleMicrotask(() {
+        listener.onListenEnd();
+      });
+    }
   }
 
   List<SubscriptionListener> getListeners() {
@@ -534,11 +542,19 @@ class LightstreamerClient {
   void addListener(ClientListener listener) {
     if (!_listeners.contains(listener)) {
       _listeners.add(listener);
+      scheduleMicrotask(() {
+        listener.onListenStart();
+      });
     }
   }
 
   void removeListener(ClientListener listener) {
-    _listeners.remove(listener);
+    var found = _listeners.remove(listener);
+    if (found) {
+      scheduleMicrotask(() {
+        listener.onListenEnd();
+      });
+    }
   }
 
   List<ClientListener> getListeners() {
@@ -608,11 +624,19 @@ class MpnDevice {
   void addListener(MpnDeviceListener listener) {
     if (!_listeners.contains(listener)) {
       _listeners.add(listener);
+      scheduleMicrotask(() {
+        listener.onListenStart();
+      });
     }
   }
 
   void removeListener(MpnDeviceListener listener) {
-    _listeners.remove(listener);
+    var found = _listeners.remove(listener);
+    if (found) {
+      scheduleMicrotask(() {
+        listener.onListenEnd();
+      });
+    }
   }
 
   List<MpnDeviceListener> getListeners() {
@@ -715,11 +739,19 @@ class MpnSubscription {
   void addListener(MpnSubscriptionListener listener) {
     if (!_listeners.contains(listener)) {
       _listeners.add(listener);
+      scheduleMicrotask(() {
+        listener.onListenStart();
+      });
     }
   }
 
   void removeListener(MpnSubscriptionListener listener) {
-    _listeners.remove(listener);
+    var found = _listeners.remove(listener);
+    if (found) {
+      scheduleMicrotask(() {
+        listener.onListenEnd();
+      });
+    }
   }
 
   List<MpnSubscriptionListener> getListeners() {
