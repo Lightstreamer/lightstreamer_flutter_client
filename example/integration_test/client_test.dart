@@ -10,7 +10,7 @@ void main() {
   late BaseClientListener listener;
   late BaseSubscriptionListener subListener;
   late BaseMessageListener msgListener;
-  // LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+  LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
   ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
     group(transport, () {

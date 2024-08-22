@@ -99,12 +99,16 @@ class NativeBridge {
   }
 
   Future<T> invokeMethod<T>(String method, Map<String, dynamic> arguments) async {
+    if (channelLogger.isDebugEnabled()) {
+      channelLogger.debug('Invoking $method $arguments');
+    }
     return await _methodChannel.invokeMethod(method, arguments);
   }
 
   Future<dynamic> _listenerChannelHandler(MethodCall call) {
-    // TODO use a logger
-    print('event on channel com.lightstreamer.flutter/listeners: ${call.method} ${call.arguments}');
+    if (channelLogger.isDebugEnabled()) {
+      channelLogger.debug('Accepting ${call.method} ${call.arguments}');
+    }
     var [className, method] = call.method.split('.');
     switch (className) {
       case 'ClientListener':

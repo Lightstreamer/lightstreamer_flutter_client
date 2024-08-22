@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:lightstreamer_flutter_client/src/item_update.dart';
 import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
+import 'package:lightstreamer_flutter_client/src/log_manager.dart';
+import 'package:lightstreamer_flutter_client/src/logger.dart';
 
 part 'native_bridge.dart';
 
@@ -453,6 +455,21 @@ class LightstreamerClient {
     };
     await client._bridge.client_create(client._id, client, arguments);
     return client;
+  }
+
+  static Future<void> setLoggerProvider(LoggerProvider provider) async {
+    var logger = provider.getLogger('lightstreamer');
+    var level = logger.isDebugEnabled() ? ConsoleLogLevel.DEBUG
+              : logger.isErrorEnabled() ? ConsoleLogLevel.ERROR
+              : logger.isWarnEnabled()  ? ConsoleLogLevel.WARN
+              : logger.isInfoEnabled()  ? ConsoleLogLevel.INFO
+              : logger.isFatalEnabled() ? ConsoleLogLevel.FATAL
+              : ConsoleLogLevel.TRACE;
+    var arguments = <String, dynamic>{
+      'level': level
+    };
+    LogManager.setLoggerProvider(provider);
+    return await NativeBridge.instance.invokeMethod('LightstreamerClient.setLoggerProvider', arguments);
   }
 
   static Future<void> addCookies(String uri, List<Cookie> cookies) async {

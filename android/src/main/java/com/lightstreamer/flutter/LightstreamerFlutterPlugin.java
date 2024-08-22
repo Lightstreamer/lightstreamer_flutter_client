@@ -22,7 +22,6 @@ import com.lightstreamer.client.mpn.MpnDevice;
 import com.lightstreamer.client.mpn.MpnDeviceListener;
 import com.lightstreamer.client.mpn.MpnSubscription;
 import com.lightstreamer.client.mpn.MpnSubscriptionListener;
-import com.lightstreamer.log.ConsoleLogLevel;
 import com.lightstreamer.log.ConsoleLoggerProvider;
 
 import java.net.HttpCookie;
@@ -40,6 +39,7 @@ import io.flutter.plugin.common.MethodChannel;
 public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler {
 
     static final String TAG = "LightstreamerClient";
+    static final com.lightstreamer.log.Logger channelLogger = com.lightstreamer.log.LogManager.getLogger("lightstreamer.flutter");
 
     // WARNING: Potential memory leak. Clients are added to the map but not removed.
     final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
@@ -50,12 +50,10 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     MethodChannel _methodChannel;
     MethodChannel _listenerChannel;
     Context _appContext;
+    final Handler _loop = new Handler(Looper.getMainLooper());
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        // TODO disable the logger
-        LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.DEBUG));
-
         _appContext = binding.getApplicationContext();
         _methodChannel = new MethodChannel(binding.getBinaryMessenger(), "com.lightstreamer.flutter/methods");
         _methodChannel.setMethodCallHandler(this);
@@ -69,7 +67,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
-        logMethod(call);
+        if (channelLogger.isDebugEnabled()) {
+            channelLogger.debug("Accepting " + call.method + " " + call.arguments(), null);
+        }
         // TODO optimize switch
         switch (call.method) {
             case "LightstreamerClient.create":
@@ -113,6 +113,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 break;
             case "LightstreamerClient.findMpnSubscription":
                 findMpnSubscription(call, result);
+                break;
+            case "LightstreamerClient.setLoggerProvider":
+                setLoggerProvider(call, result);
                 break;
             case "LightstreamerClient.addCookies":
                 addCookies(call, result);
@@ -212,6 +215,11 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String id = call.argument("id");
         client.addListener(new MyClientListener(id, this));
         result.success(null);
+    }
+
+    void setLoggerProvider(MethodCall call, MethodChannel.Result result) {
+        int level = call.argument("level");
+        LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(level));
     }
 
     void addCookies(MethodCall call, MethodChannel.Result result) {
@@ -723,8 +731,11 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         return ls;
     }
 
-    void logMethod(MethodCall call) {
-        Log.i(TAG, "event on channel com.lightstreamer.flutter/methods: " + call.method + " " + call.arguments().toString());
+    void invokeMethod(String method, Map<String, Object> arguments) {
+        if (channelLogger.isDebugEnabled()) {
+            channelLogger.debug("Invoking " + method + " " + arguments, null);
+        }
+        _loop.post(() -> _listenerChannel.invokeMethod(method, arguments));
     }
 
     static String cookieToString(HttpCookie c) {
@@ -756,7 +767,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 class MyClientListener implements ClientListener {
     final String clientId;
     final LightstreamerFlutterPlugin plugin;
-    final Handler loop = new Handler(Looper.getMainLooper());
 
     MyClientListener(String clientId, LightstreamerFlutterPlugin plugin) {
         this.clientId = clientId;
@@ -793,8 +803,7 @@ class MyClientListener implements ClientListener {
 
     void invoke(String method, Map<String, Object> arguments) {
         arguments.put("id", clientId);
-        loop.post(() ->
-            plugin._listenerChannel.invokeMethod("ClientListener." + method, arguments));
+        plugin.invokeMethod("ClientListener." + method, arguments);
     }
 }
 
@@ -802,7 +811,6 @@ class MySubscriptionListener implements SubscriptionListener {
     final String _subId;
     final Subscription _sub;
     final LightstreamerFlutterPlugin _plugin;
-    final Handler _loop = new Handler(Looper.getMainLooper());
 
     MySubscriptionListener(String subId, Subscription sub, LightstreamerFlutterPlugin plugin) {
         this._subId = subId;
@@ -926,15 +934,13 @@ class MySubscriptionListener implements SubscriptionListener {
 
     void invoke(String method, Map<String, Object> arguments) {
         arguments.put("subId", _subId);
-        _loop.post(() ->
-                _plugin._listenerChannel.invokeMethod("SubscriptionListener." + method, arguments));
+        _plugin.invokeMethod("SubscriptionListener." + method, arguments);
     }
 }
 
 class MyClientMessageListener implements ClientMessageListener {
     final String _msgId;
     final LightstreamerFlutterPlugin _plugin;
-    final Handler _loop = new Handler(Looper.getMainLooper());
 
     MyClientMessageListener(String msgId, LightstreamerFlutterPlugin plugin) {
         this._msgId = msgId;
@@ -981,15 +987,13 @@ class MyClientMessageListener implements ClientMessageListener {
 
     void invoke(String method, Map<String, Object> arguments) {
         arguments.put("msgId", _msgId);
-        _loop.post(() ->
-                _plugin._listenerChannel.invokeMethod("ClientMessageListener." + method, arguments));
+        _plugin.invokeMethod("ClientMessageListener." + method, arguments);
     }
 }
 
 class MyMpnDeviceListener implements MpnDeviceListener {
     final String _clientId;
     final LightstreamerFlutterPlugin _plugin;
-    final Handler _loop = new Handler(Looper.getMainLooper());
 
     MyMpnDeviceListener(String clientId, LightstreamerFlutterPlugin plugin) {
         this._clientId = clientId;
@@ -1040,8 +1044,7 @@ class MyMpnDeviceListener implements MpnDeviceListener {
 
     void invoke(String method, Map<String, Object> arguments) {
         arguments.put("id", _clientId);
-        _loop.post(() ->
-                _plugin._listenerChannel.invokeMethod("MpnDeviceListener." + method, arguments));
+        _plugin.invokeMethod("MpnDeviceListener." + method, arguments);
     }
 
     void invoke(String method) {
@@ -1053,7 +1056,6 @@ class MyMpnSubscriptionListener implements MpnSubscriptionListener {
     final String _mpnSubId;
     final MpnSubscription _sub;
     final LightstreamerFlutterPlugin _plugin;
-    final Handler _loop = new Handler(Looper.getMainLooper());
 
     MyMpnSubscriptionListener(String mpnSubId, MpnSubscription sub, LightstreamerFlutterPlugin plugin) {
         this._mpnSubId = mpnSubId;
@@ -1157,7 +1159,6 @@ class MyMpnSubscriptionListener implements MpnSubscriptionListener {
 
     void invoke(String method, Map<String, Object> arguments) {
         arguments.put("mpnSubId", _mpnSubId);
-        _loop.post(() ->
-                _plugin._listenerChannel.invokeMethod("MpnSubscriptionListener." + method, arguments));
+        _plugin.invokeMethod("MpnSubscriptionListener." + method, arguments);
     }
 }
