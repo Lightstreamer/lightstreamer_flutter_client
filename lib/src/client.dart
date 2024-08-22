@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:lightstreamer_flutter_client/src/item_update.dart';
 import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
 import 'package:lightstreamer_flutter_client/src/log_manager.dart';
 import 'package:lightstreamer_flutter_client/src/logger.dart';
 
 part 'native_bridge.dart';
+part 'item_update.dart';
 
 class ConnectionDetails {
   final String _id;
@@ -435,7 +435,6 @@ class Subscription {
 }
 
 class LightstreamerClient {
-  // TODO move into a singleton
   static int _idGenerator = 0;
 
   late final String _id;

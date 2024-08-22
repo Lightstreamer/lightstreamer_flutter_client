@@ -358,7 +358,7 @@ class NativeBridge {
   void _SubscriptionListener_onItemUpdate(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
-    ItemUpdate update = ItemUpdate(call);
+    ItemUpdate update = ItemUpdate._(call);
     // TODO null check
     Subscription sub = _subMap[subId]!;
     for (var l in sub.getListeners()) {

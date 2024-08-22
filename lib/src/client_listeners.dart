@@ -1,4 +1,4 @@
-import 'package:lightstreamer_flutter_client/src/item_update.dart';
+import 'package:lightstreamer_flutter_client/src/client.dart';
 
 class ClientListener {
   void onStatusChange(String status) {}

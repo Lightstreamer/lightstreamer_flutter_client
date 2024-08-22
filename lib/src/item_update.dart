@@ -1,4 +1,4 @@
-import 'package:flutter/services.dart';
+part of 'client.dart';
 
 interface class ItemUpdate {
   final String? _itemName;
@@ -11,8 +11,7 @@ interface class ItemUpdate {
   final Map<int, String> _fieldsByPosition;
   final Map<int, String> _jsonFieldsByPosition;
 
-  // TODO make private
-  ItemUpdate(MethodCall call) :
+  ItemUpdate._(MethodCall call) :
     _itemName = call.arguments['itemName'],
     _itemPos = call.arguments['itemPos'],
     _isSnapshot = call.arguments['isSnapshot'],
