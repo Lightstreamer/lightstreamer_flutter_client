@@ -3,7 +3,6 @@ package com.lightstreamer.flutter;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,132 +68,212 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         if (channelLogger.isDebugEnabled()) {
             channelLogger.debug("Accepting " + call.method + " " + call.arguments(), null);
         }
-        // TODO optimize switch
-        switch (call.method) {
-            case "LightstreamerClient.create":
-                create(call, result);
+        String[] parts = call.method.split("\\.");
+        String className = parts[0];
+        String methodName = parts[1];
+        switch (className) {
+            case "LightstreamerClient":
+                Client_handle(methodName, call, result);
                 break;
-            case "LightstreamerClient.connect":
-                connect(call, result);
+            case "ConnectionDetails":
+                ConnectionDetails_handle(methodName, call, result);
                 break;
-            case "LightstreamerClient.disconnect":
-                disconnect(call, result);
+            case "ConnectionOptions":
+                ConnectionOptions_handle(methodName, call, result);
                 break;
-            case "LightstreamerClient.getStatus":
-                getStatus(call, result);
+            case "Subscription":
+                Subscription_handle(methodName, call, result);
                 break;
-            case "LightstreamerClient.subscribe":
-                subscribe(call, result);
+            case "MpnDevice":
+                MpnDevice_handle(methodName, call, result);
                 break;
-            case "LightstreamerClient.unsubscribe":
-                unsubscribe(call, result);
+            case "MpnSubscription":
+                MpnSubscription_handle(methodName, call, result);
                 break;
-            case "LightstreamerClient.getSubscriptions":
-                getSubscriptions(call, result);
+            case "AndroidMpnBuilder":
+                AndroidMpnBuilder_handle(methodName, call, result);
                 break;
-            case "LightstreamerClient.sendMessage":
-                sendMessage(call, result);
+            default:
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
+                result.notImplemented();
+        }
+    }
+
+    void Client_handle(String method, MethodCall call, MethodChannel.Result result) {
+        switch (method) {
+            case "create":
+                Client_create(call, result);
                 break;
-            case "LightstreamerClient.registerForMpn":
-                registerForMpn(call, result);
+            case "connect":
+                Client_connect(call, result);
                 break;
-            case "LightstreamerClient.subscribeMpn":
-                subscribeMpn(call, result);
+            case "disconnect":
+                Client_disconnect(call, result);
                 break;
-            case "LightstreamerClient.unsubscribeMpn":
-                unsubscribeMpn(call, result);
+            case "getStatus":
+                Client_getStatus(call, result);
                 break;
-            case "LightstreamerClient.unsubscribeMpnSubscriptions":
-                unsubscribeMpnSubscriptions(call, result);
+            case "subscribe":
+                Client_subscribe(call, result);
                 break;
-            case "LightstreamerClient.getMpnSubscriptions":
-                getMpnSubscriptions(call, result);
+            case "unsubscribe":
+                Client_unsubscribe(call, result);
                 break;
-            case "LightstreamerClient.findMpnSubscription":
-                findMpnSubscription(call, result);
+            case "getSubscriptions":
+                Client_getSubscriptions(call, result);
                 break;
-            case "LightstreamerClient.setLoggerProvider":
-                setLoggerProvider(call, result);
+            case "sendMessage":
+                Client_sendMessage(call, result);
                 break;
-            case "LightstreamerClient.addCookies":
-                addCookies(call, result);
+            case "registerForMpn":
+                Client_registerForMpn(call, result);
                 break;
-            case "LightstreamerClient.getCookies":
-                getCookies(call, result);
+            case "subscribeMpn":
+                Client_subscribeMpn(call, result);
                 break;
-            case "ConnectionDetails.getServerInstanceAddress":
+            case "unsubscribeMpn":
+                Client_unsubscribeMpn(call, result);
+                break;
+            case "unsubscribeMpnSubscriptions":
+                Client_unsubscribeMpnSubscriptions(call, result);
+                break;
+            case "getMpnSubscriptions":
+                Client_getMpnSubscriptions(call, result);
+                break;
+            case "findMpnSubscription":
+                Client_findMpnSubscription(call, result);
+                break;
+            case "setLoggerProvider":
+                Client_setLoggerProvider(call, result);
+                break;
+            case "addCookies":
+                Client_addCookies(call, result);
+                break;
+            case "getCookies":
+                Client_getCookies(call, result);
+                break;
+            default:
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
+                result.notImplemented();
+        }
+    }
+
+    void ConnectionDetails_handle(String method, MethodCall call, MethodChannel.Result result) {
+        switch (method) {
+            case "getServerInstanceAddress":
                 Details_getServerInstanceAddress(call, result);
                 break;
-            case "ConnectionDetails.getServerSocketName":
+            case "getServerSocketName":
                 Details_getServerSocketName(call, result);
                 break;
-            case "ConnectionDetails.getClientIp":
+            case "getClientIp":
                 Details_getClientIp(call, result);
                 break;
-            case "ConnectionDetails.getSessionId":
+            case "getSessionId":
                 Details_getSessionId(call, result);
                 break;
-            case "ConnectionOptions.getRealMaxBandwidth":
+            default:
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
+                result.notImplemented();
+        }
+    }
+
+    void ConnectionOptions_handle(String method, MethodCall call, MethodChannel.Result result) {
+        switch (method) {
+            case "getRealMaxBandwidth":
                 ConnectionOptions_getRealMaxBandwidth(call, result);
                 break;
-//            case "ConnectionOptions.getRequestedMaxBandwidth":
+//            case "getRequestedMaxBandwidth":
 //                ConnectionOptions_getRequestedMaxBandwidth(call, result);
 //                break;
-//            case "ConnectionOptions.setRequestedMaxBandwidth":
+//            case "setRequestedMaxBandwidth":
 //                ConnectionOptions_setRequestedMaxBandwidth(call, result);
 //                break;
-            case "MpnDevice.getApplicationId":
-                MpnDevice_getApplicationId(call, result);
-                break;
-            case "MpnDevice.getDeviceId":
-                MpnDevice_getDeviceId(call, result);
-                break;
-            case "MpnDevice.getDeviceToken":
-                MpnDevice_getDeviceToken(call, result);
-                break;
-            case "MpnDevice.getPlatform":
-                MpnDevice_getPlatform(call, result);
-                break;
-            case "MpnDevice.getPreviousDeviceToken":
-                MpnDevice_getPreviousDeviceToken(call, result);
-                break;
-            case "MpnDevice.getStatus":
-                MpnDevice_getStatus(call, result);
-                break;
-            case "MpnDevice.getStatusTimestamp":
-                MpnDevice_getStatusTimestamp(call, result);
-                break;
-            case "MpnDevice.isRegistered":
-                MpnDevice_isRegistered(call, result);
-                break;
-            case "MpnDevice.isSuspended":
-                MpnDevice_isSuspended(call, result);
-                break;
-            case "Subscription.getCommandPosition":
+            default:
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
+                result.notImplemented();
+        }
+    }
+
+    void Subscription_handle(String method, MethodCall call, MethodChannel.Result result) {
+        switch (method) {
+            case "getCommandPosition":
                 Subscription_getCommandPosition(call, result);
                 break;
-            case "Subscription.getKeyPosition":
+            case "getKeyPosition":
                 Subscription_getKeyPosition(call, result);
                 break;
-//            case "Subscription.getRequestedMaxFrequency":
+//            case "getRequestedMaxFrequency":
 //                Subscription_getRequestedMaxFrequency(call, result);
 //                break;
-//            case "Subscription.setRequestedMaxFrequency":
+//            case "setRequestedMaxFrequency":
 //                Subscription_setRequestedMaxFrequency(call, result);
 //                break;
-            case "Subscription.isActive":
+            case "isActive":
                 Subscription_isActive(call, result);
                 break;
-            case "Subscription.isSubscribed":
+            case "isSubscribed":
                 Subscription_isSubscribed(call, result);
                 break;
-            case "AndroidMpnBuilder.build":
-                AndroidMpnBuilder_build(call, result);
+            default:
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
+                result.notImplemented();
+        }
+    }
+
+    void MpnDevice_handle(String method, MethodCall call, MethodChannel.Result result) {
+        switch (method) {
+            case "getApplicationId":
+                MpnDevice_getApplicationId(call, result);
                 break;
-            case "MpnSubscription.setTriggerExpression":
+            case "getDeviceId":
+                MpnDevice_getDeviceId(call, result);
+                break;
+            case "getDeviceToken":
+                MpnDevice_getDeviceToken(call, result);
+                break;
+            case "getPlatform":
+                MpnDevice_getPlatform(call, result);
+                break;
+            case "getPreviousDeviceToken":
+                MpnDevice_getPreviousDeviceToken(call, result);
+                break;
+            case "getStatus":
+                MpnDevice_getStatus(call, result);
+                break;
+            case "getStatusTimestamp":
+                MpnDevice_getStatusTimestamp(call, result);
+                break;
+            case "isRegistered":
+                MpnDevice_isRegistered(call, result);
+                break;
+            case "isSuspended":
+                MpnDevice_isSuspended(call, result);
+                break;
+            default:
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
+                result.notImplemented();
+        }
+    }
+
+    void MpnSubscription_handle(String method, MethodCall call, MethodChannel.Result result) {
+        switch (method) {
+            case "setTriggerExpression":
                 MpnSubscription_setTriggerExpression(call, result);
                 break;
-            case "MpnSubscription.setNotificationFormat":
+            case "setNotificationFormat":
                 MpnSubscription_setNotificationFormat(call, result);
                 break;
             default:
@@ -205,7 +284,20 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         }
     }
 
-    void create(MethodCall call, MethodChannel.Result result) {
+    void AndroidMpnBuilder_handle(String method, MethodCall call, MethodChannel.Result result) {
+        switch (method) {
+            case "build":
+                AndroidMpnBuilder_build(call, result);
+                break;
+            default:
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
+                result.notImplemented();
+        }
+    }
+
+    void Client_create(MethodCall call, MethodChannel.Result result) {
         // TODO check that id is not in the map yet
         LightstreamerClient client = getClient(call);
         String serverAddress = call.argument("serverAddress");
@@ -218,13 +310,13 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void setLoggerProvider(MethodCall call, MethodChannel.Result result) {
+    void Client_setLoggerProvider(MethodCall call, MethodChannel.Result result) {
         int level = call.argument("level");
         LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(level));
         result.success(null);
     }
 
-    void addCookies(MethodCall call, MethodChannel.Result result) {
+    void Client_addCookies(MethodCall call, MethodChannel.Result result) {
         String uri = call.argument("uri");
         List<String> cookies = call.argument("cookies");
         URI uri_ = URI.create(uri);
@@ -233,14 +325,14 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void getCookies(MethodCall call, MethodChannel.Result result) {
+    void Client_getCookies(MethodCall call, MethodChannel.Result result) {
         String uri = call.argument("uri");
         URI uri_ = URI.create(uri);
         List<String> res = LightstreamerClient.getCookies(uri_).stream().map(LightstreamerFlutterPlugin::cookieToString).collect(Collectors.toList());
         result.success(res);
     }
 
-    void connect(MethodCall call, MethodChannel.Result result) {
+    void Client_connect(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         Map<String, Object> details = call.argument("connectionDetails");
         client.connectionDetails.setAdapterSet((String) details.get("adapterSet"));
@@ -268,19 +360,19 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void disconnect(MethodCall call, MethodChannel.Result result) {
+    void Client_disconnect(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         client.disconnect();
         result.success(null);
     }
 
-    void getStatus(MethodCall call, MethodChannel.Result result) {
+    void Client_getStatus(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String res = client.getStatus();
         result.success(res);
     }
 
-    void subscribe(MethodCall call, MethodChannel.Result result) {
+    void Client_subscribe(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         Map<String, Object> options = call.argument("subscription");
         String subId = (String) options.get("id");
@@ -340,7 +432,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void unsubscribe(MethodCall call, MethodChannel.Result result) {
+    void Client_unsubscribe(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String subId = call.argument("subId");
         Subscription sub = _subMap.get(subId);
@@ -350,7 +442,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void getSubscriptions(MethodCall call, MethodChannel.Result result) {
+    void Client_getSubscriptions(MethodCall call, MethodChannel.Result result) {
         // TODO improve performance
         LightstreamerClient client = getClient(call);
         List<Subscription> subs = client.getSubscriptions();
@@ -363,7 +455,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(res);
     }
 
-    void sendMessage(MethodCall call, MethodChannel.Result result) {
+    void Client_sendMessage(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String msgId = call.argument("msgId");
         String message = call.argument("message");
@@ -380,7 +472,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void registerForMpn(MethodCall call, MethodChannel.Result result) {
+    void Client_registerForMpn(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String id = call.argument("id");
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
@@ -401,7 +493,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         });
     }
 
-    void subscribeMpn(MethodCall call, MethodChannel.Result result) {
+    void Client_subscribeMpn(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         Map<String, Object> options = call.argument("subscription");
         String mpnSubId = (String) options.get("id");
@@ -450,7 +542,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void unsubscribeMpn(MethodCall call, MethodChannel.Result result) {
+    void Client_unsubscribeMpn(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String mpnSubId = call.argument("mpnSubId");
         MpnSubscription sub = _mpnSubMap.get(mpnSubId);
@@ -460,7 +552,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void unsubscribeMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
+    void Client_unsubscribeMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String filter = (String) call.argument("filter");
         // TODO how to avoid _mpnSubMap memory leak?
@@ -468,7 +560,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void getMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
+    void Client_getMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
         // TODO improve performance
         LightstreamerClient client = getClient(call);
         String filter = (String) call.argument("filter");
@@ -482,7 +574,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(res);
     }
 
-    void findMpnSubscription(MethodCall call, MethodChannel.Result result) {
+    void Client_findMpnSubscription(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String subscriptionId = (String) call.argument("subscriptionId");
         MpnSubscription sub = client.findMpnSubscription(subscriptionId);
