@@ -10,7 +10,6 @@ part 'native_bridge.dart';
 
 class ConnectionDetails {
   final String _id;
-  final NativeBridge _bridge;
   String? _adapterSet;
   String? _serverAddress;
   String? _user;
@@ -25,7 +24,7 @@ class ConnectionDetails {
     };
   }
 
-  ConnectionDetails._(String clientId, NativeBridge bridge) : _id = clientId, _bridge = bridge;
+  ConnectionDetails._(String clientId) : _id = clientId;
 
   String? getAdapterSet() {
     return _adapterSet;
@@ -74,14 +73,13 @@ class ConnectionDetails {
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
-    return await _bridge.invokeMethod('ConnectionDetails.$method', arguments);
+    return await NativeBridge.instance.invokeMethod('ConnectionDetails.$method', arguments);
   }
 }
 
 class ConnectionOptions {
   // TODO keep in sync
   final String _id;
-  final NativeBridge _bridge;
   int _contentLength = 50000000;
   int _firstRetryMaxDelay = 100;
   String? _forcedTransport;
@@ -120,7 +118,7 @@ class ConnectionOptions {
     };
   }
 
-  ConnectionOptions._(String clientId, NativeBridge bridge) : _id = clientId, _bridge = bridge;
+  ConnectionOptions._(String clientId) : _id = clientId;
 
   int getContentLength() {
     return _contentLength;
@@ -257,7 +255,7 @@ class ConnectionOptions {
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
-    return await _bridge.invokeMethod('ConnectionOptions.$method', arguments);
+    return await NativeBridge.instance.invokeMethod('ConnectionOptions.$method', arguments);
   }
 }
 
@@ -433,14 +431,13 @@ class LightstreamerClient {
   static int _idGenerator = 0;
 
   late final String _id;
-  final NativeBridge _bridge = NativeBridge.instance;
   late final ConnectionDetails connectionDetails;
   late final ConnectionOptions connectionOptions;
   final List<ClientListener> _listeners = [];
 
   LightstreamerClient._() : _id = '${_idGenerator++}' {
-    connectionDetails = ConnectionDetails._(_id, _bridge);
-    connectionOptions = ConnectionOptions._(_id, _bridge);
+    connectionDetails = ConnectionDetails._(_id);
+    connectionOptions = ConnectionOptions._(_id);
   }
 
   // TODO factory method or initialization method?
@@ -453,7 +450,7 @@ class LightstreamerClient {
       "serverAddress": serverAddress,
       "adapterSet": adapterSet
     };
-    await client._bridge.client_create(client._id, client, arguments);
+    await NativeBridge.instance.client_create(client._id, client, arguments);
     return client;
   }
 
@@ -508,7 +505,7 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'subscription': sub._toMap()
     };
-    await _bridge.client_subscribe(_id, sub._id, sub, arguments);
+    await NativeBridge.instance.client_subscribe(_id, sub._id, sub, arguments);
     sub._active = true;
   }
 
@@ -516,12 +513,12 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'subId': sub._id
     };
-    await _bridge.client_unsubscribe(_id, sub._id, arguments);
+    await NativeBridge.instance.client_unsubscribe(_id, sub._id, arguments);
     sub._active = false;
   }
 
   Future<List<Subscription>> getSubscriptions() async {
-    return await _bridge.client_getSubscriptions(_id);
+    return await NativeBridge.instance.client_getSubscriptions(_id);
   }
 
   Future<void> sendMessage(String message, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) async {
@@ -531,7 +528,7 @@ class LightstreamerClient {
       'delayTimeout': delayTimeout,
       'enqueueWhileDisconnected': enqueueWhileDisconnected
     };
-    return await _bridge.client_sendMessage(_id, listener, arguments);
+    return await NativeBridge.instance.client_sendMessage(_id, listener, arguments);
   }
 
   void addListener(ClientListener listener) {
@@ -566,14 +563,14 @@ class LightstreamerClient {
       'subscription': sub._toMap(),
       'coalescing': coalescing
     };
-    return await _bridge.client_subscribeMpn(_id, sub._id, sub, arguments);
+    return await NativeBridge.instance.client_subscribeMpn(_id, sub._id, sub, arguments);
   }
 
   Future<void> unsubscribeMpn(MpnSubscription sub) async {
     var arguments = <String, dynamic>{
       'mpnSubId': sub._id
     };
-    return await _bridge.client_unsubscribeMpn(_id, sub._id, arguments);
+    return await NativeBridge.instance.client_unsubscribeMpn(_id, sub._id, arguments);
   }
 
   Future<void> unsubscribeMpnSubscriptions([ String? filter ]) async {
@@ -587,20 +584,20 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'filter': filter
     };
-    return await _bridge.client_getMpnSubscriptions(_id, arguments);
+    return await NativeBridge.instance.client_getMpnSubscriptions(_id, arguments);
   }
 
   Future<MpnSubscription?> findMpnSubscription(String subscriptionId) async {
     var arguments = <String, dynamic>{
       'subscriptionId': subscriptionId
     };
-    return await _bridge.client_findMpnSubscription(_id, arguments);
+    return await NativeBridge.instance.client_findMpnSubscription(_id, arguments);
   }
 
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["id"] = _id;
-    return await _bridge.invokeMethod('LightstreamerClient.$method', arguments);
+    return await NativeBridge.instance.invokeMethod('LightstreamerClient.$method', arguments);
   }
 }
 
@@ -665,7 +662,7 @@ class MpnDevice {
     }
     arguments = arguments ?? {};
     arguments["id"] = client._id;
-    return await client._bridge.invokeMethod('MpnDevice.$method', arguments);
+    return await NativeBridge.instance.invokeMethod('MpnDevice.$method', arguments);
   }
 }
 
