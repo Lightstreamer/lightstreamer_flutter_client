@@ -38,7 +38,6 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler {
 
-    static final String TAG = "LightstreamerClient";
     static final com.lightstreamer.log.Logger channelLogger = com.lightstreamer.log.LogManager.getLogger("lightstreamer.flutter");
 
     // WARNING: Potential memory leak. Clients are added to the map but not removed.
@@ -199,7 +198,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 MpnSubscription_setNotificationFormat(call, result);
                 break;
             default:
-                Log.e(TAG, "Unknown method " + call.method);
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Unknown method " + call.method, null);
+                }
                 result.notImplemented();
         }
     }
@@ -701,7 +702,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String mpnSubId = call.argument("mpnSubId");
         MpnSubscription sub = _mpnSubMap.get(mpnSubId);
         if (sub == null) {
-            Log.w(TAG, "MpnSubscription with id " + mpnSubId + " not found");
+            if (channelLogger.isWarnEnabled()) {
+                channelLogger.warn("MpnSubscription with id " + mpnSubId + " not found", null);
+            }
             result.success(null);
             return;
         }
@@ -713,7 +716,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String mpnSubId = call.argument("mpnSubId");
         MpnSubscription sub = _mpnSubMap.get(mpnSubId);
         if (sub == null) {
-            Log.w(TAG, "MpnSubscription with id " + mpnSubId + " not found");
+            if (channelLogger.isWarnEnabled()) {
+                channelLogger.warn("MpnSubscription with id " + mpnSubId + " not found", null);
+            }
             result.success(null);
             return;
         }
