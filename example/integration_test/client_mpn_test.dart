@@ -50,7 +50,7 @@ void main() {
       Future<void> _cleanup() async {
         if ((await client.getStatus()) != "DISCONNECTED" &&
             (await client.getMpnSubscriptions(null)).isNotEmpty) {
-          devListener._onSubscriptionsUpdated = () async => exps.signal(
+          devListener.fSubscriptionsUpdated = () async => exps.signal(
               "onSubscriptionsUpdated ${(await client.getMpnSubscriptions(null)).length}");
           client.unsubscribeMpnSubscriptions("ALL");
           return exps.until("onSubscriptionsUpdated 0");
@@ -61,7 +61,7 @@ void main() {
 
       tearDown(() async {
         await _cleanup();
-        devListener._onStatusChanged = (status, ts) => exps.signal("onStatusChanged " + status);
+        devListener.fStatusChanged = (status, ts) => exps.signal("onStatusChanged " + status);
         if ((await client.getStatus()) != "DISCONNECTED") {
           client.disconnect();
           await exps.until("onStatusChanged UNKNOWN");
@@ -100,8 +100,8 @@ void main() {
        * Verifies that the client registers to the MPN module.
        */
       test('register', () async {
-        devListener._onRegistered = () => exps.signal("onRegistered");
-        devListener._onStatusChanged =
+        devListener.fRegistered = () => exps.signal("onRegistered");
+        devListener.fStatusChanged =
             (status, ts) => exps.signal("onStatusChanged " + status);
         client.connect();
         client.registerForMpn(device);
@@ -124,7 +124,7 @@ void main() {
         device = new MpnDevice();
         devListener = new BaseDeviceListener();
         device.addListener(devListener);
-        devListener._onRegistrationFailed =
+        devListener.fRegistrationFailed =
             (code, msg) => exps.signal('onRegistrationFailed $code $msg');
         client.connect();
         client.registerForMpn(device);
@@ -135,9 +135,9 @@ void main() {
        * Verifies that the client subscribes to an MPN item.
        */
       test('subscribe', () async {
-        subListener._onStatusChanged =
+        subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
-        subListener._onSubscription = () => exps.signal("onSubscription");
+        subListener.fSubscription = () => exps.signal("onSubscription");
         client.connect();
         await client.registerForMpn(device);
         client.subscribeMpn(sub, false);
@@ -178,8 +178,8 @@ void main() {
        * </ul>
        */
       test('subscribe modify', () async {
-        subListener._onSubscription = () => exps.signal("onSubscription");
-        subListener._onPropertyChanged = (prop) {
+        subListener.fSubscription = () => exps.signal("onSubscription");
+        subListener.fPropertyChanged = (prop) {
           switch (prop) {
             case "trigger":
               exps.signal("trigger ${sub.getActualTriggerExpression()}");
@@ -209,7 +209,7 @@ void main() {
        * Verifies that, when the client modifies a TRIGGERED subscription, the state changes to SUBSCRIBED.
        */
       test('subscribe modify reactivate', () async {
-        subListener._onStatusChanged =
+        subListener.fStatusChanged =
             (status, _) => exps.signal("onStatusChanged " + status);
         client.connect();
         await client.registerForMpn(device);
@@ -239,8 +239,8 @@ void main() {
        * </ul>
        */
       test('subscribe modify coalesce', () async {
-        subListener._onSubscription = () => exps.signal("onSubscription");
-        subListener._onPropertyChanged = (prop) {
+        subListener.fSubscription = () => exps.signal("onSubscription");
+        subListener.fPropertyChanged = (prop) {
           switch (prop) {
             case "notification_format":
               exps.signal("format ${sub.getActualNotificationFormat()}");
@@ -254,7 +254,7 @@ void main() {
             await AndroidMpnBuilder().setTitle("my_title_2").build());
         var subCopyListener = new BaseMpnSubscriptionListener();
         subCopy.addListener(subCopyListener);
-        subCopyListener._onSubscription = () => exps.signal("onSubscription copy");
+        subCopyListener.fSubscription = () => exps.signal("onSubscription copy");
         client.connect();
         await client.registerForMpn(device);
         client.subscribeMpn(sub, false);
@@ -276,7 +276,7 @@ void main() {
        */
       test('subscribe error', () async {
         sub.setDataAdapter("unknown.adapter");
-        subListener._onSubscriptionError =
+        subListener.fSubscriptionError =
             (code, msg) => exps.signal('onSubscriptionError $code $msg');
         client.connect();
         await client.registerForMpn(device);
@@ -288,10 +288,10 @@ void main() {
        * Verifies that the client unsubscribes from an MPN item.
        */
       test('unsubscribe', () async {
-        subListener._onStatusChanged =
+        subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
-        subListener._onSubscription = () => exps.signal("onSubscription");
-        subListener._onUnsubscription = () => exps.signal("onUnsubscription");
+        subListener.fSubscription = () => exps.signal("onSubscription");
+        subListener.fUnsubscription = () => exps.signal("onUnsubscription");
         client.connect();
         await client.registerForMpn(device);
         client.subscribeMpn(sub, false);
@@ -309,8 +309,8 @@ void main() {
        * Verifies that the client doesn't send a subscription request if an unsubscription request follows immediately.
        */
       test('fast unsubscription', () async {
-        subListener._onSubscription = () => exps.signal("onSubscription");
-        subListener._onUnsubscription = () => exps.signal("onUnsubscription");
+        subListener.fSubscription = () => exps.signal("onSubscription");
+        subListener.fUnsubscription = () => exps.signal("onUnsubscription");
         client.connect();
         await client.registerForMpn(device);
         client.subscribeMpn(sub, false);
@@ -337,8 +337,8 @@ void main() {
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = new BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
-        sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
-        sub1Listener._onUnsubscription = () => exps.signal("onUnsubscription sub1");
+        sub1Listener.fSubscription = () => exps.signal("onSubscription sub1");
+        sub1Listener.fUnsubscription = () => exps.signal("onUnsubscription sub1");
 
         var sub2 = new MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
@@ -349,8 +349,8 @@ void main() {
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
         var sub2Listener = new BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
-        sub2Listener._onTriggered = () => exps.signal("onTriggered sub2");
-        sub2Listener._onUnsubscription = () => exps.signal("onUnsubscription sub2");
+        sub2Listener.fTriggered = () => exps.signal("onTriggered sub2");
+        sub2Listener.fUnsubscription = () => exps.signal("onUnsubscription sub2");
 
         await client.registerForMpn(device);
         client.subscribeMpn(sub1, false);
@@ -404,8 +404,8 @@ void main() {
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = new BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
-        sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
-        sub1Listener._onUnsubscription = () => exps.signal("onUnsubscription sub1");
+        sub1Listener.fSubscription = () => exps.signal("onSubscription sub1");
+        sub1Listener.fUnsubscription = () => exps.signal("onUnsubscription sub1");
 
         var sub2 = new MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
@@ -416,8 +416,8 @@ void main() {
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
         var sub2Listener = new BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
-        sub2Listener._onTriggered = () => exps.signal("onTriggered sub2");
-        sub2Listener._onUnsubscription = () => exps.signal("onUnsubscription sub2");
+        sub2Listener.fTriggered = () => exps.signal("onTriggered sub2");
+        sub2Listener.fUnsubscription = () => exps.signal("onUnsubscription sub2");
 
         await client.registerForMpn(device);
         client.subscribeMpn(sub1, false);
@@ -472,8 +472,8 @@ void main() {
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = new BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
-        sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
-        sub1Listener._onUnsubscription = () => exps.signal("onUnsubscription sub1");
+        sub1Listener.fSubscription = () => exps.signal("onSubscription sub1");
+        sub1Listener.fUnsubscription = () => exps.signal("onUnsubscription sub1");
 
         var sub2 = new MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
@@ -484,8 +484,8 @@ void main() {
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
         var sub2Listener = new BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
-        sub2Listener._onTriggered = () => exps.signal("onTriggered sub2");
-        sub2Listener._onUnsubscription = () => exps.signal("onUnsubscription sub2");
+        sub2Listener.fTriggered = () => exps.signal("onTriggered sub2");
+        sub2Listener.fUnsubscription = () => exps.signal("onUnsubscription sub2");
 
         await client.registerForMpn(device);
         client.subscribeMpn(sub1, false);
@@ -522,9 +522,9 @@ void main() {
        * Verifies that a subscription can start in state TRIGGERED.
        */
       test('trigger 1', () async {
-        subListener._onStatusChanged =
+        subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
-        subListener._onTriggered = () => exps.signal("onTriggered");
+        subListener.fTriggered = () => exps.signal("onTriggered");
         client.connect();
         await client.registerForMpn(device);
         // this expression is always true because the counter is >= 0
@@ -551,10 +551,10 @@ void main() {
        * </ul>
        */
       test('trigger 2', () async {
-        subListener._onStatusChanged =
+        subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
-        subListener._onSubscription = () => exps.signal("onSubscription");
-        subListener._onTriggered = () => exps.signal("onTriggered");
+        subListener.fSubscription = () => exps.signal("onSubscription");
+        subListener.fTriggered = () => exps.signal("onTriggered");
         client.connect();
         await client.registerForMpn(device);
         client.subscribeMpn(sub, false);
@@ -587,7 +587,7 @@ void main() {
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = new BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
-        sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
+        sub1Listener.fSubscription = () => exps.signal("onSubscription sub1");
 
         var sub2 = new MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
@@ -596,7 +596,7 @@ void main() {
         sub2.setNotificationFormat(descriptor);
         var sub2Listener = new BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
-        sub2Listener._onSubscription = () => exps.signal("onSubscription sub2");
+        sub2Listener.fSubscription = () => exps.signal("onSubscription sub2");
 
         await client.registerForMpn(device);
         client.connect();
@@ -626,7 +626,7 @@ void main() {
             .setIcon("my_icon")
             .build();
 
-        devListener._onSubscriptionsUpdated = () async => exps.signal(
+        devListener.fSubscriptionsUpdated = () async => exps.signal(
             "onSubscriptionsUpdated ${(await client.getMpnSubscriptions("SUBSCRIBED")).length}");
         /*
         * NB the following trigger conditions are always false because
@@ -662,7 +662,7 @@ void main() {
       });
 
     test('status change', () async {
-        subListener._onStatusChanged =
+        subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         client.connect();
         await client.registerForMpn(device);
@@ -689,7 +689,7 @@ void main() {
        * </ul>
        */
       test('onSubscriptionsUpdated empty', () async {
-        devListener._onSubscriptionsUpdated =
+        devListener.fSubscriptionsUpdated =
             () => exps.signal("onSubscriptionsUpdated");
         client.connect();
         client.registerForMpn(device);
@@ -718,7 +718,7 @@ void main() {
             .setIcon("my_icon")
             .build();
 
-        devListener._onSubscriptionsUpdated = () async => exps.signal(
+        devListener.fSubscriptionsUpdated = () async => exps.signal(
             "onSubscriptionsUpdated ${(await client.getMpnSubscriptions("ALL")).length}");
         /*
         * NB the following trigger conditions are always false because
@@ -756,7 +756,7 @@ void main() {
       });
 
     test('unsubscribe error', () async {
-        subListener._onSubscriptionError =
+        subListener.fSubscriptionError =
             (code, msg) => exps.signal('onSubscriptionError $code $msg');
         client.connect();
         await client.registerForMpn(device);
@@ -767,10 +767,10 @@ void main() {
       }, skip: "Can't simulate this kind of scenario: subscription operations are not fast enough to trigger the desired behavior");
 
       test('set trigger error', () async {
-        devListener._onStatusChanged =
+        devListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
-        subListener._onSubscription = () => exps.signal("onSubscription");
-        subListener._onModificationError = (code, msg, prop) =>
+        subListener.fSubscription = () => exps.signal("onSubscription");
+        subListener.fModificationError = (code, msg, prop) =>
             exps.signal('onModificationError $code $msg ($prop)');
         client.connect();
         await client.registerForMpn(device);
@@ -788,10 +788,10 @@ void main() {
       });
 
       test('set notification error', () async {
-        devListener._onStatusChanged =
+        devListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
-        subListener._onSubscription = () => exps.signal("onSubscription");
-        subListener._onModificationError = (code, msg, prop) =>
+        subListener.fSubscription = () => exps.signal("onSubscription");
+        subListener.fModificationError = (code, msg, prop) =>
             exps.signal('onModificationError $code $msg ($prop)');
         client.connect();
         await client.registerForMpn(device);
@@ -823,40 +823,4 @@ void main() {
         format);
     assertEqual({"d": "D"}, builder.getData());
   });
-}
-
-class BaseDeviceListener extends MpnDeviceListener {
-  void Function()? _onSubscriptionsUpdated;
-  void onSubscriptionsUpdated() => _onSubscriptionsUpdated?.call();
-  void Function()? _onRegistered;
-  void onRegistered() => _onRegistered?.call();
-  void Function(String, int)? _onStatusChanged;
-  void onStatusChanged(String status, int ts) => _onStatusChanged?.call(status, ts);
-  void Function(int, String)? _onRegistrationFailed;
-  void onRegistrationFailed(int code, String msg) => _onRegistrationFailed?.call(code, msg);
-  void Function()? fListenStart;
-  void onListenStart() => fListenStart?.call();
-  void Function()? fListenEnd;
-  void onListenEnd() => fListenEnd?.call();
-}
-
-class BaseMpnSubscriptionListener extends MpnSubscriptionListener {
-  void Function()? _onSubscription;
-  void onSubscription() => _onSubscription?.call();
-  void Function(String, int)? _onStatusChanged;
-  void onStatusChanged(String status, int ts) => _onStatusChanged?.call(status, ts);
-  void Function(String)? _onPropertyChanged;
-  void onPropertyChanged(String property) => _onPropertyChanged?.call(property);
-  void Function(int, String)? _onSubscriptionError;
-  void onSubscriptionError(int code, String msg) => _onSubscriptionError?.call(code, msg);
-  void Function()? _onUnsubscription;
-  void onUnsubscription() => _onUnsubscription?.call();
-  void Function()? _onTriggered;
-  void onTriggered() => _onTriggered?.call();
-  void Function(int, String, String)? _onModificationError;
-  void onModificationError(int code, String msg, String prop) => _onModificationError?.call(code, msg, prop);
-  void Function()? fListenStart;
-  void onListenStart() => fListenStart?.call();
-  void Function()? fListenEnd;
-  void onListenEnd() => fListenEnd?.call();
 }

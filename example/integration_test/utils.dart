@@ -171,3 +171,39 @@ class BaseMessageListener extends ClientMessageListener {
   void Function(String, int, String)? fDeny;
   void onDeny(String msg, int errorCode, String errorMessage) => fDeny?.call(msg, errorCode, errorMessage);
 }
+
+class BaseDeviceListener extends MpnDeviceListener {
+  void Function()? fSubscriptionsUpdated;
+  void onSubscriptionsUpdated() => fSubscriptionsUpdated?.call();
+  void Function()? fRegistered;
+  void onRegistered() => fRegistered?.call();
+  void Function(String, int)? fStatusChanged;
+  void onStatusChanged(String status, int ts) => fStatusChanged?.call(status, ts);
+  void Function(int, String)? fRegistrationFailed;
+  void onRegistrationFailed(int code, String msg) => fRegistrationFailed?.call(code, msg);
+  void Function()? fListenStart;
+  void onListenStart() => fListenStart?.call();
+  void Function()? fListenEnd;
+  void onListenEnd() => fListenEnd?.call();
+}
+
+class BaseMpnSubscriptionListener extends MpnSubscriptionListener {
+  void Function()? fSubscription;
+  void onSubscription() => fSubscription?.call();
+  void Function(String, int)? fStatusChanged;
+  void onStatusChanged(String status, int ts) => fStatusChanged?.call(status, ts);
+  void Function(String)? fPropertyChanged;
+  void onPropertyChanged(String property) => fPropertyChanged?.call(property);
+  void Function(int, String)? fSubscriptionError;
+  void onSubscriptionError(int code, String msg) => fSubscriptionError?.call(code, msg);
+  void Function()? fUnsubscription;
+  void onUnsubscription() => fUnsubscription?.call();
+  void Function()? fTriggered;
+  void onTriggered() => fTriggered?.call();
+  void Function(int, String, String)? fModificationError;
+  void onModificationError(int code, String msg, String prop) => fModificationError?.call(code, msg, prop);
+  void Function()? fListenStart;
+  void onListenStart() => fListenStart?.call();
+  void Function()? fListenEnd;
+  void onListenEnd() => fListenEnd?.call();
+}
