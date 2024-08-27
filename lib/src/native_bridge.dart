@@ -148,26 +148,14 @@ class NativeBridge {
     var arguments = call.arguments;
     String id = arguments['id'];
     String status = arguments['status'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    for (var l in client.getListeners()) {
-      scheduleMicrotask(() {
-        l.onStatusChange(status);
-      });
-    }
+    runClientListenersAsync(id, (l) => l.onStatusChange(status));
   }
 
   void _ClientListener_onPropertyChange(MethodCall call) {
     var arguments = call.arguments;
     String id = arguments['id'];
     String property = arguments['property'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    for (var l in client.getListeners()) {
-      scheduleMicrotask(() {
-        l.onPropertyChange(property);
-      });
-    }
+    runClientListenersAsync(id, (l) => l.onPropertyChange(property));
   }
 
   void _ClientListener_onServerError(MethodCall call) {
@@ -175,13 +163,7 @@ class NativeBridge {
     String id = arguments['id'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    for (var l in client.getListeners()) {
-      scheduleMicrotask(() {
-        l.onServerError(errorCode, errorMessage);
-      });
-    }
+    runClientListenersAsync(id, (l) => l.onServerError(errorCode, errorMessage));
   }
 
   void _ClientMessageListener_handle(String method, MethodCall call) {
@@ -208,11 +190,7 @@ class NativeBridge {
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
     bool sentOnNetwork = arguments['sentOnNetwork'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onAbort(originalMessage, sentOnNetwork);
-    });
+    runMessageListenersAsync(msgId, (l) => l.onAbort(originalMessage, sentOnNetwork));
   }
 
   void _ClientMessageListener_onDeny(MethodCall call) {
@@ -221,33 +199,21 @@ class NativeBridge {
     String originalMessage = arguments['originalMessage'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onDeny(originalMessage, errorCode, errorMessage);
-    });
+    runMessageListenersAsync(msgId, (l) => l.onDeny(originalMessage, errorCode, errorMessage));
   }
 
   void _ClientMessageListener_onDiscarded(MethodCall call) {
     var arguments = call.arguments;
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onDiscarded(originalMessage);
-    });
+    runMessageListenersAsync(msgId, (l) => l.onDiscarded(originalMessage));
   }
 
   void _ClientMessageListener_onError(MethodCall call) {
     var arguments = call.arguments;
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onError(originalMessage);
-    });
+    runMessageListenersAsync(msgId, (l) => l.onError(originalMessage));
   }
 
   void _ClientMessageListener_onProcessed(MethodCall call) {
@@ -255,11 +221,7 @@ class NativeBridge {
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
     String response = arguments['response'];
-    // TODO null check
-    ClientMessageListener listener = _msgListenerMap.remove(msgId)!;
-    scheduleMicrotask(() {
-      listener.onProcessed(originalMessage, response);
-    });
+    runMessageListenersAsync(msgId, (l) => l.onProcessed(originalMessage, response));
   }
 
   void _SubscriptionListener_handle(String method, MethodCall call) {
@@ -296,13 +258,7 @@ class NativeBridge {
     String subId = arguments['subId'];
     String itemName = arguments['itemName'];
     int itemPos = arguments['itemPos'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onClearSnapshot(itemName, itemPos);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onClearSnapshot(itemName, itemPos));
   }
 
   void _SubscriptionListener_onCommandSecondLevelItemLostUpdates(MethodCall call) {
@@ -310,13 +266,7 @@ class NativeBridge {
     String subId = arguments['subId'];
     int lostUpdates = arguments['lostUpdates'];
     String key = arguments['key'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onCommandSecondLevelItemLostUpdates(lostUpdates, key);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onCommandSecondLevelItemLostUpdates(lostUpdates, key));
   }
 
   void _SubscriptionListener_onCommandSecondLevelSubscriptionError(MethodCall call) {
@@ -325,13 +275,7 @@ class NativeBridge {
     int code = arguments['code'];
     String message = arguments['message'];
     String key = arguments['key'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onCommandSecondLevelSubscriptionError(code, message, key);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onCommandSecondLevelSubscriptionError(code, message, key));
   }
 
   void _SubscriptionListener_onEndOfSnapshot(MethodCall call) {
@@ -339,13 +283,7 @@ class NativeBridge {
     String subId = arguments['subId'];
     String itemName = arguments['itemName'];
     int itemPos = arguments['itemPos'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onEndOfSnapshot(itemName, itemPos);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onEndOfSnapshot(itemName, itemPos));
   }
 
   void _SubscriptionListener_onItemLostUpdate(MethodCall call) {
@@ -354,38 +292,20 @@ class NativeBridge {
     String itemName = arguments['itemName'];
     int itemPos = arguments['itemPos'];
     int lostUpdates = arguments['lostUpdates'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onItemLostUpdates(itemName, itemPos, lostUpdates);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onItemLostUpdates(itemName, itemPos, lostUpdates));
   }
 
   void _SubscriptionListener_onItemUpdate(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
     ItemUpdate update = ItemUpdate._(call);
-    // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onItemUpdate(update);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onItemUpdate(update));
   }
 
   void _SubscriptionListener_onSubscription(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onSubscription();
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onSubscription());
   }
 
   void _SubscriptionListener_onSubscriptionError(MethodCall call) {
@@ -393,38 +313,20 @@ class NativeBridge {
     String subId = arguments['subId'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onSubscriptionError(errorCode, errorMessage);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onSubscriptionError(errorCode, errorMessage));
   }
 
   void _SubscriptionListener_onUnsubscription(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onUnsubscription();
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onUnsubscription());
   }
 
   void _SubscriptionListener_onRealMaxFrequency(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
     String? frequency = arguments['frequency'];
-     // TODO null check
-    Subscription sub = _subMap[subId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onRealMaxFrequency(frequency);
-      });
-    }
+    runSubscriptionListenersAsync(subId, (l) => l.onRealMaxFrequency(frequency));
   }
 
   void _MpnDeviceListener_handle(String method, MethodCall call) {
@@ -451,16 +353,7 @@ class NativeBridge {
   void _MpnDeviceListener_onRegistered(MethodCall call) {
     var arguments = call.arguments;
     String id = arguments['id'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    var listeners = client.getMpnDevice()?.getListeners();
-    if (listeners != null) {
-      for (var l in listeners) {
-        scheduleMicrotask(() {
-          l.onRegistered();
-        });
-      }
-    }
+    runMpnDeviceListenersAsync(id, (l) => l.onRegistered());
   }
   
   void _MpnDeviceListener_onRegistrationFailed(MethodCall call) {
@@ -468,31 +361,13 @@ class NativeBridge {
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
     String id = arguments['id'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    var listeners = client.getMpnDevice()?.getListeners();
-    if (listeners != null) {
-      for (var l in listeners) {
-        scheduleMicrotask(() {
-          l.onRegistrationFailed(errorCode, errorMessage);
-        });
-      }
-    }
+    runMpnDeviceListenersAsync(id, (l) => l.onRegistrationFailed(errorCode, errorMessage));
   }
 
   void _MpnDeviceListener_onResumed(MethodCall call) {
     var arguments = call.arguments;
     String id = arguments['id'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    var listeners = client.getMpnDevice()?.getListeners();
-    if (listeners != null) {
-      for (var l in listeners) {
-        scheduleMicrotask(() {
-          l.onResumed();
-        });
-      }
-    }
+    runMpnDeviceListenersAsync(id, (l) => l.onResumed());
   }
 
   void _MpnDeviceListener_onStatusChanged(MethodCall call) {
@@ -500,46 +375,19 @@ class NativeBridge {
     String status = arguments['status'];
     int timestamp = arguments['timestamp'];
     String id = arguments['id'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    var listeners = client.getMpnDevice()?.getListeners();
-    if (listeners != null) {
-      for (var l in listeners) {
-        scheduleMicrotask(() {
-          l.onStatusChanged(status, timestamp);
-        });
-      }
-    }
+    runMpnDeviceListenersAsync(id, (l) => l.onStatusChanged(status, timestamp));
   }
 
   void _MpnDeviceListener_onSubscriptionsUpdated(MethodCall call) {
     var arguments = call.arguments;
     String id = arguments['id'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    var listeners = client.getMpnDevice()?.getListeners();
-    if (listeners != null) {
-      for (var l in listeners) {
-        scheduleMicrotask(() {
-          l.onSubscriptionsUpdated();
-        });
-      }
-    }
+    runMpnDeviceListenersAsync(id, (l) => l.onSubscriptionsUpdated());
   }
 
   void _MpnDeviceListener_onSuspended(MethodCall call) {
     var arguments = call.arguments;
     String id = arguments['id'];
-    // TODO null check
-    LightstreamerClient client = _clientMap[id]!;
-    var listeners = client.getMpnDevice()?.getListeners();
-    if (listeners != null) {
-      for (var l in listeners) {
-        scheduleMicrotask(() {
-          l.onSuspended();
-        });
-      }
-    }
+    runMpnDeviceListenersAsync(id, (l) => l.onSuspended());
   }
 
   void _MpnSubscriptionListener_handle(String method, MethodCall call) {
@@ -570,25 +418,13 @@ class NativeBridge {
   void _MpnSubscriptionListener_onSubscription(MethodCall call) {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
-     // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onSubscription();
-      });
-    }
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onSubscription());
   }
 
   void _MpnSubscriptionListener_onUnsubscription(MethodCall call) {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
-     // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onUnsubscription();
-      });
-    }
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onUnsubscription());
   }
 
   void _MpnSubscriptionListener_onSubscriptionError(MethodCall call) {
@@ -596,13 +432,7 @@ class NativeBridge {
     String mpnSubId = arguments['mpnSubId'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-     // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onSubscriptionError(errorCode, errorMessage);
-      });
-    }
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onSubscriptionError(errorCode, errorMessage));
   }
 
   void _MpnSubscriptionListener_onUnsubscriptionError(MethodCall call) {
@@ -610,25 +440,13 @@ class NativeBridge {
     String mpnSubId = arguments['mpnSubId'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-     // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onUnsubscriptionError(errorCode, errorMessage);
-      });
-    }
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onUnsubscriptionError(errorCode, errorMessage));
   }
 
   void _MpnSubscriptionListener_onTriggered(MethodCall call) {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
-     // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onTriggered();
-      });
-    }
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onTriggered());
   }
 
   void _MpnSubscriptionListener_onStatusChanged(MethodCall call) {
@@ -636,48 +454,43 @@ class NativeBridge {
     String mpnSubId = arguments['mpnSubId'];
     String status = arguments['status'];
     int timestamp = arguments['timestamp'];
-     // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
-    sub._status = status;
-    sub._subscriptionId = arguments['subscriptionId'];
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onStatusChanged(status, timestamp);
-      });
+    var sub = _mpnSubMap[mpnSubId];
+    if (sub != null) {
+      sub._status = status;
+      sub._subscriptionId = arguments['subscriptionId'];
+
     }
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onStatusChanged(status, timestamp));
   }
 
   void _MpnSubscriptionListener_onPropertyChanged(MethodCall call) {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
     String property = arguments['property'];
-    // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
-    switch (property) {
-      case "status_timestamp":
-        sub._statusTs = arguments['value'];
-      case "mode":
-        sub._mode = arguments['value'];
-      case "adapter":
-        sub._dataAdapter = arguments['value'];
-      case "group":
-        sub._group = arguments['value'];
-      case "schema":
-        sub._schema = arguments['value'];
-      case "notification_format":
-        sub._actualNotificationFormat = arguments['value'];
-      case "trigger":
-        sub._actualTrigger = arguments['value'];
-      case "requested_buffer_size":
-        sub._bufferSize = arguments['value'];
-      case "requested_max_frequency":
-        sub._requestedMaxFrequency = arguments['value'];
+    var sub = _mpnSubMap[mpnSubId];
+    if (sub != null) {
+      switch (property) {
+        case "status_timestamp":
+          sub._statusTs = arguments['value'];
+        case "mode":
+          sub._mode = arguments['value'];
+        case "adapter":
+          sub._dataAdapter = arguments['value'];
+        case "group":
+          sub._group = arguments['value'];
+        case "schema":
+          sub._schema = arguments['value'];
+        case "notification_format":
+          sub._actualNotificationFormat = arguments['value'];
+        case "trigger":
+          sub._actualTrigger = arguments['value'];
+        case "requested_buffer_size":
+          sub._bufferSize = arguments['value'];
+        case "requested_max_frequency":
+          sub._requestedMaxFrequency = arguments['value'];
+      }
     }
-    for (var l in sub.getListeners()) {
-      scheduleMicrotask(() {
-        l.onPropertyChanged(property);
-      });
-    }
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onPropertyChanged(property));
   }
 
   void _MpnSubscriptionListener_onModificationError(MethodCall call) {
@@ -686,11 +499,77 @@ class NativeBridge {
      int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
     String propertyName = arguments['propertyName'];
-     // TODO null check
-    MpnSubscription sub = _mpnSubMap[mpnSubId]!;
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onModificationError(errorCode, errorMessage, propertyName));
+  }
+
+  void runClientListenersAsync(String clientId, void Function(ClientListener) cb) {
+    var client = _clientMap[clientId];
+    if (client == null) {
+      if (channelLogger.isErrorEnabled()) {
+        channelLogger.error("Unknown LightstreamerClient with id $clientId", null);
+      }
+      return;
+    }
+    for (var l in client.getListeners()) {
+      scheduleMicrotask(() => cb(l));
+    }
+  }
+
+  void runMessageListenersAsync(String msgId, void Function(ClientMessageListener) cb) {
+    var listener = _msgListenerMap.remove(msgId);
+    if (listener == null) {
+      if (channelLogger.isErrorEnabled()) {
+        channelLogger.error("Unknown ClientMessageListener with id $msgId", null);
+      }
+      return;
+    }
+    scheduleMicrotask(() => cb(listener));
+  }
+
+  void runSubscriptionListenersAsync(String subId, void Function(SubscriptionListener) cb) {
+    var sub = _subMap[subId];
+    if (sub == null) {
+      if (channelLogger.isErrorEnabled()) {
+        channelLogger.error("Unknown Subscription with id $subId", null);
+      }
+      return;
+    }
+    for (var l in sub.getListeners()) {
+      scheduleMicrotask(() => cb(l));
+    }
+  }
+
+  void runMpnDeviceListenersAsync(String clientId, void Function(MpnDeviceListener) cb) {
+    var client = _clientMap[clientId];
+    if (client == null) {
+      if (channelLogger.isErrorEnabled()) {
+        channelLogger.error("Unknown LightstreamerClient with id $clientId", null);
+      }
+      return;
+    }
+    var device = client.getMpnDevice();
+    if (device == null) {
+       if (channelLogger.isErrorEnabled()) {
+        channelLogger.error("No MpnDevice registered with the LightstreamerClient with id $clientId", null);
+      }
+      return;
+    }
+    for (var l in device.getListeners()) {
+      scheduleMicrotask(() => cb(l));
+    }
+  }
+
+  void runMpnSubscriptionListenersAsync(String mpnSubId, void Function(MpnSubscriptionListener) cb) {
+    var sub = _mpnSubMap[mpnSubId];
+    if (sub == null) {
+      if (channelLogger.isErrorEnabled()) {
+        channelLogger.error("Unknown MpnSubscription with id $mpnSubId", null);
+      }
+      return;
+    }
     for (var l in sub.getListeners()) {
       scheduleMicrotask(() {
-        l.onModificationError(errorCode, errorMessage, propertyName);
+        scheduleMicrotask(() => cb(l));
       });
     }
   }
