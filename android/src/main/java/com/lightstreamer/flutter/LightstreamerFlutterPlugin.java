@@ -164,18 +164,18 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     void ConnectionDetails_handle(String method, MethodCall call, MethodChannel.Result result) {
         switch (method) {
-            case "getServerInstanceAddress":
-                Details_getServerInstanceAddress(call, result);
-                break;
-            case "getServerSocketName":
-                Details_getServerSocketName(call, result);
-                break;
-            case "getClientIp":
-                Details_getClientIp(call, result);
-                break;
-            case "getSessionId":
-                Details_getSessionId(call, result);
-                break;
+//            case "getServerInstanceAddress":
+//                Details_getServerInstanceAddress(call, result);
+//                break;
+//            case "getServerSocketName":
+//                Details_getServerSocketName(call, result);
+//                break;
+//            case "getClientIp":
+//                Details_getClientIp(call, result);
+//                break;
+//            case "getSessionId":
+//                Details_getSessionId(call, result);
+//                break;
             default:
                 if (channelLogger.isErrorEnabled()) {
                     channelLogger.error("Unknown method " + call.method, null);
@@ -186,9 +186,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     void ConnectionOptions_handle(String method, MethodCall call, MethodChannel.Result result) {
         switch (method) {
-            case "getRealMaxBandwidth":
-                ConnectionOptions_getRealMaxBandwidth(call, result);
-                break;
+//            case "getRealMaxBandwidth":
+//                ConnectionOptions_getRealMaxBandwidth(call, result);
+//                break;
 //            case "getRequestedMaxBandwidth":
 //                ConnectionOptions_getRequestedMaxBandwidth(call, result);
 //                break;
@@ -306,7 +306,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         client.connectionDetails.setServerAddress(serverAddress);
         client.connectionDetails.setAdapterSet(adapterSet);
         String id = call.argument("id");
-        client.addListener(new MyClientListener(id, this));
+        client.addListener(new MyClientListener(id, client, this));
         result.success(null);
     }
 
@@ -589,35 +589,35 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(res);
     }
 
-    void Details_getServerInstanceAddress(MethodCall call, MethodChannel.Result result) {
-        LightstreamerClient client = getClient(call);
-        String res = client.connectionDetails.getServerInstanceAddress();
-        result.success(res);
-    }
+//    void Details_getServerInstanceAddress(MethodCall call, MethodChannel.Result result) {
+//        LightstreamerClient client = getClient(call);
+//        String res = client.connectionDetails.getServerInstanceAddress();
+//        result.success(res);
+//    }
+//
+//    void Details_getServerSocketName(MethodCall call, MethodChannel.Result result) {
+//        LightstreamerClient client = getClient(call);
+//        String res = client.connectionDetails.getServerSocketName();
+//        result.success(res);
+//    }
+//
+//    void Details_getClientIp(MethodCall call, MethodChannel.Result result) {
+//        LightstreamerClient client = getClient(call);
+//        String res = client.connectionDetails.getClientIp();
+//        result.success(res);
+//    }
+//
+//    void Details_getSessionId(MethodCall call, MethodChannel.Result result) {
+//        LightstreamerClient client = getClient(call);
+//        String res = client.connectionDetails.getSessionId();
+//        result.success(res);
+//    }
 
-    void Details_getServerSocketName(MethodCall call, MethodChannel.Result result) {
-        LightstreamerClient client = getClient(call);
-        String res = client.connectionDetails.getServerSocketName();
-        result.success(res);
-    }
-
-    void Details_getClientIp(MethodCall call, MethodChannel.Result result) {
-        LightstreamerClient client = getClient(call);
-        String res = client.connectionDetails.getClientIp();
-        result.success(res);
-    }
-
-    void Details_getSessionId(MethodCall call, MethodChannel.Result result) {
-        LightstreamerClient client = getClient(call);
-        String res = client.connectionDetails.getSessionId();
-        result.success(res);
-    }
-
-    void ConnectionOptions_getRealMaxBandwidth(MethodCall call, MethodChannel.Result result) {
-        LightstreamerClient client = getClient(call);
-        String res = client.connectionOptions.getRealMaxBandwidth();
-        result.success(res);
-    }
+//    void ConnectionOptions_getRealMaxBandwidth(MethodCall call, MethodChannel.Result result) {
+//        LightstreamerClient client = getClient(call);
+//        String res = client.connectionOptions.getRealMaxBandwidth();
+//        result.success(res);
+//    }
 
 //    void ConnectionOptions_getRequestedMaxBandwidth(MethodCall call, MethodChannel.Result result) {
 //        LightstreamerClient client = getClient(call);
@@ -864,10 +864,12 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
 class MyClientListener implements ClientListener {
     final String clientId;
+    final LightstreamerClient client;
     final LightstreamerFlutterPlugin plugin;
 
-    MyClientListener(String clientId, LightstreamerFlutterPlugin plugin) {
+    MyClientListener(String clientId, LightstreamerClient client, LightstreamerFlutterPlugin plugin) {
         this.clientId = clientId;
+        this.client = client;
         this.plugin = plugin;
     }
 
@@ -896,6 +898,32 @@ class MyClientListener implements ClientListener {
     public void onPropertyChange(@NonNull String property) {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("property", property);
+        switch (property) {
+            case "serverInstanceAddress":
+                arguments.put("value", client.connectionDetails.getServerInstanceAddress());
+                break;
+            case "serverSocketName":
+                arguments.put("value", client.connectionDetails.getServerSocketName());
+                break;
+            case "clientIp":
+                arguments.put("value", client.connectionDetails.getClientIp());
+                break;
+            case "sessionId":
+                arguments.put("value", client.connectionDetails.getSessionId());
+                break;
+            case "realMaxBandwidth":
+                arguments.put("value", client.connectionOptions.getRealMaxBandwidth());
+                break;
+            case "idleTimeout":
+                arguments.put("value", client.connectionOptions.getIdleTimeout());
+                break;
+            case "keepaliveInterval":
+                arguments.put("value", client.connectionOptions.getKeepaliveInterval());
+                break;
+            case "pollingInterval":
+                arguments.put("value", client.connectionOptions.getPollingInterval());
+                break;
+        }
         invoke("onPropertyChange", arguments);
     }
 

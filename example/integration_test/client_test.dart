@@ -280,27 +280,30 @@ void main() {
             switch (prop) {
               case "clientIp":
                 exps.signal(
-                    "clientIp=${await client.connectionDetails.getClientIp()}");
+                    "clientIp=${client.connectionDetails.getClientIp()}");
               case "serverSocketName":
                 exps.signal(
-                    "serverSocketName=${await client.connectionDetails.getServerSocketName()}");
+                    "serverSocketName=${client.connectionDetails.getServerSocketName()}");
               case "sessionId":
                 exps.signal("sessionId " +
-                    ((await client.connectionDetails.getSessionId()) == null
+                    ((client.connectionDetails.getSessionId()) == null
                         ? "is null"
                         : "is not null"));
-              // case "keepaliveInterval":
-              //   exps.signal("keepaliveInterval=${client.connectionOptions.getKeepaliveInterval()}");
+              case "keepaliveInterval":
+                exps.signal("keepaliveInterval=${client.connectionOptions.getKeepaliveInterval()}");
               case "realMaxBandwidth":
                 exps.signal(
-                    "realMaxBandwidth=${await client.connectionOptions.getRealMaxBandwidth()}");
+                    "realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth()}");
             }
           };
         }
         client.connect();
         if (transport == "WS-STREAMING") {
+          // when the native client connects, it sets all the properties in connectionOptions and connectionDetails, 
+          // including keepaliveInterval, to the values passed by the Dart front-end
+          await exps.value("keepaliveInterval=0");
           await exps.value("sessionId is not null");
-          // await exps.value("keepaliveInterval=5000");
+          await exps.value("keepaliveInterval=5000");
           await exps.value("serverSocketName=Lightstreamer HTTP Server");
           await exps.value("clientIp=127.0.0.1");
           await exps.value("realMaxBandwidth=40");

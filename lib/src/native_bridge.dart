@@ -155,6 +155,27 @@ class NativeBridge {
     var arguments = call.arguments;
     String id = arguments['id'];
     String property = arguments['property'];
+    var client = _clientMap[id];
+    if (client != null) {
+      switch (property) {
+        case "serverInstanceAddress":
+          client.connectionDetails._serverInstanceAddress = arguments['value'];
+        case "serverSocketName":
+          client.connectionDetails._serverSocketName = arguments['value'];
+        case "clientIp":
+          client.connectionDetails._clientIp = arguments['value'];
+        case "sessionId":
+          client.connectionDetails._sessionId = arguments['value'];
+        case "realMaxBandwidth":
+          client.connectionOptions._realMaxBandwidth = arguments['value'];
+        case "idleTimeout":
+          client.connectionOptions._idleTimeout = arguments['value'];
+        case "keepaliveInterval":
+          client.connectionOptions._keepaliveInterval = arguments['value'];
+        case "pollingInterval":
+          client.connectionOptions._pollingInterval = arguments['value'];
+      }
+    }
     runClientListenersAsync(id, (l) => l.onPropertyChange(property));
   }
 

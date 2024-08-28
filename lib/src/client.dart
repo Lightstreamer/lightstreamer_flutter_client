@@ -14,6 +14,11 @@ class ConnectionDetails {
   String? _serverAddress;
   String? _user;
   String? _password;
+  // read-only properties
+  String? _serverInstanceAddress;
+	String? _serverSocketName;
+  String? _clientIp;
+	String? _sessionId;
 
   Map<String, dynamic> _toMap() {
     return {
@@ -50,20 +55,20 @@ class ConnectionDetails {
     _user = newVal;
   }
 
-  Future<String?> getServerInstanceAddress() async {
-    return await _invokeMethod('getServerInstanceAddress');
+  String? getServerInstanceAddress() {
+    return _serverInstanceAddress;
   }
 
-  Future<String?> getServerSocketName() async {
-    return await _invokeMethod('getServerSocketName');
+  String? getServerSocketName() {
+    return _serverSocketName;
   }
 
-  Future<String?> getClientIp() async {
-    return await _invokeMethod('getClientIp');
+  String? getClientIp() {
+    return _clientIp;
   }
 
-  Future<String?> getSessionId() async {
-    return await _invokeMethod('getSessionId');
+  String? getSessionId() {
+    return _sessionId;
   }
 
   void setPassword(String? newVal) {
@@ -96,6 +101,8 @@ class ConnectionOptions {
   bool _httpExtraHeadersOnSessionCreationOnly = false;
   bool _serverInstanceAddressIgnored = false;
   bool _slowingEnabled = false;
+  // read-only properties
+  String? _realMaxBandwidth;
 
   Map<String, dynamic> _toMap() {
     return {
@@ -176,8 +183,8 @@ class ConnectionOptions {
     _pollingInterval = newVal;
   }
 
-  Future<String?> getRealMaxBandwidth() async {
-    return await _invokeMethod('getRealMaxBandwidth');
+  String? getRealMaxBandwidth() {
+    return _realMaxBandwidth;
   }
 
   int getReconnectTimeout() {
