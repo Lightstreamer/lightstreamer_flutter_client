@@ -43,8 +43,12 @@ class ConnectionDetails {
     return _serverAddress;
   }
 
-  void setServerAddress(String? newVal) {
+  Future<void> setServerAddress(String? newVal) async {
     _serverAddress = newVal;
+     var arguments = <String, dynamic> {
+      'newVal': newVal
+    };
+    return await _invokeMethod('setServerAddress', arguments);
   }
 
   String? getUser() {
@@ -147,8 +151,12 @@ class ConnectionOptions {
     return _forcedTransport;
   }
 
-  void setForcedTransport(String? newVal) {
+  Future<void> setForcedTransport(String? newVal) async {
     _forcedTransport = newVal;
+    var arguments = <String, dynamic> {
+      'newVal': newVal
+    };
+    return await _invokeMethod('setForcedTransport', arguments);
   }
 
   Map<String, String>? getHttpExtraHeaders() {
@@ -199,8 +207,12 @@ class ConnectionOptions {
     return _requestedMaxBandwidth;
   }
 
-  void setRequestedMaxBandwidth(String newVal) {
+  Future<void> setRequestedMaxBandwidth(String newVal) async {
     _requestedMaxBandwidth = newVal;
+    var arguments = <String, dynamic> {
+      'newVal': newVal
+    };
+    return await _invokeMethod('setRequestedMaxBandwidth', arguments);
   }
 
   int getRetryDelay() {
@@ -215,8 +227,12 @@ class ConnectionOptions {
     return _reverseHeartbeatInterval;
   }
 
-  void setReverseHeartbeatInterval(int newVal) {
+  Future<void> setReverseHeartbeatInterval(int newVal) async {
     _reverseHeartbeatInterval = newVal;
+    var arguments = <String, dynamic> {
+      'newVal': newVal
+    };
+    return await _invokeMethod('setReverseHeartbeatInterval', arguments);
   }
 
   int getSessionRecoveryTimeout() {
@@ -408,8 +424,12 @@ class Subscription {
   String? getRequestedMaxFrequency() {
     return _requestedMaxFrequency;
   }
-  void setRequestedMaxFrequency(String? freq) {
+  Future<void> setRequestedMaxFrequency(String? freq) async {
     _requestedMaxFrequency = freq;
+    var arguments = <String, dynamic> {
+      'newVal': freq
+    };
+    return await _invokeMethod('setRequestedMaxFrequency', null, arguments);
   }
   String? getRequestedSnapshot() {
     return _snapshot;
@@ -817,6 +837,7 @@ class MpnSubscription {
     var arguments = <String, dynamic> {
       'trigger': trigger
     };
+    // TODO what if not subscribed?
     return await _invokeMethod('setTriggerExpression', arguments);
   }
   String? getNotificationFormat() {
@@ -827,6 +848,7 @@ class MpnSubscription {
     var arguments = <String, dynamic> {
       'notificationFormat': format
     };
+    // TODO what if not subscribed?
     return await _invokeMethod('setNotificationFormat', arguments);
   }
   bool isActive() {

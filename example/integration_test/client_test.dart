@@ -5,6 +5,7 @@ import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 import './utils.dart';
 
 void main() {
+  const host = "http://10.0.2.2:8080";
   late Expectations exps;
   late LightstreamerClient client;
   late BaseClientListener listener;
@@ -18,7 +19,7 @@ void main() {
       setUp(() async {
         exps = new Expectations();
         client =
-            await LightstreamerClient.create("http://10.0.2.2:8080", "TEST");
+            await LightstreamerClient.create(host, "TEST");
         listener = new BaseClientListener();
         subListener = new BaseSubscriptionListener();
         msgListener = new BaseMessageListener();
@@ -97,7 +98,7 @@ void main() {
 
       test('error', () async {
         client =
-            await LightstreamerClient.create("http://10.0.2.2:8080", "XXX");
+            await LightstreamerClient.create(host, "XXX");
         listener = new BaseClientListener();
         client.addListener(listener);
         listener.fServerError = (code, msg) {
@@ -225,15 +226,12 @@ void main() {
         listener.fPropertyChange = (prop) async {
           switch (prop) {
             case "realMaxBandwidth":
-              exps.signal("realMaxBandwidth=" +
-                  (await client.connectionOptions.getRealMaxBandwidth() ?? ""));
+              exps.signal("realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth()}");
           }
         };
-        assertEqual("unlimited",
-            await client.connectionOptions.getRequestedMaxBandwidth());
+        assertEqual("unlimited", client.connectionOptions.getRequestedMaxBandwidth());
         client.connect();
-        await exps.value(
-            "realMaxBandwidth=40"); // after the connection, the server sends the default bandwidth
+        await exps.value("realMaxBandwidth=40"); // after the connection, the server sends the default bandwidth
         // request a bandwidth equal to 20.1: the request is accepted
         client.connectionOptions.setRequestedMaxBandwidth("20.1");
         await exps.value("realMaxBandwidth=20.1");
@@ -243,7 +241,40 @@ void main() {
         // request an unlimited bandwidth: the meta-data adapter cuts it to 40 (which is the configured limit)
         client.connectionOptions.setRequestedMaxBandwidth("unlimited");
         await exps.value("realMaxBandwidth=40");
-      }, skip: 'TODO allow setRequestedMaxBandwidth to change dynamically');
+      });
+
+      test('forced transport', () async {
+        listener.fStatusChange = (status) => exps.signal(status);
+        client.connect();
+        await exps.until('CONNECTED:$transport');
+        var newTransport = transport == 'WS-STREAMING' ? 'HTTP-STREAMING' : 'WS-STREAMING';
+        client.connectionOptions.setForcedTransport(newTransport);
+        await exps.until('CONNECTED:$newTransport');
+      });
+
+      test('heartbeat', () async {
+        listener.fPropertyChange = (prop) async {
+          switch (prop) {
+            case "reverseHeartbeatInterval":
+              exps.signal("reverseHeartbeatInterval=${client.connectionOptions.getReverseHeartbeatInterval()}");
+          }
+        };
+        client.connect();
+        client.connectionOptions.setReverseHeartbeatInterval(123);
+        await exps.until("reverseHeartbeatInterval=123");
+        client.connectionOptions.setReverseHeartbeatInterval(456);
+        await exps.until("reverseHeartbeatInterval=456");
+      });
+
+      test('setServerAddress', () async {
+        client.connectionOptions.setRetryDelay(100);
+        client.connectionDetails.setServerAddress("http://unknown.localtest.me:8080");
+        listener.fStatusChange = (status) => exps.signal(status);
+        client.connect();
+        await exps.until('DISCONNECTED:WILL-RETRY');
+        client.connectionDetails.setServerAddress(host);
+        await exps.until('CONNECTED:$transport');
+      });
 
       test('clear snapshot', () async {
         var sub = new Subscription("DISTINCT", ["clear_snapshot"], ["dummy"]);
@@ -259,8 +290,7 @@ void main() {
 
       test('roundtrip', () async {
         assertEqual("TEST", client.connectionDetails.getAdapterSet());
-        assertEqual("http://10.0.2.2:8080",
-            client.connectionDetails.getServerAddress());
+        assertEqual(host, client.connectionDetails.getServerAddress());
         assertEqual(50000000, client.connectionOptions.getContentLength());
         assertEqual(4000, client.connectionOptions.getRetryDelay());
         assertEqual(
@@ -453,7 +483,7 @@ void main() {
         await exps.value("frequency=2.5");
         sub.setRequestedMaxFrequency("unlimited");
         await exps.value("frequency=unlimited");
-      }, skip: 'TODO allow setRequestedMaxFrequency to change dynamically');
+      });
 
       test('headers', () async {
         client.connectionOptions.setHttpExtraHeaders({"hello": "header"});

@@ -176,12 +176,22 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 //            case "getSessionId":
 //                Details_getSessionId(call, result);
 //                break;
+            case "setServerAddress":
+                Details_setServerAddress(call, result);
+                break;
             default:
                 if (channelLogger.isErrorEnabled()) {
                     channelLogger.error("Unknown method " + call.method, null);
                 }
                 result.notImplemented();
         }
+    }
+
+    void Details_setServerAddress(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String newVal = call.argument("newVal");
+        client.connectionDetails.setServerAddress(newVal);
+        result.success(null);
     }
 
     void ConnectionOptions_handle(String method, MethodCall call, MethodChannel.Result result) {
@@ -192,9 +202,15 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 //            case "getRequestedMaxBandwidth":
 //                ConnectionOptions_getRequestedMaxBandwidth(call, result);
 //                break;
-//            case "setRequestedMaxBandwidth":
-//                ConnectionOptions_setRequestedMaxBandwidth(call, result);
-//                break;
+            case "setForcedTransport":
+                ConnectionOptions_setForcedTransport(call, result);
+                break;
+            case "setRequestedMaxBandwidth":
+                ConnectionOptions_setRequestedMaxBandwidth(call, result);
+                break;
+            case "setReverseHeartbeatInterval":
+                ConnectionOptions_setReverseHeartbeatInterval(call, result);
+                break;
             default:
                 if (channelLogger.isErrorEnabled()) {
                     channelLogger.error("Unknown method " + call.method, null);
@@ -214,9 +230,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 //            case "getRequestedMaxFrequency":
 //                Subscription_getRequestedMaxFrequency(call, result);
 //                break;
-//            case "setRequestedMaxFrequency":
-//                Subscription_setRequestedMaxFrequency(call, result);
-//                break;
+            case "setRequestedMaxFrequency":
+                Subscription_setRequestedMaxFrequency(call, result);
+                break;
             case "isActive":
                 Subscription_isActive(call, result);
                 break;
@@ -624,13 +640,27 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 //        String res = client.connectionOptions.getRequestedMaxBandwidth();
 //        result.success(res);
 //    }
-//
-//    void ConnectionOptions_setRequestedMaxBandwidth(MethodCall call, MethodChannel.Result result) {
-//        LightstreamerClient client = getClient(call);
-//        String newVal = call.argument("newVal");
-//        client.connectionOptions.setRequestedMaxBandwidth(newVal);
-//        result.success(null);
-//    }
+
+    void ConnectionOptions_setForcedTransport(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String newVal = call.argument("newVal");
+        client.connectionOptions.setForcedTransport(newVal);
+        result.success(null);
+    }
+
+    void ConnectionOptions_setRequestedMaxBandwidth(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String newVal = call.argument("newVal");
+        client.connectionOptions.setRequestedMaxBandwidth(newVal);
+        result.success(null);
+    }
+
+    void ConnectionOptions_setReverseHeartbeatInterval(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        int newVal = call.argument("newVal");
+        client.connectionOptions.setReverseHeartbeatInterval(newVal);
+        result.success(null);
+    }
 
     void MpnDevice_getApplicationId(MethodCall call, MethodChannel.Result result) {
         String id = call.argument("id");
@@ -764,15 +794,15 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 //        Object res = sub.getRequestedMaxFrequency();
 //        result.success(res);
 //    }
-//
-//    void Subscription_setRequestedMaxFrequency(MethodCall call, MethodChannel.Result result) {
-//        String subId = call.argument("subId");
-//        String newVal = call.argument("newVal");
-//        Subscription sub = _subMap.get(subId);
-//        // TODO null check
-//        sub.setRequestedMaxFrequency(newVal);
-//        result.success(null);
-//    }
+
+    void Subscription_setRequestedMaxFrequency(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        String newVal = call.argument("newVal");
+        Subscription sub = _subMap.get(subId);
+        // TODO null check
+        sub.setRequestedMaxFrequency(newVal);
+        result.success(null);
+    }
 
     void Subscription_isActive(MethodCall call, MethodChannel.Result result) {
         String subId = call.argument("subId");
