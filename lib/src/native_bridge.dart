@@ -11,6 +11,9 @@ class NativeBridge {
   // TODO possible memory leak
   final Map<String, Subscription> _subMap = {};
 
+  // TODO possible memory leak
+  final Map<String, MpnDevice> _mpnDeviceMap = {};
+
   // TODO possible memory leak (unsubscribeMpnSubscriptions)
   final Map<String, MpnSubscription> _mpnSubMap = {};
 
@@ -61,6 +64,12 @@ class NativeBridge {
       arguments['msgId'] = msgId;
     }
     return await _invokeClientMethod(clientId, 'sendMessage', arguments);
+  }
+
+  Future<void> client_registerForMpn(String clientId, String mpnDevId, MpnDevice device, Map<String, dynamic> arguments) async {
+    // TODO what if device is already there?
+    _mpnDeviceMap[mpnDevId] = device;
+    return await _invokeClientMethod(clientId, 'registerForMpn', arguments);
   }
 
   Future<void> client_subscribeMpn(String clientId, String mpnSubId, MpnSubscription sub, Map<String, dynamic> arguments) async {
@@ -373,42 +382,55 @@ class NativeBridge {
   
   void _MpnDeviceListener_onRegistered(MethodCall call) {
     var arguments = call.arguments;
-    String id = arguments['id'];
-    runMpnDeviceListenersAsync(id, (l) => l.onRegistered());
+    String mpnDevId = arguments['mpnDevId'];
+    var device = _mpnDeviceMap[mpnDevId];
+    if (device != null) {
+      device._applicationId = arguments['applicationId'];
+      device._deviceId = arguments['deviceId'];
+      device._deviceToken = arguments['deviceToken'];
+      device._platform = arguments['platform'];
+      device._previousDeviceToken = arguments['previousDeviceToken'];
+    }
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onRegistered());
   }
   
   void _MpnDeviceListener_onRegistrationFailed(MethodCall call) {
     var arguments = call.arguments;
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    String id = arguments['id'];
-    runMpnDeviceListenersAsync(id, (l) => l.onRegistrationFailed(errorCode, errorMessage));
+    String mpnDevId = arguments['mpnDevId'];
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onRegistrationFailed(errorCode, errorMessage));
   }
 
   void _MpnDeviceListener_onResumed(MethodCall call) {
     var arguments = call.arguments;
-    String id = arguments['id'];
-    runMpnDeviceListenersAsync(id, (l) => l.onResumed());
+    String mpnDevId = arguments['mpnDevId'];
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onResumed());
   }
 
   void _MpnDeviceListener_onStatusChanged(MethodCall call) {
     var arguments = call.arguments;
     String status = arguments['status'];
     int timestamp = arguments['timestamp'];
-    String id = arguments['id'];
-    runMpnDeviceListenersAsync(id, (l) => l.onStatusChanged(status, timestamp));
+    String mpnDevId = arguments['mpnDevId'];
+    var device = _mpnDeviceMap[mpnDevId];
+    if (device != null) {
+      device._status = status;
+      device._statusTs = timestamp;
+    }
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onStatusChanged(status, timestamp));
   }
 
   void _MpnDeviceListener_onSubscriptionsUpdated(MethodCall call) {
     var arguments = call.arguments;
-    String id = arguments['id'];
-    runMpnDeviceListenersAsync(id, (l) => l.onSubscriptionsUpdated());
+    String mpnDevId = arguments['mpnDevId'];
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onSubscriptionsUpdated());
   }
 
   void _MpnDeviceListener_onSuspended(MethodCall call) {
     var arguments = call.arguments;
-    String id = arguments['id'];
-    runMpnDeviceListenersAsync(id, (l) => l.onSuspended());
+    String mpnDevId = arguments['mpnDevId'];
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onSuspended());
   }
 
   void _MpnSubscriptionListener_handle(String method, MethodCall call) {
@@ -560,18 +582,11 @@ class NativeBridge {
     }
   }
 
-  void runMpnDeviceListenersAsync(String clientId, void Function(MpnDeviceListener) cb) {
-    var client = _clientMap[clientId];
-    if (client == null) {
-      if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown LightstreamerClient with id $clientId", null);
-      }
-      return;
-    }
-    var device = client.getMpnDevice();
+  void runMpnDeviceListenersAsync(String mpnDevId, void Function(MpnDeviceListener) cb) {
+    var device = _mpnDeviceMap[mpnDevId];
     if (device == null) {
        if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("No MpnDevice registered with the LightstreamerClient with id $clientId", null);
+        channelLogger.error("No MpnDevice registered with id $mpnDevId", null);
       }
       return;
     }

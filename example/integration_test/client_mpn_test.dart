@@ -107,14 +107,14 @@ void main() {
         client.registerForMpn(device);
         await exps.value("onStatusChanged REGISTERED");
         await exps.value("onRegistered");
-        assertEqual("REGISTERED", await device.getStatus());
-        assertTrue(await device.isRegistered());
-        assertFalse(await device.isSuspended());
-        assertTrue((await device.getStatusTimestamp()) >= 0);
-        assertEqual("Google", await device.getPlatform());
-        assertEqual("com.lightstreamer.push_demo.android.fcm",
-            await device.getApplicationId());
-        assertNotNull(await device.getDeviceId());
+        assertEqual("REGISTERED", device.getStatus());
+        assertTrue(device.isRegistered());
+        assertFalse(device.isSuspended());
+        assertTrue((device.getStatusTimestamp()) >= 0);
+        assertEqual("Google", device.getPlatform());
+        assertEqual("com.lightstreamer.push_demo.android.fcm", device.getApplicationId());
+        assertNotNull(device.getDeviceId());
+        assertNotNull(device.getDeviceToken());
       });
 
       /**

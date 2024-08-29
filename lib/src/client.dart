@@ -596,8 +596,10 @@ class LightstreamerClient {
   Future<void> registerForMpn(MpnDevice device) async {
     // TODO what if already registered
     _mpnDevice = device;
-    device._client = this;
-    return await _invokeMethod('registerForMpn');
+    var arguments = <String, dynamic>{
+      'mpnDevId': device._id
+    };
+    return await NativeBridge.instance.client_registerForMpn(_id, device._id, device, arguments);
   }
 
   Future<void> subscribeMpn(MpnSubscription sub, bool coalescing) async {
@@ -644,8 +646,19 @@ class LightstreamerClient {
 }
 
 class MpnDevice {
+  static int _idGenerator = 0;
+
+  final String _id;
   final List<MpnDeviceListener> _listeners = [];
-  LightstreamerClient? _client;
+  String? _applicationId;
+  String? _deviceId;
+  String? _deviceToken;
+  String? _platform;
+  String? _previousDeviceToken;
+  String _status = 'UNKNOWN';
+  int _statusTs = 0;
+
+  MpnDevice() : _id = 'dev${_idGenerator++}';
 
   void addListener(MpnDeviceListener listener) {
     if (!_listeners.contains(listener)) {
@@ -669,50 +682,40 @@ class MpnDevice {
     return _listeners.toList();
   }
 
-  Future<String> getApplicationId() async {
-    return await _invokeMethod('getApplicationId');
+  String? getApplicationId() {
+    return _applicationId;
   }
 
-  Future<String?> getDeviceId() async {
-    return await _invokeMethod('getDeviceId');
+  String? getDeviceId() {
+    return _deviceId;
   }
 
-  Future<String> getDeviceToken() async {
-    return await _invokeMethod('getDeviceToken');
+  String? getDeviceToken() {
+    return _deviceToken;
   }
 
-  Future<String> getPlatform() async {
-    return await _invokeMethod('getPlatform');
+  String? getPlatform() {
+    return _platform;
   }
 
-  Future<String?> getPreviousDeviceToken() async {
-    return await _invokeMethod('getPreviousDeviceToken');
+  String? getPreviousDeviceToken() {
+    return _previousDeviceToken;
   }
 
-  Future<String> getStatus() async {
-    return await _invokeMethod('getStatus');
+  String getStatus() {
+    return _status;
   }
 
-  Future<int> getStatusTimestamp() async {
-    return await _invokeMethod('getStatusTimestamp');
+  int getStatusTimestamp() {
+    return _statusTs;
   }
 
-  Future<bool> isRegistered() async {
-    return await _invokeMethod('isRegistered');
+  bool isRegistered() {
+    return _status != 'UNKNOWN';
   }
 
-  Future<bool> isSuspended() async {
-    return await _invokeMethod('isSuspended');
-  }
-
-  Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
-    var client = _client;
-    if (client == null) {
-      throw Exception("This MPN device has not been registered by any client yet");
-    }
-    arguments = arguments ?? {};
-    arguments["id"] = client._id;
-    return await NativeBridge.instance.invokeMethod('MpnDevice.$method', arguments);
+  bool isSuspended() {
+    return _status == 'SUSPENDED';
   }
 }
 
