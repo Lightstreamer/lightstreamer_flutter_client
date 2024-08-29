@@ -304,6 +304,12 @@ class Subscription {
   // _active is true when the subscribe method has been called and the unsubscribe method has not been called in the meantime;
   // _active is false when the unsubscribe method has been called and the subscribe method has not been called in the meantime
   bool _active = false;
+  bool _subscribed = false;
+  int? _commandPosition;
+  int? _keyPosition;
+  // _remoteActive is true iff the remote image of this subscription has been created
+  // TODO when does _remoteActive become false?
+  bool _remoteActive = false;
 
   Map<String, dynamic> _toMap() {
     return {
@@ -352,17 +358,11 @@ class Subscription {
     return _listeners.toList();
   }
 
-  Future<int> getCommandPosition() async {
-    if (!_active) {
-      throw Exception('Subscription is not active');
-    }
-    return await _invokeMethod('getCommandPosition', -1);
+  int? getCommandPosition() {
+    return _commandPosition;
   }
-   Future<int> getKeyPosition() async {
-    if (!_active) {
-      throw Exception('Subscription is not active');
-    }
-    return await _invokeMethod('getKeyPosition', -1);
+  int? getKeyPosition() {
+    return _keyPosition;
   }
   String? getCommandSecondLevelDataAdapter() {
     return _dataAdapter2;
@@ -426,10 +426,12 @@ class Subscription {
   }
   Future<void> setRequestedMaxFrequency(String? freq) async {
     _requestedMaxFrequency = freq;
-    var arguments = <String, dynamic> {
-      'newVal': freq
-    };
-    return await _invokeMethod('setRequestedMaxFrequency', null, arguments);
+    if (_remoteActive) {
+      var arguments = <String, dynamic> {
+        'newVal': freq
+      };
+      return await _invokeMethod('setRequestedMaxFrequency', arguments);
+    }
   }
   String? getRequestedSnapshot() {
     return _snapshot;
@@ -443,21 +445,21 @@ class Subscription {
   void setSelector(String? selector) {
     _selector = selector;
   }
-  Future<bool> isActive() async {
-    return await _invokeMethod('isActive', false);
+  bool isActive() {
+    return _active;
   }
-  Future<bool> isSubscribed() async {
-    return await _invokeMethod('isSubscribed', false);
+  bool isSubscribed() {
+    return _subscribed;
   }
   // TODO String? getValue(StringOrInt itemNameOrPosition, StringOrInt fieldNameOrPosition) {
   // }
   // TODO String? getCommandValue(StringOrInt itemNameOrPosition, String keyValue, StringOrInt fieldNameOrPosition) {
   // }
 
-  Future<T> _invokeMethod<T>(String method, T defaultValue, [ Map<String, dynamic>? arguments ]) async {
+  Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
     arguments["subId"] = _id;
-    return _active ? await NativeBridge.instance.invokeMethod('Subscription.$method', arguments) : defaultValue;
+    return await NativeBridge.instance.invokeMethod('Subscription.$method', arguments);
   }
 }
 
@@ -539,16 +541,22 @@ class LightstreamerClient {
     var arguments = <String, dynamic>{
       'subscription': sub._toMap()
     };
-    await NativeBridge.instance.client_subscribe(_id, sub._id, sub, arguments);
     sub._active = true;
+    await NativeBridge.instance.client_subscribe(_id, sub._id, sub, arguments);
+    // NB _remoteActive is set after the remote call to ensure that, when the call returns,
+    // the remote image of the local subscription has been created
+    sub._remoteActive = true;
   }
 
   Future<void> unsubscribe(Subscription sub) async {
     var arguments = <String, dynamic>{
       'subId': sub._id
     };
-    await NativeBridge.instance.client_unsubscribe(_id, sub._id, arguments);
     sub._active = false;
+    sub._subscribed = false;
+    sub._commandPosition = null;
+    sub._keyPosition = null;
+    return await NativeBridge.instance.client_unsubscribe(_id, sub._id, arguments);
   }
 
   Future<List<Subscription>> getSubscriptions() async {

@@ -1065,7 +1065,12 @@ class MySubscriptionListener implements SubscriptionListener {
 
     @Override
     public void onSubscription() {
-        invoke("onSubscription", new HashMap<>());
+        Map<String, Object> arguments = new HashMap<>();
+        if ("COMMAND".equals(_sub.getMode())) {
+            arguments.put("commandPosition", _sub.getCommandPosition());
+            arguments.put("keyPosition", _sub.getKeyPosition());
+        }
+        invoke("onSubscription", arguments);
     }
 
     @Override

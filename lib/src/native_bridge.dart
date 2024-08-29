@@ -335,6 +335,12 @@ class NativeBridge {
   void _SubscriptionListener_onSubscription(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
+    var sub = _subMap[subId];
+    if (sub != null) {
+      sub._subscribed = true;
+      sub._commandPosition = arguments['commandPosition'];
+      sub._keyPosition = arguments['keyPosition'];
+    }
     runSubscriptionListenersAsync(subId, (l) => l.onSubscription());
   }
 

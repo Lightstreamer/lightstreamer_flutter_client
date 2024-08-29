@@ -134,7 +134,7 @@ void main() {
         assertEqual(true, sub == subs[0]);
         client.connect();
         await exps.value();
-        assertEqual(true, await sub.isSubscribed());
+        assertEqual(true, sub.isSubscribed());
       });
 
       test('subscription error', () async {
@@ -160,9 +160,9 @@ void main() {
         client.subscribe(sub);
         client.connect();
         await exps.value();
-        assertEqual(true, await sub.isSubscribed());
-        assertEqual(1, await sub.getKeyPosition());
-        assertEqual(4, await sub.getCommandPosition());
+        assertEqual(true, sub.isSubscribed());
+        assertEqual(1, sub.getKeyPosition());
+        assertEqual(4, sub.getCommandPosition());
       });
 
       test('subscribe command 2 levels', () async {
@@ -187,9 +187,9 @@ void main() {
         assertEqual(true, sub == subs[0]);
         client.connect();
         await exps.value();
-        assertEqual(true, await sub.isSubscribed());
-        assertEqual(1, await sub.getKeyPosition());
-        assertEqual(2, await sub.getCommandPosition());
+        assertEqual(true, sub.isSubscribed());
+        assertEqual(1, sub.getKeyPosition());
+        assertEqual(2, sub.getCommandPosition());
       });
 
       test('unsubscribe', () async {
@@ -205,8 +205,8 @@ void main() {
         client.subscribe(sub);
         client.connect();
         await exps.value();
-        assertEqual(false, await sub.isSubscribed());
-        assertEqual(false, await sub.isActive());
+        assertEqual(false, sub.isSubscribed());
+        assertEqual(false, sub.isActive());
       });
 
       test('subscribe non-ascii', () async {
