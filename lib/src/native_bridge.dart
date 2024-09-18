@@ -46,6 +46,7 @@ class NativeBridge {
   }
 
   Future<List<Subscription>> client_getSubscriptions(String clientId) async {
+    // TODO why not return those in _subMap?
     List<String> subIds = (await _invokeClientMethod(clientId, 'getSubscriptions')).cast<String>();
     List<Subscription> res = [];
     for (var subId in subIds) {
