@@ -773,6 +773,26 @@ class MpnSubscription {
     _items = items?.toList(), 
     _fields = fields?.toList();
 
+  MpnSubscription._fromDTO(Map<String, dynamic> dto) : 
+    _id = dto['id'], 
+    _mode = dto['mode'] 
+  {
+    _items = dto['items'];
+    _fields = dto['fields'];
+    _group = dto['group'];
+    _schema = dto['schema'];
+    _dataAdapter = dto['dataAdapter'];
+    _bufferSize = dto['bufferSize'];
+    _requestedMaxFrequency = dto['requestedMaxFrequency'];
+    _trigger = dto['trigger'];
+    _notificationFormat = dto['notificationFormat'];
+    _actualNotificationFormat = dto['actualNotificationFormat'];
+    _actualTrigger = dto['actualTrigger'];
+    _statusTs = dto['statusTs'];
+    _status = dto['status'];
+    _subscriptionId = dto['subscriptionId'];
+  }
+
   void addListener(MpnSubscriptionListener listener) {
     if (!_listeners.contains(listener)) {
       _listeners.add(listener);

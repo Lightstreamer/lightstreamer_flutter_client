@@ -292,6 +292,99 @@ void main() {
         await exps.value("onSubscriptionError 17 Data Adapter not found");
       });
 
+      test('serverSubscription', () async {
+        var exps = new Expectations();
+        var dev2 = MpnDevice();
+        var client2 = await LightstreamerClient.create(host, "TEST");
+        subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
+        client2.connect();
+        await client2.registerForMpn(dev2);
+        sub.setTriggerExpression("0==0");
+        client2.subscribeMpn(sub, false);
+        await exps.value("onStatusChanged ACTIVE");
+        await exps.value("onStatusChanged SUBSCRIBED");
+        await exps.value("onStatusChanged TRIGGERED");
+        client2.disconnect();
+
+        client.connect();
+        devListener.fSubscriptionsUpdated = () => exps.signal('onSubscriptionsUpdated');
+        await client.registerForMpn(device);
+
+        await exps.value("onSubscriptionsUpdated");
+        var subs = await client.getMpnSubscriptions();
+        assertEqual(1, subs.length);
+        var s0 = subs[0];
+        assertEqual('MERGE', s0.getMode());
+        assertEqual('COUNT', s0.getDataAdapter());
+        assertEqual('count', s0.getItemGroup());
+        assertEqual('count', s0.getFieldSchema());
+        assertEqual('{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}', s0.getActualNotificationFormat());
+        assertEqual('0==0', s0.getActualTriggerExpression());
+        assertEqual('TRIGGERED', s0.getStatus());
+        assertEqual(sub.getSubscriptionId(), s0.getSubscriptionId());
+        assertTrue(s0.getStatusTimestamp() > 0);
+      });
+
+      test('serverSubscriptionNotification', () async {
+        var exps = new Expectations();
+        var dev2 = MpnDevice();
+        var client2 = await LightstreamerClient.create(host, "TEST");
+        subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
+        client2.connect();
+        await client2.registerForMpn(dev2);
+        client2.subscribeMpn(sub, false);
+        await exps.value("onStatusChanged ACTIVE");
+        await exps.value("onStatusChanged SUBSCRIBED");
+        client2.disconnect();
+
+        client.connect();
+        devListener.fSubscriptionsUpdated = () => exps.signal('onSubscriptionsUpdated');
+        await client.registerForMpn(device);
+
+        await exps.value("onSubscriptionsUpdated");
+        var subs = await client.getMpnSubscriptions();
+        assertEqual(1, subs.length);
+
+        var s0 = subs[0];
+        var s0Listener = BaseMpnSubscriptionListener();
+        s0Listener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
+        s0.addListener(s0Listener);
+        s0.setTriggerExpression('0==0');
+        await exps.value("onStatusChanged TRIGGERED");
+      });
+
+      test('serverSubscriptionUnsubscription', () async {
+        var exps = new Expectations();
+        var dev2 = MpnDevice();
+        var client2 = await LightstreamerClient.create(host, "TEST");
+        subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
+        client2.connect();
+        await client2.registerForMpn(dev2);
+        client2.subscribeMpn(sub, false);
+        await exps.value("onStatusChanged ACTIVE");
+        await exps.value("onStatusChanged SUBSCRIBED");
+        client2.disconnect();
+
+        client.connect();
+        devListener.fSubscriptionsUpdated = () => exps.signal('onSubscriptionsUpdated');
+        await client.registerForMpn(device);
+
+        await exps.value("onSubscriptionsUpdated");
+        var subs = await client.getMpnSubscriptions();
+        assertEqual(1, subs.length);
+        
+        var s0 = subs[0];
+        var s0Listener = BaseMpnSubscriptionListener();
+        s0Listener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
+        s0.addListener(s0Listener);
+        client.unsubscribeMpn(s0);
+        await exps.value("onStatusChanged UNKNOWN");
+
+        await exps.value("onSubscriptionsUpdated");
+        subs = await client.getMpnSubscriptions();
+        assertEqual(0, subs.length);
+      });
+
       /**
        * Verifies that the client unsubscribes from an MPN item.
        */

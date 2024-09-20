@@ -86,13 +86,29 @@ class NativeBridge {
   }
 
   Future<List<MpnSubscription>> client_getMpnSubscriptions(String clientId, Map<String, dynamic> arguments) async {
-    List<String> mpnSubIds = (await _invokeClientMethod(clientId, 'getMpnSubscriptions', arguments)).cast<String>();
+    Map<String, dynamic> map = (await _invokeClientMethod(clientId, 'getMpnSubscriptions', arguments)).cast<String, dynamic>();
     List<MpnSubscription> res = [];
+    // the subscriptions in the `result` field are already known to the Client,
+    // since they have been subscribed through the `LightstreamerClient.subscribeMpn` method
+    List<String> mpnSubIds = (map['result'] as List).cast();
     for (var mpnSubId in mpnSubIds) {
       var sub = _mpnSubMap[mpnSubId];
       if (sub != null) {
         res.add(sub);
+      } else {
+        if (channelLogger.isWarnEnabled()) {
+          channelLogger.warn('Unknown MpnSubscription $mpnSubId in getMpnSubscriptions method');
+        }
       }
+    }
+    // the subscriptions in the `extra` field are unknown to the Client,
+    // as they are MpnSubscriptions created by the Server.
+    // since they are unknown, add them to `_mpnSubMap`
+    List<Map> dtoLst = (map['extra'] as List).cast();
+    for (var dto in dtoLst) {
+      var sub = MpnSubscription._fromDTO(dto.cast());
+      _mpnSubMap[sub._id] = sub;
+      res.add(sub);
     }
     return res;
   }

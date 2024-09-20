@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -38,11 +40,12 @@ import io.flutter.plugin.common.MethodChannel;
 public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler {
 
     static final com.lightstreamer.log.Logger channelLogger = com.lightstreamer.log.LogManager.getLogger("lightstreamer.flutter");
+    static final AtomicInteger _mpnSubIdGenerator = new AtomicInteger();
 
     // WARNING: Potential memory leak. Clients are added to the map but not removed.
     final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
     final Map<String, Subscription> _subMap = new HashMap<>();
-    final Map<String, MpnSubscription> _mpnSubMap = new HashMap<>();
+    final MpnSubscriptionMap _mpnSubMap = new MpnSubscriptionMap();
     // maps mpnDevId to MpnDevice
     final Map<String, MpnDevice> _mpnDeviceMap = new HashMap<>();
     MethodChannel _methodChannel;
@@ -513,6 +516,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         LightstreamerClient client = getClient(call);
         Map<String, Object> options = call.argument("subscription");
         String mpnSubId = (String) options.get("id");
+        String mode = (String) options.get("mode");
         List<String> items = (List<String>) options.get("items");
         List<String> fields = (List<String>) options.get("fields");
         String group = (String) options.get("group");
@@ -523,9 +527,8 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String trigger = (String) options.get("trigger");
         String format = (String) options.get("notificationFormat");
         boolean coalescing = (boolean) call.argument("coalescing");
-        MpnSubscription sub = new MpnSubscription((String) options.get("mode"));
-        // TODO what if already in _subMap?
-        _mpnSubMap.put(mpnSubId, sub);
+        MpnSubscription sub = new MpnSubscription(mode);
+        _mpnSubMap.put(mpnSubId, sub, client);
         if (items != null) {
             sub.setItems(items.toArray(new String[0]));
         }
@@ -561,9 +564,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void Client_unsubscribeMpn(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String mpnSubId = call.argument("mpnSubId");
-        MpnSubscription sub = _mpnSubMap.get(mpnSubId);
-        _mpnSubMap.remove(mpnSubId);
-        // TODO what if null?
+        MpnSubscription sub = _mpnSubMap.remove(mpnSubId);
         client.unsubscribe(sub);
         result.success(null);
     }
@@ -581,12 +582,57 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         LightstreamerClient client = getClient(call);
         String filter = (String) call.argument("filter");
         List<MpnSubscription> subs = client.getMpnSubscriptions(filter);
-        List<String> res = new ArrayList<>();
-        for (Map.Entry<String, MpnSubscription> e : _mpnSubMap.entrySet()) {
-            if (subs.contains(e.getValue())) {
-                res.add(e.getKey());
+        //
+        List<String> knownSubs = new ArrayList<>();
+        List<Map<String, Object>> unknownSubs = new ArrayList<>();
+        for (MpnSubscription sub : subs) {
+            String subscriptionId = sub.getSubscriptionId(); // can be null
+            // 1. search a subscription known to the Flutter component (i.e. in `_mpnSubMap`) and owned by `client` having the same subscriptionId
+            // TODO what if subscriptionId is null?
+            if (subscriptionId != null) {
+                String mpnSubId = null;
+                for (Map.Entry<String, MyMpnSubscription> e : _mpnSubMap.entrySet()) {
+                    MyMpnSubscription mySub = e.getValue();
+                    if (mySub._client == client && subscriptionId.equals(mySub._sub.getSubscriptionId())) {
+                        mpnSubId = e.getKey();
+                        break;
+                    }
+                }
+                if (mpnSubId != null) {
+                    // 2.A. there is such a subscription: it means that `sub` is known to the Flutter component
+                    knownSubs.add(mpnSubId);
+                } else {
+                    // 2.B. there isn't such a subscription: it means that `sub` is unknown to the Flutter component
+                    // (i.e. it is a new server subscription)
+                    // add it to `_mpnSubMap` and add a listener so the Flutter component can receive subscription events
+                    mpnSubId = "mpnsub-server" + _mpnSubIdGenerator.getAndIncrement();
+                    sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
+                    _mpnSubMap.put(mpnSubId, sub, client);
+                    // serialize `sub` in order to send it to the Flutter component
+                    Map<String, Object> dto = new HashMap<>();
+                    dto.put("id", mpnSubId);
+                    dto.put("mode", sub.getMode());
+                    dto.put("items", sub.getItems());
+                    dto.put("fields", sub.getFields());
+                    dto.put("group", sub.getItemGroup());
+                    dto.put("schema", sub.getFieldSchema());
+                    dto.put("dataAdapter", sub.getDataAdapter());
+                    dto.put("bufferSize", sub.getRequestedBufferSize());
+                    dto.put("requestedMaxFrequency", sub.getRequestedMaxFrequency());
+                    dto.put("notificationFormat", sub.getNotificationFormat());
+                    dto.put("trigger", sub.getTriggerExpression());
+                    dto.put("actualNotificationFormat", sub.getActualNotificationFormat());
+                    dto.put("actualTrigger", sub.getActualTriggerExpression());
+                    dto.put("statusTs", sub.getStatusTimestamp());
+                    dto.put("status", sub.getStatus());
+                    dto.put("subscriptionId", sub.getSubscriptionId());
+                    unknownSubs.add(dto);
+                }
             }
         }
+        Map<String, Object> res = new HashMap<>();
+        res.put("result", knownSubs);
+        res.put("extra", unknownSubs);
         result.success(res);
     }
 
@@ -595,9 +641,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String subscriptionId = (String) call.argument("subscriptionId");
         MpnSubscription sub = client.findMpnSubscription(subscriptionId);
         String res = null;
-        for (Map.Entry<String, MpnSubscription> e : _mpnSubMap.entrySet()) {
+        for (Map.Entry<String, MyMpnSubscription> e : _mpnSubMap.entrySet()) {
             // TODO what if more than one?
-            if (sub == e.getValue()) {
+            if (sub == e.getValue()._sub) {
                 res = e.getKey();
                 break;
             }
@@ -1149,6 +1195,43 @@ class MyClientMessageListener implements ClientMessageListener {
     void invoke(String method, Map<String, Object> arguments) {
         arguments.put("msgId", _msgId);
         _plugin.invokeMethod("ClientMessageListener." + method, arguments);
+    }
+}
+
+class MyMpnSubscription {
+    final LightstreamerClient _client;
+    final String _mpnSubId;
+    final MpnSubscription _sub;
+
+    MyMpnSubscription(LightstreamerClient client, String mpnSubId, MpnSubscription sub) {
+        _client = client;
+        _mpnSubId = mpnSubId;
+        _sub = sub;
+    }
+}
+
+class MpnSubscriptionMap {
+    final Map<String, MyMpnSubscription> _mpnSubMap = new HashMap<>();
+
+    @Nullable MpnSubscription get(String mpnSubId) {
+        MyMpnSubscription mySub = _mpnSubMap.get(mpnSubId);
+        // TODO what if null?
+        return mySub == null ? null : mySub._sub;
+    }
+
+    void put(String mpnSubId, MpnSubscription sub, LightstreamerClient client) {
+        // TODO what if already in _subMap?
+        _mpnSubMap.put(mpnSubId, new MyMpnSubscription(client, mpnSubId, sub));
+    }
+
+    @Nullable MpnSubscription remove(String mpnSubId) {
+        MyMpnSubscription mySub = _mpnSubMap.remove(mpnSubId);
+        // TODO what if null?
+        return mySub == null ? null : mySub._sub;
+    }
+
+    Set<Map.Entry<String, MyMpnSubscription>> entrySet() {
+        return _mpnSubMap.entrySet();
     }
 }
 
