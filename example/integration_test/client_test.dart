@@ -6,7 +6,6 @@ import './utils.dart';
 
 void main() {
   const host = "http://10.0.2.2:8080";
-  late Expectations exps;
   late LightstreamerClient client;
   late BaseClientListener listener;
   late BaseSubscriptionListener subListener;
@@ -17,7 +16,6 @@ void main() {
     group(transport, () {
 
       setUp(() async {
-        exps = new Expectations();
         client =
             await LightstreamerClient.create(host, "TEST");
         listener = new BaseClientListener();
@@ -37,6 +35,7 @@ void main() {
       });
 
       test('listeners', () async {
+        var exps = new Expectations();
         var ls = client.getListeners();
         assertEqual(1, ls.length);
         assertEqual(true, listener == ls[0]);
@@ -65,6 +64,7 @@ void main() {
       });
 
       test('connect', () async {
+        var exps = new Expectations();
         var expected = "CONNECTED:" + transport;
         listener.fStatusChange = (status) {
           if (status == expected) {
@@ -77,6 +77,7 @@ void main() {
       });
 
       test('online server', () async {
+        var exps = new Expectations();
         client = await LightstreamerClient.create(
             "https://push.lightstreamer.com", "DEMO");
         listener = new BaseClientListener();
@@ -97,6 +98,7 @@ void main() {
               : 'why does $transport not work?');
 
       test('error', () async {
+        var exps = new Expectations();
         client =
             await LightstreamerClient.create(host, "XXX");
         listener = new BaseClientListener();
@@ -109,6 +111,7 @@ void main() {
       });
 
       test('disconnect', () async {
+        var exps = new Expectations();
         listener.fStatusChange = (status) {
           if (status == "CONNECTED:" + transport) {
             client.disconnect();
@@ -122,6 +125,7 @@ void main() {
       });
 
       test('subscribe', () async {
+        var exps = new Expectations();
         var sub = new Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
@@ -138,6 +142,7 @@ void main() {
       });
 
       test('subscription error', () async {
+        var exps = new Expectations();
         var sub = new Subscription("RAW", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
@@ -150,6 +155,7 @@ void main() {
       });
 
       test('subscribe command', () async {
+        var exps = new Expectations();
         var sub = new Subscription(
             "COMMAND", ["mult_table"], ["key", "value1", "value2", "command"]);
         sub.setDataAdapter("MULT_TABLE");
@@ -166,6 +172,7 @@ void main() {
       });
 
       test('subscribe command 2 levels', () async {
+        var exps = new Expectations();
         var sub = new Subscription("COMMAND",
             ["two_level_command_count" + transport], ["key", "command"]);
         sub.setDataAdapter("TWO_LEVEL_COMMAND");
@@ -193,6 +200,7 @@ void main() {
       });
 
       test('unsubscribe', () async {
+        var exps = new Expectations();
         var sub = new Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
@@ -210,6 +218,7 @@ void main() {
       });
 
       test('subscribe non-ascii', () async {
+        var exps = new Expectations();
         var sub = new Subscription(
             "MERGE", ["strange:àìùòlè"], ["value🌐-", "value&+=\r\n%"]);
         sub.setDataAdapter("STRANGE_NAMES");
@@ -223,6 +232,7 @@ void main() {
       });
 
       test('bandwidth', () async {
+        var exps = new Expectations();
         listener.fPropertyChange = (prop) async {
           switch (prop) {
             case "realMaxBandwidth":
@@ -245,6 +255,7 @@ void main() {
       });
 
       test('forced transport', () async {
+        var exps = new Expectations();
         listener.fStatusChange = (status) => exps.signal(status);
         client.connect();
         await exps.until('CONNECTED:$transport');
@@ -253,7 +264,7 @@ void main() {
         await exps.until('CONNECTED:$newTransport');
       });
 
-      test('heartbeat', () async {
+      test('heartbeat', () async {var exps = new Expectations();
         listener.fPropertyChange = (prop) async {
           switch (prop) {
             case "reverseHeartbeatInterval":
@@ -268,6 +279,7 @@ void main() {
       });
 
       test('setServerAddress', () async {
+        var exps = new Expectations();
         client.connectionOptions.setRetryDelay(100);
         client.connectionDetails.setServerAddress("http://unknown.localtest.me:8080");
         listener.fStatusChange = (status) => exps.signal(status);
@@ -278,6 +290,7 @@ void main() {
       });
 
       test('clear snapshot', () async {
+        var exps = new Expectations();
         var sub = new Subscription("DISTINCT", ["clear_snapshot"], ["dummy"]);
         sub.setDataAdapter("CLEAR_SNAPSHOT");
         sub.addListener(subListener);
@@ -290,6 +303,7 @@ void main() {
       });
 
       test('roundtrip', () async {
+        var exps = new Expectations();
         assertEqual("TEST", client.connectionDetails.getAdapterSet());
         assertEqual(host, client.connectionDetails.getServerAddress());
         assertEqual(50000000, client.connectionOptions.getContentLength());
@@ -347,6 +361,7 @@ void main() {
       });
 
       test('message', () async {
+        var exps = new Expectations();
         client.connect();
         client.sendMessage("test message ()", null, 0, null, true);
         // no outcome expected
@@ -366,6 +381,7 @@ void main() {
       });
 
       test('message with return value', () async {
+        var exps = new Expectations();
         client.connect();
         msgListener = new BaseMessageListener();
         msgListener.fProcessed =
@@ -376,6 +392,7 @@ void main() {
       });
 
       test('message with special chars', () async {
+        var exps = new Expectations();
         msgListener.fProcessed = (msg, _) {
           exps.signal(msg);
         };
@@ -385,6 +402,7 @@ void main() {
       });
 
       test('unordered messages', () async {
+        var exps = new Expectations();
         msgListener.fProcessed = (msg, _) {
           exps.signal(msg);
         };
@@ -394,7 +412,7 @@ void main() {
         await exps.value("test message");
       });
 
-      test('message error', () async {
+      test('message error', () async {var exps = new Expectations();
         msgListener.fDeny = (msg, code, error) {
           exps.signal('$msg $code $error');
         };
@@ -405,6 +423,7 @@ void main() {
       });
 
       test('long message', () async {
+        var exps = new Expectations();
         var msg =
             "{\"n\":\"MESSAGE_SEND\",\"c\":{\"u\":\"GEiIxthxD-1gf5Tk5O1NTw\",\"s\":\"S29120e92e162c244T2004863\",\"p\":\"localhost:3000/html/widget-responsive.html\",\"t\":\"2017-08-08T10:20:05.665Z\"},\"d\":\"{\\\"p\\\":\\\"🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐\\\"}\"}";
         msgListener.fProcessed = (_, __) => exps.signal();
@@ -414,6 +433,7 @@ void main() {
       });
 
       test('end of snapshot', () async {
+        var exps = new Expectations();
         var sub = new Subscription("DISTINCT", ["end_of_snapshot"], ["value"]);
         sub.setRequestedSnapshot("yes");
         sub.setDataAdapter("END_OF_SNAPSHOT");
@@ -436,6 +456,7 @@ void main() {
        * </ul>
        */
       test('overflow', () async {
+        var exps = new Expectations();
         var sub = new Subscription("MERGE", ["overflow"], ["value"]);
         sub.setRequestedSnapshot("yes");
         sub.setDataAdapter("OVERFLOW");
@@ -457,6 +478,7 @@ void main() {
       });
 
       test('frequency', () async {
+        var exps = new Expectations();
         var sub = new Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
@@ -469,6 +491,7 @@ void main() {
       });
 
       test('change frequency', () async {
+        var exps = new Expectations();
         var sub = new Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
@@ -486,6 +509,7 @@ void main() {
       });
 
       test('headers', () async {
+        var exps = new Expectations();
         client.connectionOptions.setHttpExtraHeaders({"hello": "header"});
         var hs = client.connectionOptions.getHttpExtraHeaders()!;
         assertEqual("header", hs["hello"]);
@@ -499,6 +523,7 @@ void main() {
       });
 
       test('json patch', () async {
+        var exps = new Expectations();
         var updates = <ItemUpdate>[];
         var sub = new Subscription("MERGE", ["count"], ["count"]);
         sub.setRequestedSnapshot("no");
@@ -521,6 +546,7 @@ void main() {
       });
 
       test('diff patch', () async {
+        var exps = new Expectations();
         var updates = <ItemUpdate>[];
         var sub = new Subscription("MERGE", ["count"], ["count"]);
         sub.setRequestedSnapshot("no");

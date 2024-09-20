@@ -16,6 +16,9 @@ class Expectations {
   late String _pendingExpected;
   List<String> _queue = [];
   
+  /// Hint: to isolate the tests more effectively, instantiate `Expectations` as a local variable within each test case
+  Expectations();
+  
   void signal([String actual = '']) {
     print('--> signal $actual');
     switch (_state) {

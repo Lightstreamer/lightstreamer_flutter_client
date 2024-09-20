@@ -6,7 +6,6 @@ import './utils.dart';
 
 void main() {
   const host = "http://10.0.2.2:8080";
-  late Expectations exps;
   late MpnDevice device;
   late MpnSubscription sub;
   late LightstreamerClient client;
@@ -19,7 +18,6 @@ void main() {
     group(transport, () {
 
       setUp(() async {
-        exps = new Expectations();
         client = await LightstreamerClient.create(host, "TEST");
         /* create an Android device */
         device = new MpnDevice();
@@ -48,6 +46,7 @@ void main() {
       });
 
       Future<void> _cleanup() async {
+        var exps = new Expectations();
         if ((await client.getStatus()) != "DISCONNECTED" &&
             (await client.getMpnSubscriptions(null)).isNotEmpty) {
           devListener.fSubscriptionsUpdated = () async => exps.signal(
@@ -60,6 +59,7 @@ void main() {
       }
 
       tearDown(() async {
+        var exps = new Expectations();
         await _cleanup();
         devListener.fStatusChanged = (status, ts) => exps.signal("onStatusChanged " + status);
         if ((await client.getStatus()) != "DISCONNECTED") {
@@ -69,6 +69,7 @@ void main() {
       });
 
       test('listeners', () async {
+        var exps = new Expectations();
         var ls = device.getListeners();
         assertEqual(1, ls.length);
         assertEqual(true, devListener == ls[0]);
@@ -100,6 +101,7 @@ void main() {
        * Verifies that the client registers to the MPN module.
        */
       test('register', () async {
+        var exps = new Expectations();
         devListener.fRegistered = () => exps.signal("onRegistered");
         devListener.fStatusChanged =
             (status, ts) => exps.signal("onStatusChanged " + status);
@@ -121,6 +123,7 @@ void main() {
        * Verifies that when the registration fails the device listener is notified.
        */
       test('register error', () async {
+        var exps = new Expectations();
         device = new MpnDevice();
         devListener = new BaseDeviceListener();
         device.addListener(devListener);
@@ -135,6 +138,7 @@ void main() {
        * Verifies that the client subscribes to an MPN item.
        */
       test('subscribe', () async {
+        var exps = new Expectations();
         subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         subListener.fSubscription = () => exps.signal("onSubscription");
@@ -178,6 +182,7 @@ void main() {
        * </ul>
        */
       test('subscribe modify', () async {
+        var exps = new Expectations();
         subListener.fSubscription = () => exps.signal("onSubscription");
         subListener.fPropertyChanged = (prop) {
           switch (prop) {
@@ -209,6 +214,7 @@ void main() {
        * Verifies that, when the client modifies a TRIGGERED subscription, the state changes to SUBSCRIBED.
        */
       test('subscribe modify reactivate', () async {
+        var exps = new Expectations();
         subListener.fStatusChanged =
             (status, _) => exps.signal("onStatusChanged " + status);
         client.connect();
@@ -239,6 +245,7 @@ void main() {
        * </ul>
        */
       test('subscribe modify coalesce', () async {
+        var exps = new Expectations();
         subListener.fSubscription = () => exps.signal("onSubscription");
         subListener.fPropertyChanged = (prop) {
           switch (prop) {
@@ -275,6 +282,7 @@ void main() {
        * Verifies that, when the subscription fails, the subscription listener is notified.
        */
       test('subscribe error', () async {
+        var exps = new Expectations();
         sub.setDataAdapter("unknown.adapter");
         subListener.fSubscriptionError =
             (code, msg) => exps.signal('onSubscriptionError $code $msg');
@@ -288,6 +296,7 @@ void main() {
        * Verifies that the client unsubscribes from an MPN item.
        */
       test('unsubscribe', () async {
+        var exps = new Expectations();
         subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         subListener.fSubscription = () => exps.signal("onSubscription");
@@ -309,6 +318,7 @@ void main() {
        * Verifies that the client doesn't send a subscription request if an unsubscription request follows immediately.
        */
       test('fast unsubscription', () async {
+        var exps = new Expectations();
         subListener.fSubscription = () => exps.signal("onSubscription");
         subListener.fUnsubscription = () => exps.signal("onUnsubscription");
         client.connect();
@@ -324,6 +334,7 @@ void main() {
        * Verifies that the client unsubscribes from all the subscribed items.
        */
       test('unsubscribe filter subscribed', () async {
+        var exps = new Expectations();
         var descriptor = await AndroidMpnBuilder()
             .setTitle("my_title")
             .setBody("my_body")
@@ -391,6 +402,7 @@ void main() {
        * Verifies that the client unsubscribes from all the triggered items.
        */
       test('unsubscribe filter triggered', () async {
+        var exps = new Expectations();
         var descriptor = await AndroidMpnBuilder()
             .setTitle("my_title")
             .setBody("my_body")
@@ -459,6 +471,7 @@ void main() {
        * Verifies that the client unsubscribes from all the triggered items.
        */
       test('unsubscribe filter all', () async {
+        var exps = new Expectations();
         var descriptor = await AndroidMpnBuilder()
             .setTitle("my_title")
             .setBody("my_body")
@@ -522,6 +535,7 @@ void main() {
        * Verifies that a subscription can start in state TRIGGERED.
        */
       test('trigger 1', () async {
+        var exps = new Expectations();
         subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         subListener.fTriggered = () => exps.signal("onTriggered");
@@ -551,6 +565,7 @@ void main() {
        * </ul>
        */
       test('trigger 2', () async {
+        var exps = new Expectations();
         subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         subListener.fSubscription = () => exps.signal("onSubscription");
@@ -574,6 +589,7 @@ void main() {
        * Verifies that the two subscription objects become subscribed.
        */
       test('double subscription', () async {
+        var exps = new Expectations();
         var descriptor = await AndroidMpnBuilder()
             .setTitle("my_title")
             .setBody("my_body")
@@ -620,6 +636,7 @@ void main() {
        * </ul>
        */
       test('double subscription disconnect', () async {
+        var exps = new Expectations();
         var descriptor = await AndroidMpnBuilder()
             .setTitle("my_title")
             .setBody("my_body")
@@ -662,6 +679,7 @@ void main() {
       });
 
     test('status change', () async {
+        var exps = new Expectations();
         subListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         client.connect();
@@ -689,6 +707,7 @@ void main() {
        * </ul>
        */
       test('onSubscriptionsUpdated empty', () async {
+        var exps = new Expectations();
         devListener.fSubscriptionsUpdated =
             () => exps.signal("onSubscriptionsUpdated");
         client.connect();
@@ -712,6 +731,7 @@ void main() {
        * </ul>
        */
       test('onSubscriptionsUpdated', () async {
+        var exps = new Expectations();
         var descriptor = await AndroidMpnBuilder()
             .setTitle("my_title")
             .setBody("my_body")
@@ -756,6 +776,7 @@ void main() {
       });
 
     test('unsubscribe error', () async {
+        var exps = new Expectations();
         subListener.fSubscriptionError =
             (code, msg) => exps.signal('onSubscriptionError $code $msg');
         client.connect();
@@ -767,6 +788,7 @@ void main() {
       }, skip: "Can't simulate this kind of scenario: subscription operations are not fast enough to trigger the desired behavior");
 
       test('set trigger error', () async {
+        var exps = new Expectations();
         devListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         subListener.fSubscription = () => exps.signal("onSubscription");
@@ -788,6 +810,7 @@ void main() {
       });
 
       test('set notification error', () async {
+        var exps = new Expectations();
         devListener.fStatusChanged =
             (status, ts) => exps.signal('onStatusChanged $status');
         subListener.fSubscription = () => exps.signal("onSubscription");
