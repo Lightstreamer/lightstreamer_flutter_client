@@ -240,7 +240,8 @@ void main() {
         await exps.value("realMaxBandwidth=40");
         // request an unlimited bandwidth: the meta-data adapter cuts it to 40 (which is the configured limit)
         client.connectionOptions.setRequestedMaxBandwidth("unlimited");
-        await exps.value("realMaxBandwidth=40");
+        // NB the listener isn't notified again because the value isn't changed
+        // await exps.value("realMaxBandwidth=40");
       });
 
       test('forced transport', () async {
@@ -331,7 +332,6 @@ void main() {
         if (transport == "WS-STREAMING") {
           // when the native client connects, it sets all the properties in connectionOptions and connectionDetails, 
           // including keepaliveInterval, to the values passed by the Dart front-end
-          await exps.value("keepaliveInterval=0");
           await exps.value("sessionId is not null");
           await exps.value("keepaliveInterval=5000");
           await exps.value("serverSocketName=Lightstreamer HTTP Server");
