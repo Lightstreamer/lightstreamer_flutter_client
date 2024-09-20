@@ -2,26 +2,44 @@
 
 part of 'client.dart';
 
+/// A bridge manages the communication between this Flutter component (the Flutter app targeting Android using the Lightstreamer Flutter Client SDK)
+/// and the Android component (the environment running the Lightstreamer Android Client SDK 
+/// that performs the operations requested by the Flutter component).
+/// See also: https://docs.flutter.dev/platform-integration/platform-channels
 class NativeBridge {
   static final instance = NativeBridge._();
 
-  // TODO possible memory leak
+  // TODO potential memory leak: objects are added to the maps but never removed (see also unsubscribeMpnSubscriptions)
+
+  /// Maps a clientId (i.e. `LightstreamerClient._id`) to a LightstreamerClient.
+  /// The mapping is created when the LightstreamerClient constructor is called.
   final Map<String, LightstreamerClient> _clientMap = {};
 
-  // TODO possible memory leak
+  /// Maps a subId (i.e. `Subscription._id`) to a Subscription.
+  /// The mapping is created when `LightstreamerClient.subscribe` is called.
   final Map<String, Subscription> _subMap = {};
 
-  // TODO possible memory leak
+  /// Maps an mpnDevId (i.e. `MpnDevice._id`) to an MpnDevice.
+  /// The mapping is created when `LightstreamerClient.registerForMpn` is called.
   final Map<String, MpnDevice> _mpnDeviceMap = {};
 
-  // TODO possible memory leak (unsubscribeMpnSubscriptions)
+  /// Maps an mpnSubId (i.e. `MpnSubscription._id`) to an MpnSubscription.
+  /// The mapping is created either when
+  /// 1. `LightstreamerClient.subscribeMpn` is called, or
+  /// 2. a Server MpnSubscription (i.e. an MpnSubscription not created by a user) is sent by the Android component 
+  ///    through `LightstreamerClient.getMpnSubscriptions`.
   final Map<String, MpnSubscription> _mpnSubMap = {};
 
   int _msgIdGenerator = 0;
-  // TODO possible memory leak
+
+  /// Maps an msgId to a ClientMessageListener.
+  /// The mapping is created when `LightstreamerClient.sendMessage` is called (and the `listener` argument is not null)
+  /// and it is removed when any ClientMessageListener event is notified.
   final Map<String, ClientMessageListener> _msgListenerMap = {};
 
+  /// The channel through which this Flutter component forwards the procedure calls directed to the Android component.
   final MethodChannel _methodChannel = const MethodChannel('com.lightstreamer.flutter/methods');
+  /// The channel through which the listener events fired by the Android component are communicated to this Flutter component.
   final MethodChannel _listenerChannel = const MethodChannel('com.lightstreamer.flutter/listeners');
 
   NativeBridge._() {

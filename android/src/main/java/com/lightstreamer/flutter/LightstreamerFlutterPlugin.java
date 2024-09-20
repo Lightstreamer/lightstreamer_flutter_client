@@ -37,18 +37,51 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
+/**
+ * A plugin manages the communication between the Flutter component (the Flutter app targeting Android using the Lightstreamer Flutter Client SDK)
+ * and this Android component (the environment running the Lightstreamer Android Client SDK
+ * that performs the operations requested by the Flutter component).
+ * See also: https://docs.flutter.dev/platform-integration/platform-channels
+ */
 public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler {
 
     static final com.lightstreamer.log.Logger channelLogger = com.lightstreamer.log.LogManager.getLogger("lightstreamer.flutter");
     static final AtomicInteger _mpnSubIdGenerator = new AtomicInteger();
 
-    // WARNING: Potential memory leak. Clients are added to the map but not removed.
+    // TODO potential memory leak: objects are added to the maps but never removed
+
+    /**
+     * Maps a clientId (i.e. the `id` field of a MethodCall object) to a LightstreamerClient.
+     * The mapping is created when any LightstreamerClient method is called by the Flutter component.
+     */
     final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
+    /**
+     * Maps a subId (i.e. the `subId` field of a MethodCall object) to a Subscription.
+     * The mapping is created when `LightstreamerClient.subscribe` is called
+     * and it is removed when `LightstreamerClient.unsubscribe` is called.
+     */
     final Map<String, Subscription> _subMap = new HashMap<>();
+    /**
+     * Maps an mpnSubId (i.e. the `mpnSubId` field of a MethodCall object) to an MpnSubscription.
+     * The mapping is created either when
+     * 1. `LightstreamerClient.subscribeMpn` is called, or
+     * 2. a Server MpnSubscription (i.e. an MpnSubscription not created in response to a `LightstreamerClient.subscribeMpn` call)
+     *    is returned by `LightstreamerClient.getMpnSubscriptions`.
+     * The mapping is removed when `LightstreamerClient.unsubscribeMpn` is called.
+     */
     final MpnSubscriptionMap _mpnSubMap = new MpnSubscriptionMap();
-    // maps mpnDevId to MpnDevice
+    /**
+     * Maps an mpnDevId (i.e. the `mpnDevId` field of a MethodCall object) to an MpnDevice.
+     * The mapping is created when `LightstreamerClient.registerForMpn` is called.
+     */
     final Map<String, MpnDevice> _mpnDeviceMap = new HashMap<>();
+    /**
+     * The channel through which the procedure calls requested by the Flutter component are received.
+     */
     MethodChannel _methodChannel;
+    /**
+     * The channel through which the events fired by the listeners are communicated to the Flutter component.
+     */
     MethodChannel _listenerChannel;
     Context _appContext;
     final Handler _loop = new Handler(Looper.getMainLooper());
