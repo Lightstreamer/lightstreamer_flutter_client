@@ -8,6 +8,196 @@ import 'package:lightstreamer_flutter_client/src/logger.dart';
 part 'native_bridge.dart';
 part 'item_update.dart';
 
+class LightstreamerClient {
+  static int _idGenerator = 0;
+
+  late final String _id;
+  late final ConnectionDetails connectionDetails;
+  late final ConnectionOptions connectionOptions;
+  final List<ClientListener> _listeners = [];
+
+  LightstreamerClient._() : _id = '${_idGenerator++}' {
+    connectionDetails = ConnectionDetails._(_id);
+    connectionOptions = ConnectionOptions._(_id);
+  }
+
+  // TODO factory method or initialization method?
+  static Future<LightstreamerClient> create(String? serverAddress, String? adapterSet) async {
+    var client = LightstreamerClient._();
+    client.connectionDetails.setServerAddress(serverAddress);
+    client.connectionDetails.setAdapterSet(adapterSet);
+    var arguments = <String, dynamic>{
+      "id": client._id,
+      "serverAddress": serverAddress,
+      "adapterSet": adapterSet
+    };
+    await NativeBridge.instance.client_create(client._id, client, arguments);
+    return client;
+  }
+
+  static Future<void> setLoggerProvider(LoggerProvider provider) async {
+    var logger = provider.getLogger('lightstreamer');
+    var level = logger.isDebugEnabled() ? ConsoleLogLevel.DEBUG
+              : logger.isErrorEnabled() ? ConsoleLogLevel.ERROR
+              : logger.isWarnEnabled()  ? ConsoleLogLevel.WARN
+              : logger.isInfoEnabled()  ? ConsoleLogLevel.INFO
+              : logger.isFatalEnabled() ? ConsoleLogLevel.FATAL
+              : ConsoleLogLevel.TRACE;
+    var arguments = <String, dynamic>{
+      'level': level
+    };
+    LogManager.setLoggerProvider(provider);
+    return await NativeBridge.instance.invokeMethod('LightstreamerClient.setLoggerProvider', arguments);
+  }
+
+  static Future<void> addCookies(String uri, List<Cookie> cookies) async {
+    var arguments = <String, dynamic>{
+      'uri': uri,
+      'cookies': cookies.map((e) => e.toString()).toList()
+    };
+    return await NativeBridge.instance.invokeMethod('LightstreamerClient.addCookies', arguments);
+  }
+
+  static Future<List<Cookie>> getCookies(String uri) async {
+    var arguments = <String, dynamic>{
+      'uri': uri
+    };
+    List<String> cookies = (await NativeBridge.instance.invokeMethod('LightstreamerClient.getCookies', arguments)).cast<String>();
+    return cookies.map((e) => Cookie.fromSetCookieValue(e)).toList();
+  }
+
+  Future<void> connect() async {
+    var arguments = <String, dynamic>{
+      "connectionDetails": connectionDetails._toMap(),
+      "connectionOptions": connectionOptions._toMap(),
+    };
+    return await _invokeMethod('connect', arguments);
+  }
+
+  Future<void> disconnect() async {
+    return await _invokeMethod('disconnect');
+  }
+
+  Future<String> getStatus() async {
+    return await _invokeMethod('getStatus');
+  }
+
+  Future<void> subscribe(Subscription sub) async {
+    var arguments = <String, dynamic>{
+      'subscription': sub._toMap()
+    };
+    sub._active = true;
+    await NativeBridge.instance.client_subscribe(_id, sub._id, sub, arguments);
+    // NB _remoteActive is set after the remote call to ensure that, when the call returns,
+    // the remote image of the local subscription has been created
+    sub._remoteActive = true;
+  }
+
+  Future<void> unsubscribe(Subscription sub) async {
+    var arguments = <String, dynamic>{
+      'subId': sub._id
+    };
+    sub._active = false;
+    sub._subscribed = false;
+    sub._commandPosition = null;
+    sub._keyPosition = null;
+    return await NativeBridge.instance.client_unsubscribe(_id, sub._id, arguments);
+  }
+
+  Future<List<Subscription>> getSubscriptions() async {
+    return await NativeBridge.instance.client_getSubscriptions(_id);
+  }
+
+  Future<void> sendMessage(String message, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) async {
+    var arguments = <String, dynamic>{
+      'message': message,
+      'sequence': sequence,
+      'delayTimeout': delayTimeout,
+      'enqueueWhileDisconnected': enqueueWhileDisconnected
+    };
+    return await NativeBridge.instance.client_sendMessage(_id, listener, arguments);
+  }
+
+  void addListener(ClientListener listener) {
+    if (!_listeners.contains(listener)) {
+      _listeners.add(listener);
+      scheduleMicrotask(() {
+        listener.onListenStart();
+      });
+    }
+  }
+
+  void removeListener(ClientListener listener) {
+    var found = _listeners.remove(listener);
+    if (found) {
+      scheduleMicrotask(() {
+        listener.onListenEnd();
+      });
+    }
+  }
+
+  List<ClientListener> getListeners() {
+    return _listeners.toList();
+  }
+
+  MpnDevice? _mpnDevice;
+
+  MpnDevice? getMpnDevice() {
+    return _mpnDevice;
+  }
+
+  Future<void> registerForMpn(MpnDevice device) async {
+    // TODO what if already registered
+    _mpnDevice = device;
+    var arguments = <String, dynamic>{
+      'mpnDevId': device._id
+    };
+    return await NativeBridge.instance.client_registerForMpn(_id, device._id, device, arguments);
+  }
+
+  Future<void> subscribeMpn(MpnSubscription sub, bool coalescing) async {
+    var arguments = <String, dynamic>{
+      'subscription': sub._toMap(),
+      'coalescing': coalescing
+    };
+    return await NativeBridge.instance.client_subscribeMpn(_id, sub._id, sub, arguments);
+  }
+
+  Future<void> unsubscribeMpn(MpnSubscription sub) async {
+    var arguments = <String, dynamic>{
+      'mpnSubId': sub._id
+    };
+    return await NativeBridge.instance.client_unsubscribeMpn(_id, sub._id, arguments);
+  }
+
+  Future<void> unsubscribeMpnSubscriptions([ String? filter ]) async {
+    var arguments = <String, dynamic>{
+      'filter': filter
+    };
+    return await _invokeMethod('unsubscribeMpnSubscriptions', arguments);
+  }
+
+  Future<List<MpnSubscription>> getMpnSubscriptions([ String? filter ]) async {
+    var arguments = <String, dynamic>{
+      'filter': filter
+    };
+    return await NativeBridge.instance.client_getMpnSubscriptions(_id, arguments);
+  }
+
+  Future<MpnSubscription?> findMpnSubscription(String subscriptionId) async {
+    var arguments = <String, dynamic>{
+      'subscriptionId': subscriptionId
+    };
+    return await NativeBridge.instance.client_findMpnSubscription(_id, arguments);
+  }
+
+  Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
+    arguments = arguments ?? {};
+    arguments["id"] = _id;
+    return await NativeBridge.instance.invokeMethod('LightstreamerClient.$method', arguments);
+  }
+}
+
 class ConnectionDetails {
   final String _id;
   String? _adapterSet;
@@ -460,196 +650,6 @@ class Subscription {
     arguments = arguments ?? {};
     arguments["subId"] = _id;
     return await NativeBridge.instance.invokeMethod('Subscription.$method', arguments);
-  }
-}
-
-class LightstreamerClient {
-  static int _idGenerator = 0;
-
-  late final String _id;
-  late final ConnectionDetails connectionDetails;
-  late final ConnectionOptions connectionOptions;
-  final List<ClientListener> _listeners = [];
-
-  LightstreamerClient._() : _id = '${_idGenerator++}' {
-    connectionDetails = ConnectionDetails._(_id);
-    connectionOptions = ConnectionOptions._(_id);
-  }
-
-  // TODO factory method or initialization method?
-  static Future<LightstreamerClient> create(String? serverAddress, String? adapterSet) async {
-    var client = LightstreamerClient._();
-    client.connectionDetails.setServerAddress(serverAddress);
-    client.connectionDetails.setAdapterSet(adapterSet);
-    var arguments = <String, dynamic>{
-      "id": client._id,
-      "serverAddress": serverAddress,
-      "adapterSet": adapterSet
-    };
-    await NativeBridge.instance.client_create(client._id, client, arguments);
-    return client;
-  }
-
-  static Future<void> setLoggerProvider(LoggerProvider provider) async {
-    var logger = provider.getLogger('lightstreamer');
-    var level = logger.isDebugEnabled() ? ConsoleLogLevel.DEBUG
-              : logger.isErrorEnabled() ? ConsoleLogLevel.ERROR
-              : logger.isWarnEnabled()  ? ConsoleLogLevel.WARN
-              : logger.isInfoEnabled()  ? ConsoleLogLevel.INFO
-              : logger.isFatalEnabled() ? ConsoleLogLevel.FATAL
-              : ConsoleLogLevel.TRACE;
-    var arguments = <String, dynamic>{
-      'level': level
-    };
-    LogManager.setLoggerProvider(provider);
-    return await NativeBridge.instance.invokeMethod('LightstreamerClient.setLoggerProvider', arguments);
-  }
-
-  static Future<void> addCookies(String uri, List<Cookie> cookies) async {
-    var arguments = <String, dynamic>{
-      'uri': uri,
-      'cookies': cookies.map((e) => e.toString()).toList()
-    };
-    return await NativeBridge.instance.invokeMethod('LightstreamerClient.addCookies', arguments);
-  }
-
-  static Future<List<Cookie>> getCookies(String uri) async {
-    var arguments = <String, dynamic>{
-      'uri': uri
-    };
-    List<String> cookies = (await NativeBridge.instance.invokeMethod('LightstreamerClient.getCookies', arguments)).cast<String>();
-    return cookies.map((e) => Cookie.fromSetCookieValue(e)).toList();
-  }
-
-  Future<void> connect() async {
-    var arguments = <String, dynamic>{
-      "connectionDetails": connectionDetails._toMap(),
-      "connectionOptions": connectionOptions._toMap(),
-    };
-    return await _invokeMethod('connect', arguments);
-  }
-
-  Future<void> disconnect() async {
-    return await _invokeMethod('disconnect');
-  }
-
-  Future<String> getStatus() async {
-    return await _invokeMethod('getStatus');
-  }
-
-  Future<void> subscribe(Subscription sub) async {
-    var arguments = <String, dynamic>{
-      'subscription': sub._toMap()
-    };
-    sub._active = true;
-    await NativeBridge.instance.client_subscribe(_id, sub._id, sub, arguments);
-    // NB _remoteActive is set after the remote call to ensure that, when the call returns,
-    // the remote image of the local subscription has been created
-    sub._remoteActive = true;
-  }
-
-  Future<void> unsubscribe(Subscription sub) async {
-    var arguments = <String, dynamic>{
-      'subId': sub._id
-    };
-    sub._active = false;
-    sub._subscribed = false;
-    sub._commandPosition = null;
-    sub._keyPosition = null;
-    return await NativeBridge.instance.client_unsubscribe(_id, sub._id, arguments);
-  }
-
-  Future<List<Subscription>> getSubscriptions() async {
-    return await NativeBridge.instance.client_getSubscriptions(_id);
-  }
-
-  Future<void> sendMessage(String message, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) async {
-    var arguments = <String, dynamic>{
-      'message': message,
-      'sequence': sequence,
-      'delayTimeout': delayTimeout,
-      'enqueueWhileDisconnected': enqueueWhileDisconnected
-    };
-    return await NativeBridge.instance.client_sendMessage(_id, listener, arguments);
-  }
-
-  void addListener(ClientListener listener) {
-    if (!_listeners.contains(listener)) {
-      _listeners.add(listener);
-      scheduleMicrotask(() {
-        listener.onListenStart();
-      });
-    }
-  }
-
-  void removeListener(ClientListener listener) {
-    var found = _listeners.remove(listener);
-    if (found) {
-      scheduleMicrotask(() {
-        listener.onListenEnd();
-      });
-    }
-  }
-
-  List<ClientListener> getListeners() {
-    return _listeners.toList();
-  }
-
-  MpnDevice? _mpnDevice;
-
-  MpnDevice? getMpnDevice() {
-    return _mpnDevice;
-  }
-
-  Future<void> registerForMpn(MpnDevice device) async {
-    // TODO what if already registered
-    _mpnDevice = device;
-    var arguments = <String, dynamic>{
-      'mpnDevId': device._id
-    };
-    return await NativeBridge.instance.client_registerForMpn(_id, device._id, device, arguments);
-  }
-
-  Future<void> subscribeMpn(MpnSubscription sub, bool coalescing) async {
-    var arguments = <String, dynamic>{
-      'subscription': sub._toMap(),
-      'coalescing': coalescing
-    };
-    return await NativeBridge.instance.client_subscribeMpn(_id, sub._id, sub, arguments);
-  }
-
-  Future<void> unsubscribeMpn(MpnSubscription sub) async {
-    var arguments = <String, dynamic>{
-      'mpnSubId': sub._id
-    };
-    return await NativeBridge.instance.client_unsubscribeMpn(_id, sub._id, arguments);
-  }
-
-  Future<void> unsubscribeMpnSubscriptions([ String? filter ]) async {
-    var arguments = <String, dynamic>{
-      'filter': filter
-    };
-    return await _invokeMethod('unsubscribeMpnSubscriptions', arguments);
-  }
-
-  Future<List<MpnSubscription>> getMpnSubscriptions([ String? filter ]) async {
-    var arguments = <String, dynamic>{
-      'filter': filter
-    };
-    return await NativeBridge.instance.client_getMpnSubscriptions(_id, arguments);
-  }
-
-  Future<MpnSubscription?> findMpnSubscription(String subscriptionId) async {
-    var arguments = <String, dynamic>{
-      'subscriptionId': subscriptionId
-    };
-    return await NativeBridge.instance.client_findMpnSubscription(_id, arguments);
-  }
-
-  Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
-    arguments = arguments ?? {};
-    arguments["id"] = _id;
-    return await NativeBridge.instance.invokeMethod('LightstreamerClient.$method', arguments);
   }
 }
 
