@@ -66,7 +66,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
      * The mapping is created either when
      * 1. `LightstreamerClient.subscribeMpn` is called, or
      * 2. a Server MpnSubscription (i.e. an MpnSubscription not created in response to a `LightstreamerClient.subscribeMpn` call)
-     *    is returned by `LightstreamerClient.getMpnSubscriptions`.
+     *    is returned by `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
      * The mapping is removed when `LightstreamerClient.unsubscribeMpn` is called.
      */
     final MpnSubscriptionMap _mpnSubMap = new MpnSubscriptionMap();
@@ -670,17 +670,53 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     }
 
     void Client_findMpnSubscription(MethodCall call, MethodChannel.Result result) {
+        // TODO improve performance
         LightstreamerClient client = getClient(call);
         String subscriptionId = (String) call.argument("subscriptionId");
         MpnSubscription sub = client.findMpnSubscription(subscriptionId);
-        String res = null;
-        for (Map.Entry<String, MyMpnSubscription> e : _mpnSubMap.entrySet()) {
-            // TODO what if more than one?
-            if (sub == e.getValue()._sub) {
-                res = e.getKey();
-                break;
+        //
+        Map<String, Object> res = new HashMap<>();
+        if (sub != null) {
+            // 1. search a subscription known to the Flutter component (i.e. in `_mpnSubMap`) and owned by `client` having the same subscriptionId
+            String mpnSubId = null;
+            for (Map.Entry<String, MyMpnSubscription> e : _mpnSubMap.entrySet()) {
+                MyMpnSubscription mySub = e.getValue();
+                if (mySub._client == client && subscriptionId.equals(mySub._sub.getSubscriptionId())) {
+                    mpnSubId = e.getKey();
+                    break;
+                }
             }
-        }
+            if (mpnSubId != null) {
+                // 2.A. there is such a subscription: it means that `sub` is known to the Flutter component
+                res.put("result", mpnSubId);
+            } else {
+                // 2.B. there isn't such a subscription: it means that `sub` is unknown to the Flutter component
+                // (i.e. it is a new server subscription)
+                // add it to `_mpnSubMap` and add a listener so the Flutter component can receive subscription events
+                mpnSubId = "mpnsub-server" + _mpnSubIdGenerator.getAndIncrement();
+                sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
+                _mpnSubMap.put(mpnSubId, sub, client);
+                // serialize `sub` in order to send it to the Flutter component
+                Map<String, Object> dto = new HashMap<>();
+                dto.put("id", mpnSubId);
+                dto.put("mode", sub.getMode());
+                dto.put("items", sub.getItems());
+                dto.put("fields", sub.getFields());
+                dto.put("group", sub.getItemGroup());
+                dto.put("schema", sub.getFieldSchema());
+                dto.put("dataAdapter", sub.getDataAdapter());
+                dto.put("bufferSize", sub.getRequestedBufferSize());
+                dto.put("requestedMaxFrequency", sub.getRequestedMaxFrequency());
+                dto.put("notificationFormat", sub.getNotificationFormat());
+                dto.put("trigger", sub.getTriggerExpression());
+                dto.put("actualNotificationFormat", sub.getActualNotificationFormat());
+                dto.put("actualTrigger", sub.getActualTriggerExpression());
+                dto.put("statusTs", sub.getStatusTimestamp());
+                dto.put("status", sub.getStatus());
+                dto.put("subscriptionId", sub.getSubscriptionId());
+                res.put("extra", dto);
+            }
+        } // else if sub == null, return an empty map
         result.success(res);
     }
 

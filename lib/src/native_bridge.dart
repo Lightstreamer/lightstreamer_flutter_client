@@ -27,7 +27,7 @@ class NativeBridge {
   /// The mapping is created either when
   /// 1. `LightstreamerClient.subscribeMpn` is called, or
   /// 2. a Server MpnSubscription (i.e. an MpnSubscription not created by a user) is sent by the Android component 
-  ///    through `LightstreamerClient.getMpnSubscriptions`.
+  ///    through `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
   final Map<String, MpnSubscription> _mpnSubMap = {};
 
   int _msgIdGenerator = 0;
@@ -132,8 +132,32 @@ class NativeBridge {
   }
 
   Future<MpnSubscription?> client_findMpnSubscription(String clientId, Map<String, dynamic> arguments) async {
-    String? mpnSubId = await _invokeClientMethod(clientId, 'findMpnSubscription', arguments);
-    return mpnSubId == null ? null : _mpnSubMap[mpnSubId];
+    Map<String, dynamic> map = (await _invokeClientMethod(clientId, 'findMpnSubscription', arguments)).cast<String, dynamic>();
+    var mpnSubId = map['result'];
+    if (mpnSubId != null) {
+      // the subscription in the `result` field is already known to the Client,
+      // since it has been subscribed through the `LightstreamerClient.subscribeMpn` method
+      var sub = _mpnSubMap[mpnSubId];
+      if (sub != null) {
+        return sub;
+      } else {
+        if (channelLogger.isWarnEnabled()) {
+          channelLogger.warn('Unknown MpnSubscription $mpnSubId in findMpnSubscription method');
+        }
+        return null;
+      }
+    }
+    var dto = map['extra'];
+    if (dto != null) {
+      // the subscription in the `extra` field is unknown to the Client,
+      // as it is an MpnSubscription created by the Server.
+      // since it is unknown, add it to `_mpnSubMap`
+      var sub = MpnSubscription._fromDTO(dto.cast<String, dynamic>());
+      _mpnSubMap[sub._id] = sub;
+      return sub;
+    }
+    // if both `result` and `extra` are null, there is no subscription with the given subscriptionId
+    return null;
   }
 
   Future<T> _invokeClientMethod<T>(String clientId, String method, [ Map<String, dynamic>? arguments ]) async {

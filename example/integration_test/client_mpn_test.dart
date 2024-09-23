@@ -275,7 +275,8 @@ void main() {
 
         assertEqual(sub.getSubscriptionId(), subCopy.getSubscriptionId());
         assertEqual(1, (await client.getMpnSubscriptions("ALL")).length);
-        assertTrue(sub == await client.findMpnSubscription(sub.getSubscriptionId()!));
+        var ss = await client.findMpnSubscription(sub.getSubscriptionId()!);
+        assertTrue(ss == sub || ss == subCopy);
       });
 
       /**
@@ -383,6 +384,50 @@ void main() {
         await exps.value("onSubscriptionsUpdated");
         subs = await client.getMpnSubscriptions();
         assertEqual(0, subs.length);
+      });
+
+      test('findMpnSubscription_found', () async {
+        var exps = new Expectations();
+        var dev2 = MpnDevice();
+        var client2 = await LightstreamerClient.create(host, "TEST");
+        subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
+        client2.connect();
+        await client2.registerForMpn(dev2);
+        sub.setTriggerExpression("0==0");
+        client2.subscribeMpn(sub, false);
+        await exps.value("onStatusChanged ACTIVE");
+        await exps.value("onStatusChanged SUBSCRIBED");
+        await exps.value("onStatusChanged TRIGGERED");
+        client2.disconnect();
+
+        client.connect();
+        devListener.fSubscriptionsUpdated = () => exps.signal('onSubscriptionsUpdated');
+        await client.registerForMpn(device);
+
+        await exps.value("onSubscriptionsUpdated");
+        MpnSubscription? s0_ = await client.findMpnSubscription(sub.getSubscriptionId()!);
+        assertNotNull(s0_);
+        MpnSubscription s0 = s0_!;
+        assertEqual('MERGE', s0.getMode());
+        assertEqual('COUNT', s0.getDataAdapter());
+        assertEqual('count', s0.getItemGroup());
+        assertEqual('count', s0.getFieldSchema());
+        assertEqual('{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}', s0.getActualNotificationFormat());
+        assertEqual('0==0', s0.getActualTriggerExpression());
+        assertEqual('TRIGGERED', s0.getStatus());
+        assertEqual(sub.getSubscriptionId(), s0.getSubscriptionId());
+        assertTrue(s0.getStatusTimestamp() > 0);
+      });
+
+      test('findMpnSubscription_notFound', () async {
+        var exps = new Expectations();
+        devListener.fSubscriptionsUpdated = () => exps.signal('onSubscriptionsUpdated');
+        client.connect();
+        client.registerForMpn(device);
+        await exps.value("onSubscriptionsUpdated");
+
+        MpnSubscription? s0 = await client.findMpnSubscription('');
+        assertNull(s0);
       });
 
       /**
