@@ -13,6 +13,54 @@ void main() {
   late BaseMpnSubscriptionListener subListener;
   LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
+  test('MpnSubscription ctors', () {
+    var sub = Subscription('MERGE', ['i1', 'i2'], ['f1', 'f2']);
+    sub.setDataAdapter('data');
+    sub.setRequestedBufferSize('10');
+    sub.setRequestedMaxFrequency('0.5');
+
+    var sub1 = MpnSubscription.fromSubscription(sub);
+    assertEqual('MERGE', sub1.getMode());
+    assertEqual(['i1', 'i2'], sub1.getItems());
+    assertEqual(['f1', 'f2'], sub1.getFields());
+    assertNull(sub1.getItemGroup());
+    assertNull(sub1.getFieldSchema());
+    assertEqual('data', sub1.getDataAdapter());
+    assertEqual('10', sub1.getRequestedBufferSize());
+    assertEqual('0.5', sub1.getRequestedMaxFrequency());
+    assertNull(sub1.getTriggerExpression());
+    assertNull(sub1.getNotificationFormat());
+
+    sub1.setTriggerExpression('1 < 0');
+    sub1.setNotificationFormat('{foo: 123}');
+
+    var sub2 = MpnSubscription.fromMpnSubscription(sub1);
+    assertEqual('MERGE', sub2.getMode());
+    assertEqual(['i1', 'i2'], sub2.getItems());
+    assertEqual(['f1', 'f2'], sub2.getFields());
+    assertNull(sub2.getItemGroup());
+    assertNull(sub2.getFieldSchema());
+    assertEqual('data', sub2.getDataAdapter());
+    assertEqual('10', sub2.getRequestedBufferSize());
+    assertEqual('0.5', sub2.getRequestedMaxFrequency());
+    assertEqual('1 < 0', sub2.getTriggerExpression());
+    assertEqual('{foo: 123}', sub2.getNotificationFormat());
+  });
+
+  test('android builder', () async {
+    var builder = new AndroidMpnBuilder();
+    var format = await builder
+        .setTitle("TITLE")
+        .setBody("BODY")
+        .setIcon("ICON")
+        .setData({"d": "D"})
+        .build();
+    assertEqual(
+        '{"android":{"notification":{"icon":"ICON","title":"TITLE","body":"BODY"},"data":{"d":"D"}}}',
+        format);
+    assertEqual({"d": "D"}, builder.getData());
+  });
+
   ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
 
     group(transport, () {
@@ -970,18 +1018,4 @@ void main() {
 
     }); // group
   }); // for each group
-
-  test('android builder', () async {
-    var builder = new AndroidMpnBuilder();
-    var format = await builder
-        .setTitle("TITLE")
-        .setBody("BODY")
-        .setIcon("ICON")
-        .setData({"d": "D"})
-        .build();
-    assertEqual(
-        '{"android":{"notification":{"icon":"ICON","title":"TITLE","body":"BODY"},"data":{"d":"D"}}}',
-        format);
-    assertEqual({"d": "D"}, builder.getData());
-  });
-}
+} // main

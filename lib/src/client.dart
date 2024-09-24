@@ -596,7 +596,7 @@ class Subscription {
   void setItemGroup(String? groupName) {
     _group = groupName;
   }
-  List<String>? _getItems() {
+  List<String>? getItems() {
     return _items?.toList();
   }
   void setItems(List<String>? items) {
@@ -767,11 +767,39 @@ class MpnSubscription {
     };
   }
 
+  static String _nextMpnSubId() {
+    return 'mpnsub${_idGenerator++}';
+  }
+
   MpnSubscription(String mode, [ List<String>? items, List<String>? fields ]) : 
-    _id = 'mpnsub${_idGenerator++}',
+    _id = _nextMpnSubId(),
     _mode = mode, 
     _items = items?.toList(), 
     _fields = fields?.toList();
+
+  MpnSubscription.fromSubscription(Subscription sub) :
+    _id = _nextMpnSubId(),
+    _mode = sub.getMode(),
+    _items = sub.getItems()?.toList(),
+    _fields = sub.getFields()?.toList(),
+    _group = sub.getItemGroup(),
+    _schema = sub.getFieldSchema(),
+    _dataAdapter = sub.getDataAdapter(),
+    _bufferSize = sub.getRequestedBufferSize(),
+    _requestedMaxFrequency = sub.getRequestedMaxFrequency();
+
+  MpnSubscription.fromMpnSubscription(MpnSubscription sub) :
+    _id = _nextMpnSubId(),
+    _mode = sub.getMode(),
+    _items = sub.getItems()?.toList(),
+    _fields = sub.getFields()?.toList(),
+    _group = sub.getItemGroup(),
+    _schema = sub.getFieldSchema(),
+    _dataAdapter = sub.getDataAdapter(),
+    _bufferSize = sub.getRequestedBufferSize(),
+    _requestedMaxFrequency = sub.getRequestedMaxFrequency(),
+    _trigger = sub.getTriggerExpression(),
+    _notificationFormat = sub.getNotificationFormat();
 
   MpnSubscription._fromDTO(Map<String, dynamic> dto) : 
     _id = dto['id'], 
