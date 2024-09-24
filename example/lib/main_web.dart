@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+/*
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+*/
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 
 late final String fcmToken;
 
 void main() async {
+  // TODO complete firebase configuration
+  /*
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -33,6 +37,7 @@ void main() async {
       print('Message also contained a notification: ${message.notification}');
     }
   });
+  */
 
   runApp(MyApp());
 }
