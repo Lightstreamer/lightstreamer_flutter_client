@@ -200,18 +200,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     void ConnectionDetails_handle(String method, MethodCall call, MethodChannel.Result result) {
         switch (method) {
-//            case "getServerInstanceAddress":
-//                Details_getServerInstanceAddress(call, result);
-//                break;
-//            case "getServerSocketName":
-//                Details_getServerSocketName(call, result);
-//                break;
-//            case "getClientIp":
-//                Details_getClientIp(call, result);
-//                break;
-//            case "getSessionId":
-//                Details_getSessionId(call, result);
-//                break;
             case "setServerAddress":
                 Details_setServerAddress(call, result);
                 break;
@@ -232,12 +220,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     void ConnectionOptions_handle(String method, MethodCall call, MethodChannel.Result result) {
         switch (method) {
-//            case "getRealMaxBandwidth":
-//                ConnectionOptions_getRealMaxBandwidth(call, result);
-//                break;
-//            case "getRequestedMaxBandwidth":
-//                ConnectionOptions_getRequestedMaxBandwidth(call, result);
-//                break;
             case "setForcedTransport":
                 ConnectionOptions_setForcedTransport(call, result);
                 break;
@@ -263,9 +245,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             case "getKeyPosition":
                 Subscription_getKeyPosition(call, result);
                 break;
-//            case "getRequestedMaxFrequency":
-//                Subscription_getRequestedMaxFrequency(call, result);
-//                break;
             case "setRequestedMaxFrequency":
                 Subscription_setRequestedMaxFrequency(call, result);
                 break;
@@ -285,33 +264,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     void MpnDevice_handle(String method, MethodCall call, MethodChannel.Result result) {
         switch (method) {
-//            case "getApplicationId":
-//                MpnDevice_getApplicationId(call, result);
-//                break;
-//            case "getDeviceId":
-//                MpnDevice_getDeviceId(call, result);
-//                break;
-//            case "getDeviceToken":
-//                MpnDevice_getDeviceToken(call, result);
-//                break;
-//            case "getPlatform":
-//                MpnDevice_getPlatform(call, result);
-//                break;
-//            case "getPreviousDeviceToken":
-//                MpnDevice_getPreviousDeviceToken(call, result);
-//                break;
-//            case "getStatus":
-//                MpnDevice_getStatus(call, result);
-//                break;
-//            case "getStatusTimestamp":
-//                MpnDevice_getStatusTimestamp(call, result);
-//                break;
-//            case "isRegistered":
-//                MpnDevice_isRegistered(call, result);
-//                break;
-//            case "isSuspended":
-//                MpnDevice_isSuspended(call, result);
-//                break;
             default:
                 if (channelLogger.isErrorEnabled()) {
                     channelLogger.error("Unknown method " + call.method, null);
@@ -699,42 +651,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(res);
     }
 
-//    void Details_getServerInstanceAddress(MethodCall call, MethodChannel.Result result) {
-//        LightstreamerClient client = getClient(call);
-//        String res = client.connectionDetails.getServerInstanceAddress();
-//        result.success(res);
-//    }
-//
-//    void Details_getServerSocketName(MethodCall call, MethodChannel.Result result) {
-//        LightstreamerClient client = getClient(call);
-//        String res = client.connectionDetails.getServerSocketName();
-//        result.success(res);
-//    }
-//
-//    void Details_getClientIp(MethodCall call, MethodChannel.Result result) {
-//        LightstreamerClient client = getClient(call);
-//        String res = client.connectionDetails.getClientIp();
-//        result.success(res);
-//    }
-//
-//    void Details_getSessionId(MethodCall call, MethodChannel.Result result) {
-//        LightstreamerClient client = getClient(call);
-//        String res = client.connectionDetails.getSessionId();
-//        result.success(res);
-//    }
-
-//    void ConnectionOptions_getRealMaxBandwidth(MethodCall call, MethodChannel.Result result) {
-//        LightstreamerClient client = getClient(call);
-//        String res = client.connectionOptions.getRealMaxBandwidth();
-//        result.success(res);
-//    }
-
-//    void ConnectionOptions_getRequestedMaxBandwidth(MethodCall call, MethodChannel.Result result) {
-//        LightstreamerClient client = getClient(call);
-//        String res = client.connectionOptions.getRequestedMaxBandwidth();
-//        result.success(res);
-//    }
-
     void ConnectionOptions_setForcedTransport(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String newVal = call.argument("newVal");
@@ -755,78 +671,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         client.connectionOptions.setReverseHeartbeatInterval(newVal);
         result.success(null);
     }
-
-//    void MpnDevice_getApplicationId(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.getApplicationId();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_getDeviceId(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.getDeviceId();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_getDeviceToken(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.getDeviceToken();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_getPlatform(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.getPlatform();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_getPreviousDeviceToken(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.getPreviousDeviceToken();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_getStatus(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.getStatus();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_getStatusTimestamp(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.getStatusTimestamp();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_isRegistered(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.isRegistered();
-//        result.success(res);
-//    }
-//
-//    void MpnDevice_isSuspended(MethodCall call, MethodChannel.Result result) {
-//        String id = call.argument("id");
-//        // TODO null check
-//        MpnDevice device = _mpnDeviceMap.get(id);
-//        Object res = device.isSuspended();
-//        result.success(res);
-//    }
 
     void AndroidMpnBuilder_build(MethodCall call, MethodChannel.Result result) {
         String collapseKey = call.argument("collapseKey");
@@ -880,14 +724,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         Object res = sub.getKeyPosition();
         result.success(res);
     }
-
-//    void Subscription_getRequestedMaxFrequency(MethodCall call, MethodChannel.Result result) {
-//        String subId = call.argument("subId");
-//        Subscription sub = _subMap.get(subId);
-//        // TODO null check
-//        Object res = sub.getRequestedMaxFrequency();
-//        result.success(res);
-//    }
 
     void Subscription_setRequestedMaxFrequency(MethodCall call, MethodChannel.Result result) {
         String subId = call.argument("subId");
