@@ -8,8 +8,13 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:8.1.4'
     }
+
+    // Fix for this issue: https://github.com/facebook/react-native/issues/44501
+    gradle.startParameter.excludedTaskNames.addAll(
+        gradle.startParameter.taskNames.findAll { it.contains("testClasses") }
+    )
 }
 
 rootProject.allprojects {
@@ -23,10 +28,19 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
+    if (project.android.hasProperty("namespace")) {
+        namespace = "com.lightstreamer.lightstreamer_flutter_client"
+    }
+
     compileSdk 34
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
-        minSdkVersion 26
+        minSdkVersion 21
     }
 }
 
