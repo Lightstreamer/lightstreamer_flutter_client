@@ -24,8 +24,8 @@ class LightstreamerClient {
   // TODO factory method or initialization method?
   static Future<LightstreamerClient> create(String? serverAddress, String? adapterSet) async {
     var client = LightstreamerClient._();
-    client.connectionDetails.setServerAddress(serverAddress);
-    client.connectionDetails.setAdapterSet(adapterSet);
+    client.connectionDetails._serverAddress = serverAddress;
+    client.connectionDetails._adapterSet = adapterSet;
     var arguments = <String, dynamic>{
       "id": client._id,
       "serverAddress": serverAddress,
