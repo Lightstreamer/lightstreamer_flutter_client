@@ -1,5 +1,6 @@
 // ignore_for_file: unnecessary_new, prefer_interpolation_to_compose_strings
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 import './utils.dart';
@@ -11,6 +12,26 @@ void main() {
   late BaseSubscriptionListener subListener;
   late BaseMessageListener msgListener;
   LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+
+  test('channel errors', () async {
+    try {
+      client = await LightstreamerClient.create('', '');
+      fail('Expected exception');
+    } on PlatformException catch(e) {
+      assertEqual('Lightstreamer Internal Error', e.code);
+      assertEqual('address is malformed', e.message);
+    }
+
+    try {
+      client = await LightstreamerClient.create(host, 'TEST');
+      client.connectionOptions.setContentLength(-1);
+      await client.connect();
+      fail('Expected exception');
+    } on PlatformException catch(e) {
+      assertEqual('Lightstreamer Internal Error', e.code);
+      assertEqual('value must be greater than zero', e.message);
+    }
+  });
 
   ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
     group(transport, () {

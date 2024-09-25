@@ -104,36 +104,43 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         if (channelLogger.isDebugEnabled()) {
             channelLogger.debug("Accepting " + call.method + " " + call.arguments(), null);
         }
-        String[] parts = call.method.split("\\.");
-        String className = parts[0];
-        String methodName = parts[1];
-        switch (className) {
-            case "LightstreamerClient":
-                Client_handle(methodName, call, result);
-                break;
-            case "ConnectionDetails":
-                ConnectionDetails_handle(methodName, call, result);
-                break;
-            case "ConnectionOptions":
-                ConnectionOptions_handle(methodName, call, result);
-                break;
-            case "Subscription":
-                Subscription_handle(methodName, call, result);
-                break;
-            case "MpnDevice":
-                MpnDevice_handle(methodName, call, result);
-                break;
-            case "MpnSubscription":
-                MpnSubscription_handle(methodName, call, result);
-                break;
-            case "AndroidMpnBuilder":
-                AndroidMpnBuilder_handle(methodName, call, result);
-                break;
-            default:
-                if (channelLogger.isErrorEnabled()) {
-                    channelLogger.error("Unknown method " + call.method, null);
-                }
-                result.notImplemented();
+        try {
+            String[] parts = call.method.split("\\.");
+            String className = parts[0];
+            String methodName = parts[1];
+            switch (className) {
+                case "LightstreamerClient":
+                    Client_handle(methodName, call, result);
+                    break;
+                case "ConnectionDetails":
+                    ConnectionDetails_handle(methodName, call, result);
+                    break;
+                case "ConnectionOptions":
+                    ConnectionOptions_handle(methodName, call, result);
+                    break;
+                case "Subscription":
+                    Subscription_handle(methodName, call, result);
+                    break;
+                case "MpnDevice":
+                    MpnDevice_handle(methodName, call, result);
+                    break;
+                case "MpnSubscription":
+                    MpnSubscription_handle(methodName, call, result);
+                    break;
+                case "AndroidMpnBuilder":
+                    AndroidMpnBuilder_handle(methodName, call, result);
+                    break;
+                default:
+                    if (channelLogger.isErrorEnabled()) {
+                        channelLogger.error("Unknown method " + call.method, null);
+                    }
+                    result.notImplemented();
+            }
+        } catch (Exception e) {
+            if (channelLogger.isErrorEnabled()) {
+                channelLogger.error(e.getMessage(), e);
+            }
+            result.error("Lightstreamer Internal Error", e.getMessage(), e);
         }
     }
 
@@ -209,13 +216,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 }
                 result.notImplemented();
         }
-    }
-
-    void Details_setServerAddress(MethodCall call, MethodChannel.Result result) {
-        LightstreamerClient client = getClient(call);
-        String newVal = call.argument("newVal");
-        client.connectionDetails.setServerAddress(newVal);
-        result.success(null);
     }
 
     void ConnectionOptions_handle(String method, MethodCall call, MethodChannel.Result result) {
@@ -649,6 +649,13 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             }
         } // else if sub == null, return an empty map
         result.success(res);
+    }
+
+    void Details_setServerAddress(MethodCall call, MethodChannel.Result result) {
+        LightstreamerClient client = getClient(call);
+        String newVal = call.argument("newVal");
+        client.connectionDetails.setServerAddress(newVal);
+        result.success(null);
     }
 
     void ConnectionOptions_setForcedTransport(MethodCall call, MethodChannel.Result result) {
