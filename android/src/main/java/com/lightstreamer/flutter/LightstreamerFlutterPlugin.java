@@ -57,8 +57,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
     /**
      * Maps a subId (i.e. the `subId` field of a MethodCall object) to a Subscription.
-     * The mapping is created when `LightstreamerClient.subscribe` is called
-     * and it is removed when `LightstreamerClient.unsubscribe` is called.
+     * The mapping is created when `LightstreamerClient.subscribe` is called.
      */
     final Map<String, Subscription> _subMap = new HashMap<>();
     /**
@@ -437,14 +436,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void Client_unsubscribe(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String subId = call.argument("subId");
-        Subscription sub = _subMap.remove(subId);
-        if (sub == null) {
-            String errMsg = "Subscription " + subId + " doesn't exist";
-            if (channelLogger.isErrorEnabled()) {
-                channelLogger.error(errMsg, null);
-            }
-            throw new IllegalStateException(errMsg);
-        }
+        Subscription sub = getSubscription(subId);
         client.unsubscribe(sub);
         result.success(null);
     }

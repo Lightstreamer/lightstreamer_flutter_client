@@ -46,7 +46,7 @@ void main() {
     }
     
     await client.unsubscribe(sub);
-    sub.setSelector('selector');
+    sub.setRequestedMaxFrequency('2');
     await client.subscribe(sub);
   });
 
