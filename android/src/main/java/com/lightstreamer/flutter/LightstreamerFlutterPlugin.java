@@ -439,7 +439,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String subId = call.argument("subId");
         Subscription sub = _subMap.remove(subId);
         if (sub == null) {
-            String errMsg = "A Subscription with id " + subId + " doesn't exist";
+            String errMsg = "Subscription " + subId + " doesn't exist";
             if (channelLogger.isErrorEnabled()) {
                 channelLogger.error(errMsg, null);
             }
@@ -730,7 +730,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     Subscription getSubscription(String subId) {
         Subscription sub = _subMap.get(subId);
         if (sub == null) {
-            String errMsg = "A Subscription with id " + subId + " doesn't exist";
+            String errMsg = "Subscription " + subId + " doesn't exist";
             if (channelLogger.isErrorEnabled()) {
                 channelLogger.error(errMsg, null);
             }
@@ -778,7 +778,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     MpnSubscription getMpnSubscription(String mpnSubId) {
         MyMpnSubscription mySub = _mpnSubMap.get(mpnSubId);
         if (mySub == null) {
-            String errMsg = "An MpnSubscription with id " + mpnSubId + " doesn't exist";
+            String errMsg = "MpnSubscription " + mpnSubId + " doesn't exist";
             if (channelLogger.isErrorEnabled()) {
                 channelLogger.error(errMsg, null);
             }
