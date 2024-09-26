@@ -9,7 +9,7 @@ part of 'client.dart';
 class NativeBridge {
   static final instance = NativeBridge._();
 
-  // TODO potential memory leak: objects are added to the maps but never removed (see also unsubscribeMpnSubscriptions)
+  // TODO potential memory leak: objects are added to the maps but never removed
 
   /// Maps a clientId (i.e. `LightstreamerClient._id`) to a LightstreamerClient.
   /// The mapping is created when the LightstreamerClient constructor is called.
@@ -58,8 +58,6 @@ class NativeBridge {
   }
 
   Future<void> client_unsubscribe(String clientId, String subId, Map<String, dynamic> arguments) async {
-    // TODO memory leak
-    // _subMap.remove(subId);
     return await _invokeClientMethod(clientId, 'unsubscribe', arguments);
   }
 
@@ -98,8 +96,6 @@ class NativeBridge {
   }
 
   Future<void> client_unsubscribeMpn(String clientId, String mpnSubId, Map<String, dynamic> arguments) async {
-    // TODO memory leak
-    // _mpnSubMap.remove(mpnSubId);
     return await _invokeClientMethod(clientId, 'unsubscribeMpn', arguments);
   }
 
