@@ -604,8 +604,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         for (MpnSubscription sub : subs) {
             String subscriptionId = sub.getSubscriptionId(); // can be null
             // 1. search a subscription known to the Flutter component (i.e. in `_mpnSubMap`) and owned by `client` having the same subscriptionId
-            // TODO what if subscriptionId is null?
-            if (subscriptionId != null) {
+            if (subscriptionId != null) { // defensive check, even if `subscriptionId` should not be null
                 String mpnSubId = null;
                 for (Map.Entry<String, MyMpnSubscription> e : _mpnSubMap.entrySet()) {
                     MyMpnSubscription mySub = e.getValue();
@@ -628,6 +627,10 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                     // serialize `sub` in order to send it to the Flutter component
                     Map<String, Object> dto = mySub.toMap();
                     unknownSubs.add(dto);
+                }
+            } else {
+                if (channelLogger.isWarnEnabled()) {
+                    channelLogger.warn("MpnSubscription.subscriptionId should not be null, but it is", null);
                 }
             }
         }
