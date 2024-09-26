@@ -52,8 +52,7 @@ class NativeBridge {
   }
 
   Future<void> client_subscribe(String clientId, String subId, Subscription sub, Map<String, dynamic> arguments) async {
-    // TODO what if sub is already there?
-    _subMap[subId] = sub;
+    _subMap[subId] = sub; // subscribing to the same object multiple times is permitted
     return await _invokeClientMethod(clientId, 'subscribe', arguments);
   }
 
@@ -62,13 +61,16 @@ class NativeBridge {
   }
 
   Future<List<Subscription>> client_getSubscriptions(String clientId) async {
-    // TODO why not return those in _subMap?
     List<String> subIds = (await _invokeClientMethod(clientId, 'getSubscriptions')).cast<String>();
     List<Subscription> res = [];
     for (var subId in subIds) {
       var sub = _subMap[subId];
       if (sub != null) {
         res.add(sub);
+      } else {
+        if (channelLogger.isWarnEnabled()) {
+          channelLogger.warn('Unknown Subscription $subId in getSubscriptions method');
+        }
       }
     }
     return res;
@@ -84,14 +86,12 @@ class NativeBridge {
   }
 
   Future<void> client_registerForMpn(String clientId, String mpnDevId, MpnDevice device, Map<String, dynamic> arguments) async {
-    // TODO what if device is already there?
-    _mpnDeviceMap[mpnDevId] = device;
+    _mpnDeviceMap[mpnDevId] = device; // registering the same object multiple times is permitted
     return await _invokeClientMethod(clientId, 'registerForMpn', arguments);
   }
 
   Future<void> client_subscribeMpn(String clientId, String mpnSubId, MpnSubscription sub, Map<String, dynamic> arguments) async {
-    // TODO what if sub is already there?
-    _mpnSubMap[mpnSubId] = sub;
+    _mpnSubMap[mpnSubId] = sub; // subscribing to the same object multiple times is permitted
     return await _invokeClientMethod(clientId, 'subscribeMpn', arguments);
   }
 
