@@ -16,7 +16,7 @@ void main() {
   test('channel errors', () async {
     try {
       client = await LightstreamerClient.create('', '');
-      fail('Expected exception');
+      fail('Expected PlatformException');
     } on PlatformException catch(e) {
       assertEqual('Lightstreamer Internal Error', e.code);
       assertEqual('address is malformed', e.message);
@@ -26,11 +26,28 @@ void main() {
       client = await LightstreamerClient.create(host, 'TEST');
       client.connectionOptions.setContentLength(-1);
       await client.connect();
-      fail('Expected exception');
+      fail('Expected PlatformException');
     } on PlatformException catch(e) {
       assertEqual('Lightstreamer Internal Error', e.code);
       assertEqual('value must be greater than zero', e.message);
     }
+  });
+
+  test('Subscription errors', () async {
+    client = await LightstreamerClient.create(host, "TEST");
+    var sub = new Subscription("MERGE", ["count"], ["count"]);
+    client.subscribe(sub);
+    try {
+      await client.subscribe(sub);
+      fail('Expected PlatformException');
+    } on PlatformException catch(e) {
+      assertEqual('Lightstreamer Internal Error', e.code);
+      assertEqual('Cannot subscribe to an active Subscription', e.message);
+    }
+    
+    await client.unsubscribe(sub);
+    sub.setSelector('selector');
+    await client.subscribe(sub);
   });
 
   ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 

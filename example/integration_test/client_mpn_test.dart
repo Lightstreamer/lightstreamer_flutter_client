@@ -1,5 +1,6 @@
 // ignore_for_file: unnecessary_new, prefer_interpolation_to_compose_strings
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 import './utils.dart';
@@ -45,6 +46,25 @@ void main() {
     assertEqual('0.5', sub2.getRequestedMaxFrequency());
     assertEqual('1 < 0', sub2.getTriggerExpression());
     assertEqual('{foo: 123}', sub2.getNotificationFormat());
+  });
+
+  test('MpnSubscription errors', () async {
+    client = await LightstreamerClient.create(host, "TEST");
+    var sub = new MpnSubscription("MERGE", ["count"], ["count"]);
+    sub.setNotificationFormat('{}');
+    await client.registerForMpn(MpnDevice());
+    client.subscribeMpn(sub, false);
+    try {
+      await client.subscribeMpn(sub, false);
+      fail('Expected PlatformException');
+    } on PlatformException catch(e) {
+      assertEqual('Lightstreamer Internal Error', e.code);
+      assertEqual('Cannot subscribe to an active MpnSubscription', e.message);
+    }
+    
+    await client.unsubscribeMpn(sub);
+    sub.setTriggerExpression('0==0');
+    await client.subscribeMpn(sub, false);
   });
 
   test('android builder', () async {

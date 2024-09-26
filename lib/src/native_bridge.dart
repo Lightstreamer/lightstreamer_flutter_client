@@ -2,8 +2,8 @@
 
 part of 'client.dart';
 
-/// A bridge manages the communication between this Flutter component (the Flutter app targeting Android using the Lightstreamer Flutter Client SDK)
-/// and the Android component (the environment running the Lightstreamer Android Client SDK 
+/// A bridge manages the communication between this Flutter component (the Flutter app targeting Android/iOS using the Lightstreamer Flutter Client SDK)
+/// and the Android/iOS component (the process running the Lightstreamer Android/iOS Client SDK 
 /// that performs the operations requested by the Flutter component).
 /// See also: https://docs.flutter.dev/platform-integration/platform-channels
 class NativeBridge {

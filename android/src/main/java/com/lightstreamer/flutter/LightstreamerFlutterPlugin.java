@@ -67,9 +67,8 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
      * 1. `LightstreamerClient.subscribeMpn` is called, or
      * 2. a Server MpnSubscription (i.e. an MpnSubscription not created in response to a `LightstreamerClient.subscribeMpn` call)
      *    is returned by `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
-     * The mapping is removed when `LightstreamerClient.unsubscribeMpn` is called.
      */
-    final MpnSubscriptionMap _mpnSubMap = new MpnSubscriptionMap();
+    final Map<String, MyMpnSubscription> _mpnSubMap = new HashMap<>();
     /**
      * Maps an mpnDevId (i.e. the `mpnDevId` field of a MethodCall object) to an MpnDevice.
      * The mapping is created when `LightstreamerClient.registerForMpn` is called.
@@ -302,13 +301,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     }
 
     void Client_create(MethodCall call, MethodChannel.Result result) {
-        // TODO check that id is not in the map yet
-        LightstreamerClient client = getClient(call);
-        String serverAddress = call.argument("serverAddress");
-        String adapterSet = call.argument("adapterSet");
-        // TODO better to pass them to the ctor
-        client.connectionDetails.setServerAddress(serverAddress);
-        client.connectionDetails.setAdapterSet(adapterSet);
+        LightstreamerClient client = createClient(call);
         String id = call.argument("id");
         client.addListener(new MyClientListener(id, client, this));
         result.success(null);
@@ -392,9 +385,15 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String dataAdapter2 = (String) options.get("dataAdapter2");
         List<String> fields2 = (List<String>) options.get("fields2");
         String schema2 = (String) options.get("schema2");
-        Subscription sub = new Subscription((String) options.get("mode"));
-        // TODO what if already in _subMap?
-        _subMap.put(subId, sub);
+        Subscription sub = _subMap.get(subId);
+        if (sub == null) {
+            sub = new Subscription((String) options.get("mode"));
+            sub.addListener(new MySubscriptionListener(subId, sub, this));
+            _subMap.put(subId, sub);
+        }
+        if (sub.isActive()) {
+            throw new IllegalStateException("Cannot subscribe to an active Subscription");
+        }
         if (items != null) {
             sub.setItems(items.toArray(new String[0]));
         }
@@ -431,7 +430,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         if (schema2 != null) {
             sub.setCommandSecondLevelFieldSchema(schema2);
         }
-        sub.addListener(new MySubscriptionListener(subId, sub, this));
         client.subscribe(sub);
         result.success(null);
     }
@@ -439,9 +437,14 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void Client_unsubscribe(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String subId = call.argument("subId");
-        Subscription sub = _subMap.get(subId);
-        _subMap.remove(subId);
-        // TODO what if null?
+        Subscription sub = _subMap.remove(subId);
+        if (sub == null) {
+            String errMsg = "A Subscription with id " + subId + " doesn't exist";
+            if (channelLogger.isErrorEnabled()) {
+                channelLogger.error(errMsg, null);
+            }
+            throw new IllegalStateException(errMsg);
+        }
         client.unsubscribe(sub);
         result.success(null);
     }
@@ -512,8 +515,17 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String trigger = (String) options.get("trigger");
         String format = (String) options.get("notificationFormat");
         boolean coalescing = (boolean) call.argument("coalescing");
-        MpnSubscription sub = new MpnSubscription(mode);
-        _mpnSubMap.put(new MyMpnSubscription(client, mpnSubId, sub));
+        MyMpnSubscription mySub = _mpnSubMap.get(mpnSubId);
+        if (mySub == null) {
+            MpnSubscription sub = new MpnSubscription(mode);
+            sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
+            mySub = new MyMpnSubscription(client, mpnSubId, sub);
+            _mpnSubMap.put(mpnSubId, mySub);
+        }
+        MpnSubscription sub = mySub._sub;
+        if (sub.isActive()) {
+            throw new IllegalStateException("Cannot subscribe to an active MpnSubscription");
+        }
         if (items != null) {
             sub.setItems(items.toArray(new String[0]));
         }
@@ -541,7 +553,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         if (format != null) {
             sub.setNotificationFormat(format);
         }
-        sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
         client.subscribe(sub, coalescing);
         result.success(null);
     }
@@ -549,7 +560,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void Client_unsubscribeMpn(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String mpnSubId = call.argument("mpnSubId");
-        MpnSubscription sub = _mpnSubMap.remove(mpnSubId);
+        MpnSubscription sub = getMpnSubscription(mpnSubId);
         client.unsubscribe(sub);
         result.success(null);
     }
@@ -602,7 +613,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                     mpnSubId = nextServerMpnSubId();
                     sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
                     MyMpnSubscription mySub = new MyMpnSubscription(client, mpnSubId, sub);
-                    _mpnSubMap.put(mySub);
+                    _mpnSubMap.put(mpnSubId, mySub);
                     // serialize `sub` in order to send it to the Flutter component
                     Map<String, Object> dto = mySub.toMap();
                     unknownSubs.add(dto);
@@ -642,7 +653,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 mpnSubId = nextServerMpnSubId();
                 sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
                 MyMpnSubscription mySub = new MyMpnSubscription(client, mpnSubId, sub);
-                _mpnSubMap.put(mySub);
+                _mpnSubMap.put(mpnSubId, mySub);
                 // serialize `sub` in order to send it to the Flutter component
                 Map<String, Object> dto = mySub.toMap();
                 res.put("extra", dto);
@@ -716,18 +727,28 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(res);
     }
 
+    Subscription getSubscription(String subId) {
+        Subscription sub = _subMap.get(subId);
+        if (sub == null) {
+            String errMsg = "A Subscription with id " + subId + " doesn't exist";
+            if (channelLogger.isErrorEnabled()) {
+                channelLogger.error(errMsg, null);
+            }
+            throw new IllegalStateException(errMsg);
+        }
+        return sub;
+    }
+
     void Subscription_getCommandPosition(MethodCall call, MethodChannel.Result result) {
         String subId = call.argument("subId");
-        Subscription sub = _subMap.get(subId);
-        // TODO null check
+        Subscription sub = getSubscription(subId);
         Object res = sub.getCommandPosition();
         result.success(res);
     }
 
     void Subscription_getKeyPosition(MethodCall call, MethodChannel.Result result) {
         String subId = call.argument("subId");
-        Subscription sub = _subMap.get(subId);
-        // TODO null check
+        Subscription sub = getSubscription(subId);
         Object res = sub.getKeyPosition();
         result.success(res);
     }
@@ -735,63 +756,77 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void Subscription_setRequestedMaxFrequency(MethodCall call, MethodChannel.Result result) {
         String subId = call.argument("subId");
         String newVal = call.argument("newVal");
-        Subscription sub = _subMap.get(subId);
-        // TODO null check
+        Subscription sub = getSubscription(subId);
         sub.setRequestedMaxFrequency(newVal);
         result.success(null);
     }
 
     void Subscription_isActive(MethodCall call, MethodChannel.Result result) {
         String subId = call.argument("subId");
-        Subscription sub = _subMap.get(subId);
-        // TODO null check
+        Subscription sub = getSubscription(subId);
         Object res = sub.isActive();
         result.success(res);
     }
 
     void Subscription_isSubscribed(MethodCall call, MethodChannel.Result result) {
         String subId = call.argument("subId");
-        Subscription sub = _subMap.get(subId);
-        // TODO null check
+        Subscription sub = getSubscription(subId);
         Object res = sub.isSubscribed();
         result.success(res);
     }
 
+    MpnSubscription getMpnSubscription(String mpnSubId) {
+        MyMpnSubscription mySub = _mpnSubMap.get(mpnSubId);
+        if (mySub == null) {
+            String errMsg = "An MpnSubscription with id " + mpnSubId + " doesn't exist";
+            if (channelLogger.isErrorEnabled()) {
+                channelLogger.error(errMsg, null);
+            }
+            throw new IllegalStateException(errMsg);
+        }
+        return mySub._sub;
+    }
+
     void MpnSubscription_setTriggerExpression(MethodCall call, MethodChannel.Result result) {
         String mpnSubId = call.argument("mpnSubId");
-        MpnSubscription sub = _mpnSubMap.get(mpnSubId);
-        if (sub == null) {
-            if (channelLogger.isWarnEnabled()) {
-                channelLogger.warn("MpnSubscription with id " + mpnSubId + " not found", null);
-            }
-            result.success(null);
-            return;
-        }
+        MpnSubscription sub = getMpnSubscription(mpnSubId);
         sub.setTriggerExpression(call.argument("trigger"));
         result.success(null);
     }
 
     void MpnSubscription_setNotificationFormat(MethodCall call, MethodChannel.Result result) {
         String mpnSubId = call.argument("mpnSubId");
-        MpnSubscription sub = _mpnSubMap.get(mpnSubId);
-        if (sub == null) {
-            if (channelLogger.isWarnEnabled()) {
-                channelLogger.warn("MpnSubscription with id " + mpnSubId + " not found", null);
-            }
-            result.success(null);
-            return;
-        }
+        MpnSubscription sub = getMpnSubscription(mpnSubId);
         sub.setNotificationFormat(call.argument("notificationFormat"));
         result.success(null);
+    }
+
+    LightstreamerClient createClient(MethodCall call) {
+        String id = call.argument("id");
+        LightstreamerClient ls = _clientMap.get(id);
+        if (ls != null) {
+            String errMsg = "A LightstreamerClient wit id " + id + " already exists";
+            if (channelLogger.isErrorEnabled()) {
+                channelLogger.error(errMsg, null);
+            }
+            throw new IllegalStateException(errMsg);
+        }
+        String serverAddress = call.argument("serverAddress");
+        String adapterSet = call.argument("adapterSet");
+        ls = new LightstreamerClient(serverAddress, adapterSet);
+        _clientMap.put(id, ls);
+        return ls;
     }
 
     LightstreamerClient getClient(MethodCall call) {
         String id = call.argument("id");
         LightstreamerClient ls = _clientMap.get(id);
-        // TODO what if null and called by a method other than create?
         if (ls == null) {
-            ls = new LightstreamerClient(null, null);
-            _clientMap.put(id, ls);
+            String errMsg = "A LightstreamerClient wit id " + id + " doesn't exist";
+            if (channelLogger.isErrorEnabled()) {
+                channelLogger.error(errMsg, null);
+            }
+            throw new IllegalStateException(errMsg);
         }
         return ls;
     }
@@ -1090,6 +1125,7 @@ class MyClientMessageListener implements ClientMessageListener {
 }
 
 class MyMpnSubscription {
+    // TODO what if another client subscribes to this MpnSubscription?
     final LightstreamerClient _client;
     final String _mpnSubId;
     final MpnSubscription _sub;
@@ -1119,31 +1155,6 @@ class MyMpnSubscription {
         dto.put("status", _sub.getStatus());
         dto.put("subscriptionId", _sub.getSubscriptionId());
         return dto;
-    }
-}
-
-class MpnSubscriptionMap {
-    final Map<String, MyMpnSubscription> _mpnSubMap = new HashMap<>();
-
-    @Nullable MpnSubscription get(String mpnSubId) {
-        MyMpnSubscription mySub = _mpnSubMap.get(mpnSubId);
-        // TODO what if null?
-        return mySub == null ? null : mySub._sub;
-    }
-
-    void put(MyMpnSubscription mySub) {
-        // TODO what if already in _subMap?
-        _mpnSubMap.put(mySub._mpnSubId, mySub);
-    }
-
-    @Nullable MpnSubscription remove(String mpnSubId) {
-        MyMpnSubscription mySub = _mpnSubMap.remove(mpnSubId);
-        // TODO what if null?
-        return mySub == null ? null : mySub._sub;
-    }
-
-    Set<Map.Entry<String, MyMpnSubscription>> entrySet() {
-        return _mpnSubMap.entrySet();
     }
 }
 

@@ -160,7 +160,10 @@ class LightstreamerClient {
       'subscription': sub._toMap(),
       'coalescing': coalescing
     };
-    return await NativeBridge.instance.client_subscribeMpn(_id, sub._id, sub, arguments);
+    await NativeBridge.instance.client_subscribeMpn(_id, sub._id, sub, arguments);
+    // NB _remoteActive is set after the remote call to ensure that, when the call returns,
+    // the remote image of the local subscription has been created
+    sub._remoteActive = true;
   }
 
   Future<void> unsubscribeMpn(MpnSubscription sub) async {
@@ -497,7 +500,8 @@ class Subscription {
   bool _subscribed = false;
   int? _commandPosition;
   int? _keyPosition;
-  // _remoteActive is true iff the remote image of this subscription has been created
+  // _remoteActive is true iff the remote image of this subscription has been created,
+  // i.e. `LightstreamerClient.subscribe` has been called with this Subscription as an argument
   // TODO when does _remoteActive become false?
   bool _remoteActive = false;
 
@@ -750,6 +754,10 @@ class MpnSubscription {
   String _status = 'UNKNOWN';
   //
   String? _subscriptionId;
+  // _remoteActive is true iff the remote image of this subscription has been created,
+  // i.e. `LightstreamerClient.subscribeMpn` has been called with this MpnSubscription as an argument
+  // TODO when does _remoteActive become false?
+  bool _remoteActive = false;
 
   Map<String, dynamic> _toMap() {
     return {
@@ -819,6 +827,10 @@ class MpnSubscription {
     _statusTs = dto['statusTs'];
     _status = dto['status'];
     _subscriptionId = dto['subscriptionId'];
+    // `_remoteActive` is set to true because
+    // `dto` (returned by `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`)
+    // represents an MpnSubscription living in the Android/iOS component
+    _remoteActive = true;
   }
 
   void addListener(MpnSubscriptionListener listener) {
@@ -893,22 +905,24 @@ class MpnSubscription {
   }
   Future<void> setTriggerExpression(String? trigger) async {
     _trigger = trigger;
-    var arguments = <String, dynamic> {
-      'trigger': trigger
-    };
-    // TODO what if not subscribed?
-    return await _invokeMethod('setTriggerExpression', arguments);
+    if (_remoteActive) {
+      var arguments = <String, dynamic> {
+        'trigger': trigger
+      };
+      return await _invokeMethod('setTriggerExpression', arguments);
+    }
   }
   String? getNotificationFormat() {
     return _notificationFormat;
   }
   Future<void> setNotificationFormat(String format) async {
     _notificationFormat = format;
-    var arguments = <String, dynamic> {
-      'notificationFormat': format
-    };
-    // TODO what if not subscribed?
-    return await _invokeMethod('setNotificationFormat', arguments);
+    if (_remoteActive) {
+      var arguments = <String, dynamic> {
+        'notificationFormat': format
+      };
+      return await _invokeMethod('setNotificationFormat', arguments);
+    }
   }
   bool isActive() {
     return _status != 'UNKNOWN';
