@@ -474,17 +474,37 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void Client_registerForMpn(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String mpnDevId = call.argument("mpnDevId");
+        MpnDevice device = _mpnDeviceMap.get(mpnDevId);
+        if (device != null) {
+            client.registerForMpn(device);
+            result.success(null);
+            return;
+        }
+        // mpnDevId is unknown: get a device token and create a new device
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
             @Override
             public void onComplete(@NonNull Task<String> task) {
                 if (!task.isSuccessful()) {
-                    // TODO manage error
+                    String errMsg = "MPN Device Token is unavailable";
+                    if (channelLogger.isErrorEnabled()) {
+                        channelLogger.error(errMsg, null);
+                    }
+                    result.error("Lightstreamer Internal Error", errMsg, task.getException());
+                    return;
+                }
+                // TODO synchronize access to `_mpnDeviceMap`?
+                if (_mpnDeviceMap.containsKey(mpnDevId)) {
+                    String errMsg = "MpnDevice " + mpnDevId + " already exists";
+                    if (channelLogger.isErrorEnabled()) {
+                        channelLogger.error(errMsg, null);
+                    }
+                    result.error("Lightstreamer Internal Error", errMsg, null);
                     return;
                 }
                 String token = task.getResult();
                 MpnDevice device = new MpnDevice(_appContext, token);
-                _mpnDeviceMap.put(mpnDevId, device); // TODO what if already assigned?
                 device.addListener(new MyMpnDeviceListener(mpnDevId, device, LightstreamerFlutterPlugin.this));
+                _mpnDeviceMap.put(mpnDevId, device);
                 client.registerForMpn(device);
 
                 result.success(null);
@@ -560,7 +580,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     void Client_unsubscribeMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
         LightstreamerClient client = getClient(call);
         String filter = (String) call.argument("filter");
-        // TODO how to avoid _mpnSubMap memory leak?
         client.unsubscribeMpnSubscriptions(filter);
         result.success(null);
     }
@@ -797,7 +816,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String id = call.argument("id");
         LightstreamerClient ls = _clientMap.get(id);
         if (ls != null) {
-            String errMsg = "A LightstreamerClient wit id " + id + " already exists";
+            String errMsg = "LightstreamerClient " + id + " already exists";
             if (channelLogger.isErrorEnabled()) {
                 channelLogger.error(errMsg, null);
             }

@@ -174,7 +174,7 @@ void main() {
         devListener.fStatusChanged =
             (status, ts) => exps.signal("onStatusChanged " + status);
         client.connect();
-        client.registerForMpn(device);
+        await client.registerForMpn(device);
         await exps.value("onStatusChanged REGISTERED");
         await exps.value("onRegistered");
         assertEqual("REGISTERED", device.getStatus());
