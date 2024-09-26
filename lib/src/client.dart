@@ -140,15 +140,7 @@ class LightstreamerClient {
     return _listeners.toList();
   }
 
-  MpnDevice? _mpnDevice;
-
-  MpnDevice? getMpnDevice() {
-    return _mpnDevice;
-  }
-
   Future<void> registerForMpn(MpnDevice device) async {
-    // TODO what if already registered
-    _mpnDevice = device;
     var arguments = <String, dynamic>{
       'mpnDevId': device._id
     };
@@ -280,7 +272,7 @@ class ConnectionDetails {
 }
 
 class ConnectionOptions {
-  // TODO keep in sync
+  // WARNING: The field default values must be kept in sync with the defaults of the other Lightstreamer Client SDKs
   final String _id;
   int _contentLength = 50000000;
   int _firstRetryMaxDelay = 100;
