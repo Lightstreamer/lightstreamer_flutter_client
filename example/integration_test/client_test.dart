@@ -207,6 +207,11 @@ void main() {
         assertEqual(true, sub.isSubscribed());
         assertEqual(1, sub.getKeyPosition());
         assertEqual(4, sub.getCommandPosition());
+        // check that `getCommandValue` doesn't throw exceptions
+        await sub.getCommandValue('mult_table', 'row', 'value1');
+        await sub.getCommandValue('mult_table', 'row', '2');
+        await sub.getCommandValue('1', 'row', 'value1');
+        await sub.getCommandValue('1', 'row', '2');
       });
 
       test('subscribe command 2 levels', () async {
@@ -394,6 +399,10 @@ void main() {
         await exps.value("onSubscription");
         await exps.value("onRealMaxFrequency unlimited");
         await exps.value("onItemUpdate");
+        assertNotNull(await sub.getValue('count', 'count'));
+        assertNotNull(await sub.getValue('count', '1'));
+        assertNotNull(await sub.getValue('1', 'count'));
+        assertNotNull(await sub.getValue('1', '1'));
         client.unsubscribe(sub);
         await exps.value("onUnsubscription");
       });

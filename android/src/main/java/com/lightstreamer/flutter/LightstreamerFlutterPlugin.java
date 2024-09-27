@@ -252,6 +252,30 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             case "isSubscribed":
                 Subscription_isSubscribed(call, result);
                 break;
+            case "getValueByItemNameAndFieldName":
+                Subscription_getValueByItemNameAndFieldName(call, result);
+                break;
+            case "getValueByItemNameAndFieldPos":
+                Subscription_getValueByItemNameAndFieldPos(call, result);
+                break;
+            case "getValueByItemPosAndFieldName":
+                Subscription_getValueByItemPosAndFieldName(call, result);
+                break;
+            case "getValueByItemPosAndFieldPos":
+                Subscription_getValueByItemPosAndFieldPos(call, result);
+                break;
+            case "getCommandValueByItemNameAndFieldName":
+                Subscription_getCommandValueByItemNameAndFieldName(call, result);
+                break;
+            case "getCommandValueByItemNameAndFieldPos":
+                Subscription_getCommandValueByItemNameAndFieldPos(call, result);
+                break;
+            case "getCommandValueByItemPosAndFieldName":
+                Subscription_getCommandValueByItemPosAndFieldName(call, result);
+                break;
+            case "getCommandValueByItemPosAndFieldPos":
+                Subscription_getCommandValueByItemPosAndFieldPos(call, result);
+                break;
             default:
                 if (channelLogger.isErrorEnabled()) {
                     channelLogger.error("Unknown method " + call.method, null);
@@ -792,6 +816,82 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String subId = call.argument("subId");
         Subscription sub = getSubscription(subId);
         Object res = sub.isSubscribed();
+        result.success(res);
+    }
+
+    void Subscription_getValueByItemNameAndFieldName(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        String item = call.argument("item");
+        String field = call.argument("field");
+        String res = sub.getValue(item, field);
+        result.success(res);
+    }
+
+    void Subscription_getValueByItemNameAndFieldPos(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        String item = call.argument("item");
+        int field = call.argument("field");
+        String res = sub.getValue(item, field);
+        result.success(res);
+    }
+
+    void Subscription_getValueByItemPosAndFieldName(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        int item = call.argument("item");
+        String field = call.argument("field");
+        String res = sub.getValue(item, field);
+        result.success(res);
+    }
+
+    void Subscription_getValueByItemPosAndFieldPos(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        int item = call.argument("item");
+        int field = call.argument("field");
+        String res = sub.getValue(item, field);
+        result.success(res);
+    }
+
+    void Subscription_getCommandValueByItemNameAndFieldName(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        String item = call.argument("item");
+        String key = call.argument("key");
+        String field = call.argument("field");
+        String res = sub.getCommandValue(item, key, field);
+        result.success(res);
+    }
+
+    void Subscription_getCommandValueByItemNameAndFieldPos(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        String item = call.argument("item");
+        String key = call.argument("key");
+        int field = call.argument("field");
+        String res = sub.getCommandValue(item, key, field);
+        result.success(res);
+    }
+
+    void Subscription_getCommandValueByItemPosAndFieldName(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        int item = call.argument("item");
+        String key = call.argument("key");
+        String field = call.argument("field");
+        String res = sub.getCommandValue(item, key, field);
+        result.success(res);
+    }
+
+    void Subscription_getCommandValueByItemPosAndFieldPos(MethodCall call, MethodChannel.Result result) {
+        String subId = call.argument("subId");
+        Subscription sub = getSubscription(subId);
+        int item = call.argument("item");
+        String key = call.argument("key");
+        int field = call.argument("field");
+        String res = sub.getCommandValue(item, key, field);
         result.success(res);
     }
 

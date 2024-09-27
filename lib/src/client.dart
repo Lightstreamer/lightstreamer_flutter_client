@@ -637,10 +637,87 @@ class Subscription {
   bool isSubscribed() {
     return _subscribed;
   }
-  // TODO String? getValue(StringOrInt itemNameOrPosition, StringOrInt fieldNameOrPosition) {
-  // }
-  // TODO String? getCommandValue(StringOrInt itemNameOrPosition, String keyValue, StringOrInt fieldNameOrPosition) {
-  // }
+  
+  Future<String?> getValue(String itemNameOrPosition, String fieldNameOrPosition) async {
+    if (!_remoteActive) {
+      return null;
+    }
+    var itemPos = int.tryParse(itemNameOrPosition, radix: 10);
+    var fieldPos = int.tryParse(fieldNameOrPosition, radix: 10);
+    var itemName = itemNameOrPosition;
+    var fieldName = fieldNameOrPosition;
+    if (itemPos == null) {
+      if (fieldPos == null) {
+        var arguments = <String, dynamic> {
+          'item': itemName,
+          'field': fieldName,
+        };
+        return await _invokeMethod('getValueByItemNameAndFieldName', arguments);
+      } else {
+        var arguments = <String, dynamic> {
+          'item': itemName,
+          'field': fieldPos,
+        };
+        return await _invokeMethod('getValueByItemNameAndFieldPos', arguments);
+      }
+    } else {
+      if (fieldPos == null) {
+        var arguments = <String, dynamic> {
+          'item': itemPos,
+          'field': fieldName,
+        };
+        return await _invokeMethod('getValueByItemPosAndFieldName', arguments);
+      } else {
+        var arguments = <String, dynamic> {
+          'item': itemPos,
+          'field': fieldPos,
+        };
+        return await _invokeMethod('getValueByItemPosAndFieldPos', arguments);
+      }
+    }
+  }
+  Future<String?> getCommandValue(String itemNameOrPosition, String keyValue, String fieldNameOrPosition) async {
+    if (!_remoteActive) {
+      return null;
+    }
+    var itemPos = int.tryParse(itemNameOrPosition, radix: 10);
+    var fieldPos = int.tryParse(fieldNameOrPosition, radix: 10);
+    var itemName = itemNameOrPosition;
+    var fieldName = fieldNameOrPosition;
+    if (itemPos == null) {
+      if (fieldPos == null) {
+        var arguments = <String, dynamic> {
+          'item': itemName,
+          'key': keyValue,
+          'field': fieldName,
+        };
+        return await _invokeMethod('getCommandValueByItemNameAndFieldName', arguments);
+      } else {
+        var arguments = <String, dynamic> {
+          'item': itemName,
+          'key': keyValue,
+          'field': fieldPos,
+        };
+        return await _invokeMethod('getCommandValueByItemNameAndFieldPos', arguments);
+      }
+    } else {
+      if (fieldPos == null) {
+        var arguments = <String, dynamic> {
+          'item': itemPos,
+          'key': keyValue,
+          'field': fieldName,
+        };
+        return await _invokeMethod('getCommandValueByItemPosAndFieldName', arguments);
+      } else {
+        var arguments = <String, dynamic> {
+          'item': itemPos,
+          'key': keyValue,
+          'field': fieldPos,
+        };
+        return await _invokeMethod('getCommandValueByItemPosAndFieldPos', arguments);
+      }
+    }
+  }
 
   Future<T> _invokeMethod<T>(String method, [ Map<String, dynamic>? arguments ]) async {
     arguments = arguments ?? {};
