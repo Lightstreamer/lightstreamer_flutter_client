@@ -67,6 +67,47 @@ void main() {
     await client.subscribeMpn(sub, false);
   });
 
+  test('subscribeToSameObjectTwice', () async {
+    var exps = Expectations();
+    var client2 = await LightstreamerClient.create(host, "TEST");
+
+    device = MpnDevice();
+    devListener = BaseDeviceListener();
+    devListener.fSubscriptionsUpdated = () => exps.signal('onSubscriptionsUpdated');
+    device.addListener(devListener);
+
+    sub = new MpnSubscription("MERGE", ["count"], ["count"]);
+    sub.setDataAdapter("COUNT");
+    sub.setNotificationFormat('{"android":{"notification":{"title":"my_title_2"}}}');
+    sub.setTriggerExpression('0==0');
+
+    await client2.registerForMpn(device);
+    await client2.connect();
+    await exps.value('onSubscriptionsUpdated');
+    
+    client2.subscribeMpn(sub, false);
+    await exps.value('onSubscriptionsUpdated');
+    var subs = await client2.getMpnSubscriptions();
+    assertEqual(1, subs.length);
+
+    client2.unsubscribeMpn(sub);
+    await exps.value('onSubscriptionsUpdated');
+    subs = await client2.getMpnSubscriptions();
+    assertEqual(0, subs.length);
+
+    client2.disconnect();
+
+    client = await LightstreamerClient.create(host, "TEST");
+    await client.registerForMpn(device);
+    await client.connect();
+    await exps.value('onSubscriptionsUpdated');
+
+    client.subscribeMpn(sub, false);
+    await exps.value('onSubscriptionsUpdated');
+    subs = await client.getMpnSubscriptions();
+    assertEqual(1, subs.length);
+  });
+
   test('android builder', () async {
     var builder = new AndroidMpnBuilder();
     var format = await builder

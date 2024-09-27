@@ -533,6 +533,12 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             sub.addListener(new MyMpnSubscriptionListener(mpnSubId, sub, this));
             mySub = new MyMpnSubscription(client, mpnSubId, sub);
             _mpnSubMap.put(mpnSubId, mySub);
+        } else if (client != mySub._client) {
+            // NB since a MyMpnSubscription keeps a reference to the client that subscribes to
+            // the underlying MpnSubscription, the reference must be updated when the same MpnSubscription
+            // is subscribed to by another client
+            mySub = new MyMpnSubscription(client, mpnSubId, mySub._sub);
+            _mpnSubMap.put(mpnSubId, mySub);
         }
         MpnSubscription sub = mySub._sub;
         if (sub.isActive()) {
@@ -1139,7 +1145,8 @@ class MyClientMessageListener implements ClientMessageListener {
 }
 
 class MyMpnSubscription {
-    // TODO what if another client subscribes to this MpnSubscription?
+    // WARNING when a client different from `_client` subscribes to `_sub`,
+    // the client reference must be updated (see the implementation of `LightstreamerClient.subscribeMpn`)
     final LightstreamerClient _client;
     final String _mpnSubId;
     final MpnSubscription _sub;
