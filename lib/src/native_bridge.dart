@@ -610,7 +610,7 @@ class NativeBridge {
     var client = _clientMap[clientId];
     if (client == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown LightstreamerClient with id $clientId", null);
+        channelLogger.error("Unknown LightstreamerClient $clientId", null);
       }
       return;
     }
@@ -623,7 +623,7 @@ class NativeBridge {
     var listener = _msgListenerMap.remove(msgId);
     if (listener == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown ClientMessageListener with id $msgId", null);
+        channelLogger.error("Unknown ClientMessageListener $msgId", null);
       }
       return;
     }
@@ -634,7 +634,7 @@ class NativeBridge {
     var sub = _subMap[subId];
     if (sub == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown Subscription with id $subId", null);
+        channelLogger.error("Unknown Subscription $subId", null);
       }
       return;
     }
@@ -647,7 +647,7 @@ class NativeBridge {
     var device = _mpnDeviceMap[mpnDevId];
     if (device == null) {
        if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("No MpnDevice registered with id $mpnDevId", null);
+        channelLogger.error("No MpnDevice $mpnDevId registered", null);
       }
       return;
     }
@@ -660,7 +660,7 @@ class NativeBridge {
     var sub = _mpnSubMap[mpnSubId];
     if (sub == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown MpnSubscription with id $mpnSubId", null);
+        channelLogger.error("Unknown MpnSubscription $mpnSubId", null);
       }
       return;
     }
