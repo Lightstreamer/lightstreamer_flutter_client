@@ -69,7 +69,7 @@ class NativeBridge {
         res.add(sub);
       } else {
         if (channelLogger.isWarnEnabled()) {
-          channelLogger.warn('Unknown Subscription $subId in getSubscriptions method');
+          channelLogger.warn('Unknown Subscription $subId in getSubscriptions');
         }
       }
     }
@@ -111,7 +111,7 @@ class NativeBridge {
         res.add(sub);
       } else {
         if (channelLogger.isWarnEnabled()) {
-          channelLogger.warn('Unknown MpnSubscription $mpnSubId in getMpnSubscriptions method');
+          channelLogger.warn('Unknown MpnSubscription $mpnSubId in getMpnSubscriptions');
         }
       }
     }
@@ -138,7 +138,7 @@ class NativeBridge {
         return sub;
       } else {
         if (channelLogger.isWarnEnabled()) {
-          channelLogger.warn('Unknown MpnSubscription $mpnSubId in findMpnSubscription method');
+          channelLogger.warn('Unknown MpnSubscription $mpnSubId in findMpnSubscription');
         }
         return null;
       }
@@ -212,7 +212,7 @@ class NativeBridge {
     var arguments = call.arguments;
     String id = arguments['id'];
     String status = arguments['status'];
-    runClientListenersAsync(id, (l) => l.onStatusChange(status));
+    runClientListenersAsync(id, (l) => l.onStatusChange(status), 'onStatusChange');
   }
 
   void _ClientListener_onPropertyChange(MethodCall call) {
@@ -240,7 +240,7 @@ class NativeBridge {
           client.connectionOptions._pollingInterval = arguments['value'];
       }
     }
-    runClientListenersAsync(id, (l) => l.onPropertyChange(property));
+    runClientListenersAsync(id, (l) => l.onPropertyChange(property), 'onPropertyChange');
   }
 
   void _ClientListener_onServerError(MethodCall call) {
@@ -248,7 +248,7 @@ class NativeBridge {
     String id = arguments['id'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    runClientListenersAsync(id, (l) => l.onServerError(errorCode, errorMessage));
+    runClientListenersAsync(id, (l) => l.onServerError(errorCode, errorMessage), 'onServerError');
   }
 
   void _ClientMessageListener_handle(String method, MethodCall call) {
@@ -275,7 +275,7 @@ class NativeBridge {
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
     bool sentOnNetwork = arguments['sentOnNetwork'];
-    runMessageListenersAsync(msgId, (l) => l.onAbort(originalMessage, sentOnNetwork));
+    runMessageListenersAsync(msgId, (l) => l.onAbort(originalMessage, sentOnNetwork), 'onAbort');
   }
 
   void _ClientMessageListener_onDeny(MethodCall call) {
@@ -284,21 +284,21 @@ class NativeBridge {
     String originalMessage = arguments['originalMessage'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    runMessageListenersAsync(msgId, (l) => l.onDeny(originalMessage, errorCode, errorMessage));
+    runMessageListenersAsync(msgId, (l) => l.onDeny(originalMessage, errorCode, errorMessage), 'onDeny');
   }
 
   void _ClientMessageListener_onDiscarded(MethodCall call) {
     var arguments = call.arguments;
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
-    runMessageListenersAsync(msgId, (l) => l.onDiscarded(originalMessage));
+    runMessageListenersAsync(msgId, (l) => l.onDiscarded(originalMessage), 'onDiscarded');
   }
 
   void _ClientMessageListener_onError(MethodCall call) {
     var arguments = call.arguments;
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
-    runMessageListenersAsync(msgId, (l) => l.onError(originalMessage));
+    runMessageListenersAsync(msgId, (l) => l.onError(originalMessage), 'onError');
   }
 
   void _ClientMessageListener_onProcessed(MethodCall call) {
@@ -306,7 +306,7 @@ class NativeBridge {
     String msgId = arguments['msgId'];
     String originalMessage = arguments['originalMessage'];
     String response = arguments['response'];
-    runMessageListenersAsync(msgId, (l) => l.onProcessed(originalMessage, response));
+    runMessageListenersAsync(msgId, (l) => l.onProcessed(originalMessage, response), 'onProcessed');
   }
 
   void _SubscriptionListener_handle(String method, MethodCall call) {
@@ -343,7 +343,7 @@ class NativeBridge {
     String subId = arguments['subId'];
     String itemName = arguments['itemName'];
     int itemPos = arguments['itemPos'];
-    runSubscriptionListenersAsync(subId, (l) => l.onClearSnapshot(itemName, itemPos));
+    runSubscriptionListenersAsync(subId, (l) => l.onClearSnapshot(itemName, itemPos), 'onClearSnapshot');
   }
 
   void _SubscriptionListener_onCommandSecondLevelItemLostUpdates(MethodCall call) {
@@ -351,7 +351,7 @@ class NativeBridge {
     String subId = arguments['subId'];
     int lostUpdates = arguments['lostUpdates'];
     String key = arguments['key'];
-    runSubscriptionListenersAsync(subId, (l) => l.onCommandSecondLevelItemLostUpdates(lostUpdates, key));
+    runSubscriptionListenersAsync(subId, (l) => l.onCommandSecondLevelItemLostUpdates(lostUpdates, key), 'onCommandSecondLevelLostUpdates');
   }
 
   void _SubscriptionListener_onCommandSecondLevelSubscriptionError(MethodCall call) {
@@ -360,7 +360,7 @@ class NativeBridge {
     int code = arguments['code'];
     String message = arguments['message'];
     String key = arguments['key'];
-    runSubscriptionListenersAsync(subId, (l) => l.onCommandSecondLevelSubscriptionError(code, message, key));
+    runSubscriptionListenersAsync(subId, (l) => l.onCommandSecondLevelSubscriptionError(code, message, key), 'onCommandSecondLevelSubscriptionError');
   }
 
   void _SubscriptionListener_onEndOfSnapshot(MethodCall call) {
@@ -368,7 +368,7 @@ class NativeBridge {
     String subId = arguments['subId'];
     String itemName = arguments['itemName'];
     int itemPos = arguments['itemPos'];
-    runSubscriptionListenersAsync(subId, (l) => l.onEndOfSnapshot(itemName, itemPos));
+    runSubscriptionListenersAsync(subId, (l) => l.onEndOfSnapshot(itemName, itemPos), 'onEndOfSnapshot');
   }
 
   void _SubscriptionListener_onItemLostUpdate(MethodCall call) {
@@ -377,14 +377,14 @@ class NativeBridge {
     String itemName = arguments['itemName'];
     int itemPos = arguments['itemPos'];
     int lostUpdates = arguments['lostUpdates'];
-    runSubscriptionListenersAsync(subId, (l) => l.onItemLostUpdates(itemName, itemPos, lostUpdates));
+    runSubscriptionListenersAsync(subId, (l) => l.onItemLostUpdates(itemName, itemPos, lostUpdates), 'onItemLostUpdate');
   }
 
   void _SubscriptionListener_onItemUpdate(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
     ItemUpdate update = ItemUpdate._(call);
-    runSubscriptionListenersAsync(subId, (l) => l.onItemUpdate(update));
+    runSubscriptionListenersAsync(subId, (l) => l.onItemUpdate(update), 'onItemUpdate');
   }
 
   void _SubscriptionListener_onSubscription(MethodCall call) {
@@ -396,7 +396,7 @@ class NativeBridge {
       sub._commandPosition = arguments['commandPosition'];
       sub._keyPosition = arguments['keyPosition'];
     }
-    runSubscriptionListenersAsync(subId, (l) => l.onSubscription());
+    runSubscriptionListenersAsync(subId, (l) => l.onSubscription(), 'onSubscription');
   }
 
   void _SubscriptionListener_onSubscriptionError(MethodCall call) {
@@ -404,20 +404,20 @@ class NativeBridge {
     String subId = arguments['subId'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    runSubscriptionListenersAsync(subId, (l) => l.onSubscriptionError(errorCode, errorMessage));
+    runSubscriptionListenersAsync(subId, (l) => l.onSubscriptionError(errorCode, errorMessage), 'onSubscriptionError');
   }
 
   void _SubscriptionListener_onUnsubscription(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
-    runSubscriptionListenersAsync(subId, (l) => l.onUnsubscription());
+    runSubscriptionListenersAsync(subId, (l) => l.onUnsubscription(), 'onUnsubscription');
   }
 
   void _SubscriptionListener_onRealMaxFrequency(MethodCall call) {
     var arguments = call.arguments;
     String subId = arguments['subId'];
     String? frequency = arguments['frequency'];
-    runSubscriptionListenersAsync(subId, (l) => l.onRealMaxFrequency(frequency));
+    runSubscriptionListenersAsync(subId, (l) => l.onRealMaxFrequency(frequency), 'onRealMaxFrequency');
   }
 
   void _MpnDeviceListener_handle(String method, MethodCall call) {
@@ -452,7 +452,7 @@ class NativeBridge {
       device._platform = arguments['platform'];
       device._previousDeviceToken = arguments['previousDeviceToken'];
     }
-    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onRegistered());
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onRegistered(), 'onRegistered');
   }
   
   void _MpnDeviceListener_onRegistrationFailed(MethodCall call) {
@@ -460,13 +460,13 @@ class NativeBridge {
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
     String mpnDevId = arguments['mpnDevId'];
-    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onRegistrationFailed(errorCode, errorMessage));
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onRegistrationFailed(errorCode, errorMessage), 'onRegistrationFailed');
   }
 
   void _MpnDeviceListener_onResumed(MethodCall call) {
     var arguments = call.arguments;
     String mpnDevId = arguments['mpnDevId'];
-    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onResumed());
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onResumed(), 'onResumed');
   }
 
   void _MpnDeviceListener_onStatusChanged(MethodCall call) {
@@ -479,19 +479,19 @@ class NativeBridge {
       device._status = status;
       device._statusTs = timestamp;
     }
-    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onStatusChanged(status, timestamp));
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onStatusChanged(status, timestamp), 'onStatusChanged');
   }
 
   void _MpnDeviceListener_onSubscriptionsUpdated(MethodCall call) {
     var arguments = call.arguments;
     String mpnDevId = arguments['mpnDevId'];
-    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onSubscriptionsUpdated());
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onSubscriptionsUpdated(), 'onSubscriptionsUpdated');
   }
 
   void _MpnDeviceListener_onSuspended(MethodCall call) {
     var arguments = call.arguments;
     String mpnDevId = arguments['mpnDevId'];
-    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onSuspended());
+    runMpnDeviceListenersAsync(mpnDevId, (l) => l.onSuspended(), 'onSuspended');
   }
 
   void _MpnSubscriptionListener_handle(String method, MethodCall call) {
@@ -522,13 +522,13 @@ class NativeBridge {
   void _MpnSubscriptionListener_onSubscription(MethodCall call) {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onSubscription());
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onSubscription(), 'onSubscription');
   }
 
   void _MpnSubscriptionListener_onUnsubscription(MethodCall call) {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onUnsubscription());
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onUnsubscription(), 'onUnsubscription');
   }
 
   void _MpnSubscriptionListener_onSubscriptionError(MethodCall call) {
@@ -536,7 +536,7 @@ class NativeBridge {
     String mpnSubId = arguments['mpnSubId'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onSubscriptionError(errorCode, errorMessage));
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onSubscriptionError(errorCode, errorMessage), 'onSubscriptionError');
   }
 
   void _MpnSubscriptionListener_onUnsubscriptionError(MethodCall call) {
@@ -544,13 +544,13 @@ class NativeBridge {
     String mpnSubId = arguments['mpnSubId'];
     int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onUnsubscriptionError(errorCode, errorMessage));
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onUnsubscriptionError(errorCode, errorMessage), 'onUnsubscriptionError');
   }
 
   void _MpnSubscriptionListener_onTriggered(MethodCall call) {
     var arguments = call.arguments;
     String mpnSubId = arguments['mpnSubId'];
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onTriggered());
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onTriggered(), 'onTriggered');
   }
 
   void _MpnSubscriptionListener_onStatusChanged(MethodCall call) {
@@ -564,7 +564,7 @@ class NativeBridge {
       sub._subscriptionId = arguments['subscriptionId'];
 
     }
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onStatusChanged(status, timestamp));
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onStatusChanged(status, timestamp), 'onStatusChanged');
   }
 
   void _MpnSubscriptionListener_onPropertyChanged(MethodCall call) {
@@ -594,7 +594,7 @@ class NativeBridge {
           sub._requestedMaxFrequency = arguments['value'];
       }
     }
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onPropertyChanged(property));
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onPropertyChanged(property), 'onPropertyChanged');
   }
 
   void _MpnSubscriptionListener_onModificationError(MethodCall call) {
@@ -603,14 +603,14 @@ class NativeBridge {
      int errorCode = arguments['errorCode'];
     String errorMessage = arguments['errorMessage'];
     String propertyName = arguments['propertyName'];
-    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onModificationError(errorCode, errorMessage, propertyName));
+    runMpnSubscriptionListenersAsync(mpnSubId, (l) => l.onModificationError(errorCode, errorMessage, propertyName), 'onModificationError');
   }
 
-  void runClientListenersAsync(String clientId, void Function(ClientListener) cb) {
+  void runClientListenersAsync(String clientId, void Function(ClientListener) cb, String listenerName) {
     var client = _clientMap[clientId];
     if (client == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown LightstreamerClient $clientId", null);
+        channelLogger.error("Unknown LightstreamerClient $clientId in ClientListener.$listenerName", null);
       }
       return;
     }
@@ -619,22 +619,22 @@ class NativeBridge {
     }
   }
 
-  void runMessageListenersAsync(String msgId, void Function(ClientMessageListener) cb) {
+  void runMessageListenersAsync(String msgId, void Function(ClientMessageListener) cb, String listenerName) {
     var listener = _msgListenerMap.remove(msgId);
     if (listener == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown ClientMessageListener $msgId", null);
+        channelLogger.error("Unknown ClientMessageListener $msgId in ClientMessageListener.$listenerName", null);
       }
       return;
     }
     scheduleMicrotask(() => cb(listener));
   }
 
-  void runSubscriptionListenersAsync(String subId, void Function(SubscriptionListener) cb) {
+  void runSubscriptionListenersAsync(String subId, void Function(SubscriptionListener) cb, String listenerName) {
     var sub = _subMap[subId];
     if (sub == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown Subscription $subId", null);
+        channelLogger.error("Unknown Subscription $subId in SubscriptionListener.$listenerName", null);
       }
       return;
     }
@@ -643,11 +643,11 @@ class NativeBridge {
     }
   }
 
-  void runMpnDeviceListenersAsync(String mpnDevId, void Function(MpnDeviceListener) cb) {
+  void runMpnDeviceListenersAsync(String mpnDevId, void Function(MpnDeviceListener) cb, String listenerName) {
     var device = _mpnDeviceMap[mpnDevId];
     if (device == null) {
        if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("No MpnDevice $mpnDevId registered", null);
+        channelLogger.error("No MpnDevice $mpnDevId registered MpnDeviceListener.$listenerName", null);
       }
       return;
     }
@@ -656,11 +656,11 @@ class NativeBridge {
     }
   }
 
-  void runMpnSubscriptionListenersAsync(String mpnSubId, void Function(MpnSubscriptionListener) cb) {
+  void runMpnSubscriptionListenersAsync(String mpnSubId, void Function(MpnSubscriptionListener) cb, String listenerName) {
     var sub = _mpnSubMap[mpnSubId];
     if (sub == null) {
       if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("Unknown MpnSubscription $mpnSubId", null);
+        channelLogger.error("Unknown MpnSubscription $mpnSubId in MpnSubscriptionListener.$listenerName", null);
       }
       return;
     }
