@@ -251,11 +251,11 @@ void main() {
           client.unsubscribe(sub);
         };
         subListener.fUnsubscription = () {
-          exps.signal();
+          exps.signal('onUnsubscription');
         };
         client.subscribe(sub);
         client.connect();
-        await exps.value();
+        await exps.value('onUnsubscription');
         assertEqual(false, sub.isSubscribed());
         assertEqual(false, sub.isActive());
       });
