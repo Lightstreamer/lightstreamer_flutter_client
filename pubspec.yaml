@@ -35,7 +35,7 @@ flutter:
         package: com.lightstreamer.flutter
         pluginClass: LightstreamerFlutterPlugin
       ios:
-        pluginClass: SwiftLightstreamerFlutterClientPlugin
+        pluginClass: LightstreamerFlutterPlugin
       web:
 
   # To add assets to your plugin package, add an assets section, like this:
