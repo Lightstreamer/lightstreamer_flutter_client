@@ -1,12 +1,13 @@
 // ignore_for_file: unnecessary_new, prefer_interpolation_to_compose_strings
 
+import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 import './utils.dart';
 
 void main() {
-  const host = "http://10.0.2.2:8080";
+  final host = Platform.isAndroid ? "http://10.0.2.2:8080" : "http://127.0.0.1:8080";
   late LightstreamerClient client;
   late BaseClientListener listener;
   late BaseSubscriptionListener subListener;
@@ -31,7 +32,7 @@ void main() {
       assertEqual('Lightstreamer Internal Error', e.code);
       assertEqual('value must be greater than zero', e.message);
     }
-  });
+  }, skip: Platform.isIOS ? "When a precondition fails, Swift Client SDK throws an unrecoverable exception" : false);
 
   test('Subscription errors', () async {
     client = await LightstreamerClient.create(host, "TEST");
@@ -116,8 +117,8 @@ void main() {
 
       test('online server', () async {
         var exps = new Expectations();
-        client = await LightstreamerClient.create(
-            "https://push.lightstreamer.com", "DEMO");
+        client.connectionDetails.setServerAddress("https://push.lightstreamer.com");
+        client.connectionDetails.setAdapterSet("DEMO");
         listener = new BaseClientListener();
         client.addListener(listener);
 
@@ -130,10 +131,7 @@ void main() {
         client.connect();
         await exps.value();
         assertEqual(expected, await client.getStatus());
-      },
-          skip: transport == "WS-STREAMING"
-              ? false
-              : 'why does $transport not work?');
+      });
 
       test('error', () async {
         var exps = new Expectations();
@@ -274,23 +272,29 @@ void main() {
         await exps.value();
       });
 
+      String? normalizeFloat(String? d) {
+        // numeric strings coming from different platforms have different formatting.
+        // for example, iOS usually appends a trailing '.0' to decimal number, while Android doesn't
+        return d == null ? null : d.contains(".") ? d : '$d.0';
+      }
+
       test('bandwidth', () async {
         var exps = new Expectations();
         listener.fPropertyChange = (prop) async {
           switch (prop) {
             case "realMaxBandwidth":
-              exps.signal("realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth()}");
+              exps.signal("realMaxBandwidth=${normalizeFloat(client.connectionOptions.getRealMaxBandwidth())}");
           }
         };
         assertEqual("unlimited", client.connectionOptions.getRequestedMaxBandwidth());
         client.connect();
-        await exps.value("realMaxBandwidth=40"); // after the connection, the server sends the default bandwidth
+        await exps.value("realMaxBandwidth=40.0"); // after the connection, the server sends the default bandwidth
         // request a bandwidth equal to 20.1: the request is accepted
         client.connectionOptions.setRequestedMaxBandwidth("20.1");
         await exps.value("realMaxBandwidth=20.1");
         // request a bandwidth equal to 70.1: the meta-data adapter cuts it to 40 (which is the configured limit)
         client.connectionOptions.setRequestedMaxBandwidth("70.1");
-        await exps.value("realMaxBandwidth=40");
+        await exps.value("realMaxBandwidth=40.0");
         // request an unlimited bandwidth: the meta-data adapter cuts it to 40 (which is the configured limit)
         client.connectionOptions.setRequestedMaxBandwidth("unlimited");
         // NB the listener isn't notified again because the value isn't changed
@@ -324,7 +328,7 @@ void main() {
       test('setServerAddress', () async {
         var exps = new Expectations();
         client.connectionOptions.setRetryDelay(100);
-        client.connectionDetails.setServerAddress("http://unknown.localtest.me:8080");
+        client.connectionDetails.setServerAddress("http://10.255.255.1:8080"); // non-routable IP address 
         listener.fStatusChange = (status) => exps.signal(status);
         client.connect();
         await exps.until('DISCONNECTED:WILL-RETRY');
@@ -381,7 +385,7 @@ void main() {
                 exps.signal("keepaliveInterval=${client.connectionOptions.getKeepaliveInterval()}");
               case "realMaxBandwidth":
                 exps.signal(
-                    "realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth()}");
+                    "realMaxBandwidth=${normalizeFloat(client.connectionOptions.getRealMaxBandwidth())}");
             }
           };
         }
@@ -393,7 +397,7 @@ void main() {
           await exps.value("keepaliveInterval=5000");
           await exps.value("serverSocketName=Lightstreamer HTTP Server");
           await exps.value("clientIp=127.0.0.1");
-          await exps.value("realMaxBandwidth=40");
+          await exps.value("realMaxBandwidth=40.0");
         }
         client.subscribe(sub);
         await exps.value("onSubscription");
@@ -587,7 +591,12 @@ void main() {
         var u = updates[1];
         var patch = u.getValueAsJSONPatchIfAvailableByPosition(1)!;
         expect(patch, contains('"op":"replace"'));
-        expect(patch, contains('"path":"/value"'));
+        if (Platform.isIOS) {
+          // by default iOS JSON serialization escapes forward slashes
+          expect(patch, contains('"path":"\\/value"'));
+        } else {
+          expect(patch, contains('"path":"/value"'));
+        }
         expect(patch, matches(RegExp('"value":\\d+')));
         expect(u.getValueByPosition(1), isNotNull);
       });
