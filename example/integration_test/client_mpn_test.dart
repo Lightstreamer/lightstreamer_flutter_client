@@ -1,12 +1,13 @@
 // ignore_for_file: unnecessary_new, prefer_interpolation_to_compose_strings
 
+import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 import './utils.dart';
 
 void main() {
-  const host = "http://10.0.2.2:8080";
+  final host = Platform.isAndroid ? "http://10.0.2.2:8080" : "http://127.0.0.1:8080";
   late MpnDevice device;
   late MpnSubscription sub;
   late LightstreamerClient client;
@@ -108,19 +109,39 @@ void main() {
     assertEqual(1, subs.length);
   });
 
-  test('android builder', () async {
-    var builder = new AndroidMpnBuilder();
-    var format = await builder
-        .setTitle("TITLE")
-        .setBody("BODY")
-        .setIcon("ICON")
-        .setData({"d": "D"})
-        .build();
-    assertEqual(
-        '{"android":{"notification":{"icon":"ICON","title":"TITLE","body":"BODY"},"data":{"d":"D"}}}',
-        format);
-    assertEqual({"d": "D"}, builder.getData());
-  });
+  if (Platform.isAndroid) {
+    test('android builder', () async {
+      var builder = new AndroidMpnBuilder();
+      var format = await builder
+          .setTitle("TITLE")
+          .setBody("BODY")
+          .setIcon("ICON")
+          .setData({"d": "D"})
+          .build();
+      assertEqual(
+          '{"android":{"notification":{"icon":"ICON","title":"TITLE","body":"BODY"},"data":{"d":"D"}}}',
+          format);
+      assertEqual({"d": "D"}, builder.getData());
+    });
+  } else {
+    test('apns builder', () async {
+      var builder = new ApnsMpnBuilder();
+      var format = await builder
+          .setTitle("TITLE")
+          .setBody("BODY")
+          .setBadge("ICON")
+          .setCustomData({"d": "D"})
+          .build();
+      // expected: {"d":"D","aps":{"badge":"ICON","alert":{"body":"BODY","title":"TITLE"}}}
+      // NB since the order of the keys in the json changes from run to run, the comparisons are made piecemeal
+      assertTrue(format.contains('"d":"D"'));
+      assertTrue(format.contains('"badge":"ICON"'));
+      assertTrue(format.contains('"body":"BODY"'));
+      assertTrue(format.contains('"title":"TITLE"'));
+      assertTrue(format.contains('"aps":'));
+      assertEqual({"d": "D"}, builder.getCustomData());
+    });
+  }
 
   ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
 
@@ -133,11 +154,7 @@ void main() {
         devListener = new BaseDeviceListener();
         device.addListener(devListener);
         /* create notification descriptor */
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
         /* create MPN subscription */
         sub = new MpnSubscription("MERGE");
         sub.setDataAdapter("COUNT");
@@ -222,8 +239,8 @@ void main() {
         assertTrue(device.isRegistered());
         assertFalse(device.isSuspended());
         assertTrue((device.getStatusTimestamp()) >= 0);
-        assertEqual("Google", device.getPlatform());
-        assertEqual("com.lightstreamer.push_demo.android.fcm", device.getApplicationId());
+        assertEqual(Platform.isAndroid ? "Google" : "Apple", device.getPlatform());
+        assertEqual(Platform.isAndroid ? "com.lightstreamer.push_demo.android.fcm" : "com.lightstreamer.ios.stocklist", device.getApplicationId());
         assertNotNull(device.getDeviceId());
         assertNotNull(device.getDeviceToken());
       });
@@ -262,11 +279,7 @@ void main() {
         assertFalse(sub.isTriggered());
         assertEqual("SUBSCRIBED", sub.getStatus());
         assertTrue(sub.getStatusTimestamp() >= 0);
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
         var expectedFormat = descriptor;
         var actualFormat = sub.getNotificationFormat();
         assertEqual(expectedFormat, actualFormat);
@@ -311,12 +324,15 @@ void main() {
         sub.setTriggerExpression("0<1");
         assertEqual("0<1", sub.getTriggerExpression());
         await exps.until("trigger 0<1");
-        sub.setNotificationFormat(
-            await AndroidMpnBuilder().setTitle("my_title_2").build());
-        assertEqual("{\"android\":{\"notification\":{\"title\":\"my_title_2\"}}}",
-            sub.getNotificationFormat());
-        await exps.until(
-            "format {\"android\":{\"notification\":{\"title\":\"my_title_2\"}}}");
+        if (Platform.isAndroid) {
+          sub.setNotificationFormat(await AndroidMpnBuilder().setTitle("my_title_2").build());
+          assertEqual("{\"android\":{\"notification\":{\"title\":\"my_title_2\"}}}", sub.getNotificationFormat());
+          await exps.until("format {\"android\":{\"notification\":{\"title\":\"my_title_2\"}}}");
+        } else {
+          sub.setNotificationFormat(await ApnsMpnBuilder().setTitle("my_title_2").build());
+          assertEqual('{"aps":{"alert":{"title":"my_title_2"}}}', sub.getNotificationFormat());
+          await exps.until('format {"aps":{"alert":{"title":"my_title_2"}}}');
+        }
       });
 
       /**
@@ -366,8 +382,11 @@ void main() {
         subCopy.setDataAdapter("COUNT");
         subCopy.setItemGroup("count");
         subCopy.setFieldSchema("count");
-        subCopy.setNotificationFormat(
-            await AndroidMpnBuilder().setTitle("my_title_2").build());
+        if (Platform.isAndroid) {
+          subCopy.setNotificationFormat(await AndroidMpnBuilder().setTitle("my_title_2").build());
+        } else {
+          subCopy.setNotificationFormat(await ApnsMpnBuilder().setTitle("my_title_2").build());
+        }
         var subCopyListener = new BaseMpnSubscriptionListener();
         subCopy.addListener(subCopyListener);
         subCopyListener.fSubscription = () => exps.signal("onSubscription copy");
@@ -377,10 +396,13 @@ void main() {
         await exps.value("onSubscription");
         client.subscribeMpn(subCopy, true);
         await exps.until("onSubscription copy");
-        await exps.until('format {"android":{"notification":{"title":"my_title_2"}}}');
-        assertEqual(
-            '{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}',
-            sub.getNotificationFormat());
+        if (Platform.isAndroid) {
+          await exps.until('format {"android":{"notification":{"title":"my_title_2"}}}');
+          assertEqual('{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}', sub.getNotificationFormat());
+        } else {
+          await exps.until('format {"aps":{"alert":{"title":"my_title_2"}}}');
+          assertEqual('{"aps":{"alert":{"title":"my_title"}}}', sub.getNotificationFormat());
+        }
 
         assertEqual(sub.getSubscriptionId(), subCopy.getSubscriptionId());
         assertEqual(1, (await client.getMpnSubscriptions("ALL")).length);
@@ -428,7 +450,11 @@ void main() {
         assertEqual('COUNT', s0.getDataAdapter());
         assertEqual('count', s0.getItemGroup());
         assertEqual('count', s0.getFieldSchema());
-        assertEqual('{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}', s0.getActualNotificationFormat());
+        if (Platform.isAndroid) {
+          assertEqual('{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}', s0.getActualNotificationFormat());
+        } else {
+          assertEqual('{"aps":{"alert":{"title":"my_title"}}}', s0.getActualNotificationFormat());
+        }
         assertEqual('0==0', s0.getActualTriggerExpression());
         assertEqual('TRIGGERED', s0.getStatus());
         assertEqual(sub.getSubscriptionId(), s0.getSubscriptionId());
@@ -521,7 +547,11 @@ void main() {
         assertEqual('COUNT', s0.getDataAdapter());
         assertEqual('count', s0.getItemGroup());
         assertEqual('count', s0.getFieldSchema());
-        assertEqual('{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}', s0.getActualNotificationFormat());
+        if (Platform.isAndroid) {
+          assertEqual('{"android":{"notification":{"icon":"my_icon","title":"my_title","body":"my_body"}}}', s0.getActualNotificationFormat());
+        } else {
+          assertEqual('{"aps":{"alert":{"title":"my_title"}}}', s0.getActualNotificationFormat());
+        }
         assertEqual('0==0', s0.getActualTriggerExpression());
         assertEqual('TRIGGERED', s0.getStatus());
         assertEqual(sub.getSubscriptionId(), s0.getSubscriptionId());
@@ -582,11 +612,7 @@ void main() {
        */
       test('unsubscribe filter subscribed', () async {
         var exps = new Expectations();
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
 
         var sub1 = new MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
@@ -650,11 +676,7 @@ void main() {
        */
       test('unsubscribe filter triggered', () async {
         var exps = new Expectations();
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
 
         var sub1 = new MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
@@ -719,11 +741,7 @@ void main() {
        */
       test('unsubscribe filter all', () async {
         var exps = new Expectations();
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
 
         var sub1 = new MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
@@ -837,11 +855,7 @@ void main() {
        */
       test('double subscription', () async {
         var exps = new Expectations();
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
 
         var sub1 = new MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
@@ -884,11 +898,7 @@ void main() {
        */
       test('double subscription disconnect', () async {
         var exps = new Expectations();
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
 
         devListener.fSubscriptionsUpdated = () async => exps.signal(
             "onSubscriptionsUpdated ${(await client.getMpnSubscriptions("SUBSCRIBED")).length}");
@@ -979,11 +989,7 @@ void main() {
        */
       test('onSubscriptionsUpdated', () async {
         var exps = new Expectations();
-        var descriptor = await AndroidMpnBuilder()
-            .setTitle("my_title")
-            .setBody("my_body")
-            .setIcon("my_icon")
-            .build();
+        var descriptor = await buildFormat();
 
         devListener.fSubscriptionsUpdated = () async => exps.signal(
             "onSubscriptionsUpdated ${(await client.getMpnSubscriptions("ALL")).length}");
@@ -1080,3 +1086,17 @@ void main() {
     }); // group
   }); // for each group
 } // main
+
+Future<String> buildFormat() async {
+  if (Platform.isAndroid) {
+    return await AndroidMpnBuilder()
+            .setTitle("my_title")
+            .setBody("my_body")
+            .setIcon("my_icon")
+            .build();
+  } else {
+    return await ApnsMpnBuilder()
+            .setTitle("my_title")
+            .build();
+  }
+}

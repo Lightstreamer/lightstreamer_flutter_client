@@ -13,6 +13,7 @@ import os.log
 public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   
   let channelLogger = LogManager.getLogger("lightstreamer.flutter")
+  var _mpnSubIdGenerator = 0
   
   // TODO potential memory leak: objects are added to the maps but never removed
   
@@ -26,6 +27,19 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
    * The mapping is created when `LightstreamerClient.subscribe` is called.
    */
   var _subMap = [String:Subscription]();
+  /**
+   * Maps an mpnSubId (i.e. the `mpnSubId` field of a MethodCall object) to an MpnSubscription.
+   * The mapping is created either when
+   * 1. `LightstreamerClient.subscribeMpn` is called, or
+   * 2. a Server MpnSubscription (i.e. an MpnSubscription not created in response to a `LightstreamerClient.subscribeMpn` call)
+   *    is returned by `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
+   */
+  var _mpnSubMap = [String:MyMpnSubscription]();
+  /**
+   * Maps an mpnDevId (i.e. the `mpnDevId` field of a MethodCall object) to an MpnDevice.
+   * The mapping is created when `LightstreamerClient.registerForMpn` is called.
+   */
+  var _mpnDeviceMap = [String:MPNDevice]();
   
   /**
    * The channel through which the procedure calls requested by the Flutter component are received.
@@ -63,7 +77,12 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
         try ConnectionOptions_handle(methodName, call, result);
       case "Subscription":
         try Subscription_handle(methodName, call, result);
-      // TODO ...
+      case "MpnDevice":
+        try MpnDevice_handle(methodName, call, result);
+      case "MpnSubscription":
+        try MpnSubscription_handle(methodName, call, result);
+      case "ApnsMpnBuilder":
+        try ApnsMpnBuilder_handle(methodName, call, result);
       default:
         if (channelLogger.isErrorEnabled) {
           channelLogger.error("Unknown method " + call.method);
@@ -96,24 +115,18 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
       try Client_getSubscriptions(call, result);
     case "sendMessage":
       try Client_sendMessage(call, result);
-//    case "registerForMpn":
-//      Client_registerForMpn(call, result);
-//      break;
-//    case "subscribeMpn":
-//      Client_subscribeMpn(call, result);
-//      break;
-//    case "unsubscribeMpn":
-//      Client_unsubscribeMpn(call, result);
-//      break;
-//    case "unsubscribeMpnSubscriptions":
-//      Client_unsubscribeMpnSubscriptions(call, result);
-//      break;
-//    case "getMpnSubscriptions":
-//      Client_getMpnSubscriptions(call, result);
-//      break;
-//    case "findMpnSubscription":
-//      Client_findMpnSubscription(call, result);
-//      break;
+    case "registerForMpn":
+      try Client_registerForMpn(call, result);
+    case "subscribeMpn":
+      try Client_subscribeMpn(call, result);
+    case "unsubscribeMpn":
+      try Client_unsubscribeMpn(call, result);
+    case "unsubscribeMpnSubscriptions":
+      try Client_unsubscribeMpnSubscriptions(call, result);
+    case "getMpnSubscriptions":
+      try Client_getMpnSubscriptions(call, result);
+    case "findMpnSubscription":
+      try Client_findMpnSubscription(call, result);
     case "setLoggerProvider":
       Client_setLoggerProvider(call, result);
     case "addCookies":
@@ -189,6 +202,42 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
         channelLogger.error("Unknown method " + call.method);
       }
       result(FlutterMethodNotImplemented)
+    }
+  }
+  
+  func MpnDevice_handle(_ method: String, _ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    switch (method) {
+    default:
+      if (channelLogger.isErrorEnabled) {
+        channelLogger.error("Unknown method " + call.method);
+      }
+      result(FlutterMethodNotImplemented);
+    }
+  }
+  
+  func MpnSubscription_handle(_ method: String, _ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    switch (method) {
+    case "setTriggerExpression":
+      try MpnSubscription_setTriggerExpression(call, result);
+    case "setNotificationFormat":
+      try MpnSubscription_setNotificationFormat(call, result);
+    default:
+      if (channelLogger.isErrorEnabled) {
+        channelLogger.error("Unknown method " + call.method);
+      }
+      result(FlutterMethodNotImplemented);
+    }
+  }
+  
+  func ApnsMpnBuilder_handle(_ method: String, _ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    switch (method) {
+    case "build":
+      try ApnsMpnBuilder_build(call, result);
+    default:
+      if (channelLogger.isErrorEnabled) {
+        channelLogger.error("Unknown method " + call.method);
+      }
+      result(FlutterMethodNotImplemented);
     }
   }
   
@@ -398,6 +447,223 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     result(nil);
   }
   
+  func Client_registerForMpn(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let client = try getClient(call);
+    let mpnDevId: String = call.argument("mpnDevId");
+    let device_ = _mpnDeviceMap.get(mpnDevId);
+    if (device_ != nil) {
+      client.register(forMPN: device_!);
+      result(nil);
+      return;
+    }
+    // mpnDevId is unknown: get a device token and create a new device
+    
+    // TODO get real device token
+    // TODO synchronize access to `_mpnDeviceMap`?
+    if (_mpnDeviceMap.keys.contains(mpnDevId)) {
+      let errMsg = "MpnDevice " + mpnDevId + " already exists";
+      if (channelLogger.isErrorEnabled) {
+        channelLogger.error(errMsg);
+      }
+      result(FlutterError(code: "Lightstreamer Internal Error", message: errMsg, details: nil));
+      return;
+    }
+    // TODO String token = task.getResult();
+    let token = "tok123"
+    let device = MPNDevice(deviceToken: token);
+    device.addDelegate(MyMpnDeviceListener(mpnDevId, device, self));
+    _mpnDeviceMap.put(mpnDevId, device);
+    client.register(forMPN: device);
+    
+    result(nil);
+  }
+  
+  func Client_subscribeMpn(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let client = try getClient(call);
+    let options: [String:Any?] = call.argument("subscription");
+    let mpnSubId = options.get("id") as! String;
+    let mode = options.get("mode") as! String;
+    let items = options.get("items") as? [String];
+    let fields = options.get("fields") as? [String];
+    let group = options.get("group") as? String;
+    let schema = options.get("schema") as? String;
+    let dataAdapter = options.get("dataAdapter") as? String;
+    let bufferSize = options.get("bufferSize") as? String;
+    let requestedMaxFrequency = options.get("requestedMaxFrequency") as? String;
+    let trigger = options.get("trigger") as? String;
+    let format = options.get("notificationFormat") as? String;
+    let coalescing: Bool = call.argument("coalescing");
+    var mySub: MyMpnSubscription! = _mpnSubMap.get(mpnSubId);
+    if (mySub == nil) {
+      let sub = MPNSubscription(subscriptionMode: MPNSubscription.Mode(rawValue: mode)!);
+      sub.addDelegate(MyMpnSubscriptionListener(mpnSubId, sub, self));
+      mySub = MyMpnSubscription(client, mpnSubId, sub);
+      _mpnSubMap.put(mpnSubId, mySub);
+    } else if (client !== mySub!._client) {
+      // NB since a MyMpnSubscription keeps a reference to the client that subscribes to
+      // the underlying MpnSubscription, the reference must be updated when the same MpnSubscription
+      // is subscribed to by another client
+      mySub = MyMpnSubscription(client, mpnSubId, mySub._sub);
+      _mpnSubMap.put(mpnSubId, mySub);
+    }
+    let sub = mySub._sub;
+    if (sub.isActive) {
+      throw IllegalStateException("Cannot subscribe to an active MpnSubscription");
+    }
+    if (items != nil) {
+      sub.items = items;
+    }
+    if (fields != nil) {
+      sub.fields = fields;
+    }
+    if (group != nil) {
+      sub.itemGroup = group;
+    }
+    if (schema != nil) {
+      sub.fieldSchema = schema;
+    }
+    if (dataAdapter != nil) {
+      sub.dataAdapter = dataAdapter;
+    }
+    if (bufferSize != nil) {
+      sub.requestedBufferSize = toMpnBufferSize(bufferSize);
+    }
+    if (requestedMaxFrequency != nil) {
+      sub.requestedMaxFrequency = toMpnMaxFrequency(requestedMaxFrequency);
+    }
+    if (trigger != nil) {
+      sub.triggerExpression = trigger;
+    }
+    if (format != nil) {
+      sub.notificationFormat = format;
+    }
+    client.subscribeMPN(sub, coalescing: coalescing);
+    result(nil);
+  }
+  
+  func Client_unsubscribeMpn(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let client = try getClient(call);
+    let mpnSubId: String = call.argument("mpnSubId");
+    let sub = try getMpnSubscription(mpnSubId);
+    client.unsubscribeMPN(sub);
+    result(nil);
+  }
+  
+  func Client_unsubscribeMpnSubscriptions(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let client = try getClient(call);
+    let filter: String? = call.argumentOrNull("filter");
+    let filter_: LightstreamerClient.MPNSubscriptionStatus = switch filter {
+    case nil, "ALL": .ALL
+    case "SUBSCRIBED": .SUBSCRIBED
+    case "TRIGGERED": .TRIGGERED
+    default:
+      throw IllegalStateException("Unknown filter `\(filter ?? "nil")` in unsubscribeMpnSubscriptions")
+    }
+    client.unsubscribeMultipleMPN(filter_);
+    result(nil);
+  }
+  
+  func nextServerMpnSubId() -> String {
+    // IMPLEMENTATION NOTE
+    // since mpnSubIds for user subscriptions are generated by the Flutter component
+    // while mpnSubIds for server subscriptions are generated by this iOS component,
+    // a simple way to ensure that server and user mpnSubIds are unique is to use different prefixes,
+    // i.e. "mpnsub" for user subscriptions and "mpnsub-server" for server subscriptions
+    let id = _mpnSubIdGenerator
+    _mpnSubIdGenerator += 1
+    return "mpnsub-server\(id)";
+  }
+  
+  func Client_getMpnSubscriptions(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    // TODO improve performance
+    let client = try getClient(call);
+    let filter: String? = call.argumentOrNull("filter");
+    let filter_: LightstreamerClient.MPNSubscriptionStatus = switch filter {
+    case nil, "ALL": .ALL
+    case "SUBSCRIBED": .SUBSCRIBED
+    case "TRIGGERED": .TRIGGERED
+    default:
+      throw IllegalStateException("Unknown filter `\(filter ?? "nil")` in getMpnSubscriptions")
+    }
+    let subs = client.filterMPNSubscriptions(filter_);
+    //
+    var knownSubs = [String]();
+    var unknownSubs = [[String:Any?]]();
+    for sub in subs {
+      let subscriptionId = sub.subscriptionId; // can be null
+      // 1. search a subscription known to the Flutter component (i.e. in `_mpnSubMap`) and owned by `client` having the same subscriptionId
+      if (subscriptionId != nil) { // defensive check, even if `subscriptionId` should not be null
+        var mpnSubId: String? = nil;
+        for (key, value) in _mpnSubMap {
+          let mySub: MyMpnSubscription = value;
+          if (mySub._client === client && subscriptionId == mySub._sub.subscriptionId) {
+            mpnSubId = key;
+            break;
+          }
+        }
+        if (mpnSubId != nil) {
+          // 2.A. there is such a subscription: it means that `sub` is known to the Flutter component
+          knownSubs.append(mpnSubId!);
+        } else {
+          // 2.B. there isn't such a subscription: it means that `sub` is unknown to the Flutter component
+          // (i.e. it is a new server subscription)
+          // add it to `_mpnSubMap` and add a listener so the Flutter component can receive subscription events
+          mpnSubId = nextServerMpnSubId();
+          sub.addDelegate(MyMpnSubscriptionListener(mpnSubId!, sub, self));
+          let mySub = MyMpnSubscription(client, mpnSubId!, sub);
+          _mpnSubMap.put(mpnSubId!, mySub);
+          // serialize `sub` in order to send it to the Flutter component
+          let dto = mySub.toMap();
+          unknownSubs.append(dto);
+        }
+      } else {
+        if (channelLogger.isWarnEnabled) {
+          channelLogger.warn("MpnSubscription.subscriptionId should not be null, but it is");
+        }
+      }
+    }
+    var res = [String:Any]();
+    res.put("result", knownSubs);
+    res.put("extra", unknownSubs);
+    result(res);
+  }
+  
+  func Client_findMpnSubscription(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    // TODO improve performance
+    let client = try getClient(call);
+    let subscriptionId: String = call.argument("subscriptionId");
+    let sub: MPNSubscription! = client.findMPNSubscription(subscriptionId);
+    //
+    var res = [String:Any?]();
+    if (sub != nil) {
+      // 1. search a subscription known to the Flutter component (i.e. in `_mpnSubMap`) and owned by `client` having the same subscriptionId
+      var mpnSubId: String! = nil;
+      for (key, value) in _mpnSubMap {
+        let mySub = value;
+        if (mySub._client === client && subscriptionId == mySub._sub.subscriptionId) {
+          mpnSubId = key;
+          break;
+        }
+      }
+      if (mpnSubId != nil) {
+        // 2.A. there is such a subscription: it means that `sub` is known to the Flutter component
+        res.put("result", mpnSubId);
+      } else {
+        // 2.B. there isn't such a subscription: it means that `sub` is unknown to the Flutter component
+        // (i.e. it is a new server subscription)
+        // add it to `_mpnSubMap` and add a listener so the Flutter component can receive subscription events
+        mpnSubId = nextServerMpnSubId();
+        sub.addDelegate(MyMpnSubscriptionListener(mpnSubId, sub, self));
+        let mySub = MyMpnSubscription(client, mpnSubId, sub);
+        _mpnSubMap.put(mpnSubId, mySub);
+        // serialize `sub` in order to send it to the Flutter component
+        let dto = mySub.toMap();
+        res.put("extra", dto);
+      }
+    } // else if sub == null, return an empty map
+    result(res);
+  }
+  
   func Details_setServerAddress(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
     let client = try getClient(call);
     let newVal: String? = call.argument("newVal");
@@ -549,6 +815,73 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     let res = sub.commandValueWithItemPos(item, key: key, fieldPos: field);
     result(res);
   }
+  
+  func getMpnSubscription(_ mpnSubId: String) throws -> MPNSubscription {
+    let mySub = _mpnSubMap.get(mpnSubId);
+    if (mySub == nil) {
+      let errMsg = "MpnSubscription " + mpnSubId + " doesn't exist";
+      if (channelLogger.isErrorEnabled) {
+        channelLogger.error(errMsg);
+      }
+      throw IllegalStateException(errMsg);
+    }
+    return mySub!._sub;
+  }
+  
+  func MpnSubscription_setTriggerExpression(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let mpnSubId: String = call.argument("mpnSubId");
+    let sub = try getMpnSubscription(mpnSubId);
+    sub.triggerExpression = call.argumentOrNull("trigger");
+    result(nil);
+  }
+  
+  func MpnSubscription_setNotificationFormat(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let mpnSubId: String = call.argument("mpnSubId");
+    let sub = try getMpnSubscription(mpnSubId);
+    sub.notificationFormat = call.argumentOrNull("notificationFormat");
+    result(nil);
+  }
+  
+  func ApnsMpnBuilder_build(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let alert: String? = call.argumentOrNull("alert")
+    let badge: String? = call.argumentOrNull("badge")
+    let body: String? = call.argumentOrNull("body")
+    let bodyLocArguments: [String]? = call.argumentOrNull("bodyLocArguments")
+    let bodyLocKey: String? = call.argumentOrNull("bodyLocKey")
+    let category: String? = call.argumentOrNull("category")
+    let contentAvailable: String? = call.argumentOrNull("contentAvailable")
+    let mutableContent: String? = call.argumentOrNull("mutableContent")
+    let customData: [String:Any]? = call.argumentOrNull("customData")
+    let launchImage: String? = call.argumentOrNull("launchImage")
+    let locActionKey: String? = call.argumentOrNull("locActionKey")
+    let sound: String? = call.argumentOrNull("sound")
+    let threadId: String? = call.argumentOrNull("threadId")
+    let title: String? = call.argumentOrNull("title")
+    let subtitle: String? = call.argumentOrNull("subtitle")
+    let titleLocArguments: [String]? = call.argumentOrNull("titleLocArguments")
+    let titleLocKey: String? = call.argumentOrNull("titleLocKey")
+    let notificationFormat: String? = call.argumentOrNull("notificationFormat")
+    let builder: MPNBuilder = notificationFormat == nil ? MPNBuilder() : MPNBuilder(notificationFormat: notificationFormat!)!;
+    builder.alert(alert)
+    builder.badge(with: badge)
+    builder.body(body)
+    builder.bodyLocArguments(bodyLocArguments)
+    builder.bodyLocKey(bodyLocKey)
+    builder.category(category)
+    builder.contentAvailable(with: contentAvailable)
+    builder.mutableContent(with: mutableContent)
+    builder.customData(customData)
+    builder.launchImage(launchImage)
+    builder.locActionKey(locActionKey)
+    builder.sound(sound)
+    builder.threadId(threadId)
+    builder.title(title)
+    builder.subtitle(subtitle)
+    builder.titleLocArguments(titleLocArguments)
+    builder.titleLocKey(titleLocKey)
+    let res = builder.build()
+    result(res)
+  }
 
   func invokeMethod(_ method: String, _ arguments: [String:Any?]) {
     if (channelLogger.isDebugEnabled) {
@@ -576,7 +909,23 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
   }
   
+  func toMpnMaxFrequency(_ freq: String?) -> MPNSubscription.RequestedMaxFrequency? {
+    return switch freq {
+    case nil: nil
+    case "unlimited": .unlimited
+    default: .limited(Double(freq!)!)
+    }
+  }
+  
   func toBufferSize(_ size: String?) -> Subscription.RequestedBufferSize? {
+    return switch size {
+    case nil: nil
+    case "unlimited": .unlimited
+    default: .limited(Int(size!)!)
+    }
+  }
+  
+  func toMpnBufferSize(_ size: String?) -> MPNSubscription.RequestedBufferSize? {
     return switch size {
     case nil: nil
     case "unlimited": .unlimited
@@ -870,5 +1219,226 @@ class MySubscriptionListener : SubscriptionDelegate {
     var arguments = arguments
     arguments.put("subId", _subId);
     _plugin?.invokeMethod("SubscriptionListener." + method, arguments);
+  }
+}
+
+class MyMpnSubscription {
+  // WARNING when a client different from `_client` subscribes to `_sub`,
+  // the client reference must be updated (see the implementation of `LightstreamerClient.subscribeMpn`)
+  let _client: LightstreamerClient;
+  let _mpnSubId: String;
+  let _sub: MPNSubscription;
+
+  init(_ client: LightstreamerClient, _ mpnSubId: String, _ sub: MPNSubscription) {
+    _client = client;
+    _mpnSubId = mpnSubId;
+    _sub = sub;
+  }
+
+  func toMap() -> [String:Any?] {
+    var dto = [String:Any?]();
+    dto.put("id", _mpnSubId);
+    dto.put("mode", _sub.mode.rawValue);
+    dto.put("items", _sub.items);
+    dto.put("fields", _sub.fields);
+    dto.put("group", _sub.itemGroup);
+    dto.put("schema", _sub.fieldSchema);
+    dto.put("dataAdapter", _sub.dataAdapter);
+    let bs_: String? = switch _sub.requestedBufferSize {
+    case nil: nil
+    case .unlimited: "unlimited"
+    case .limited(var bs): "\(bs)"
+    }
+    dto.put("bufferSize", bs_);
+    let mf_: String? = switch _sub.requestedMaxFrequency {
+    case nil: nil
+    case .unlimited: "unlimited"
+    case .limited(var mf): "\(mf)"
+    }
+    dto.put("requestedMaxFrequency", mf_);
+    dto.put("notificationFormat", _sub.notificationFormat);
+    dto.put("trigger", _sub.triggerExpression);
+    dto.put("actualNotificationFormat", _sub.actualNotificationFormat);
+    dto.put("actualTrigger", _sub.actualTriggerExpression);
+    dto.put("statusTs", _sub.statusTimestamp);
+    dto.put("status", _sub.status.rawValue);
+    dto.put("subscriptionId", _sub.subscriptionId);
+    return dto;
+  }
+}
+
+class MyMpnDeviceListener : MPNDeviceDelegate {
+  let _mpnDevId: String;
+  let _device: MPNDevice;
+  weak var _plugin: LightstreamerFlutterPlugin?;
+
+  init(_ mpnDevId: String, _ device: MPNDevice, _ plugin: LightstreamerFlutterPlugin) {
+    self._mpnDevId = mpnDevId;
+    self._device = device;
+    self._plugin = plugin;
+  }
+  
+  func mpnDeviceDidAddDelegate(_ device: MPNDevice) {}
+  
+  func mpnDeviceDidRemoveDelegate(_ device: MPNDevice) {}
+  
+  func mpnDeviceDidRegister(_ device: MPNDevice) {
+    var arguments = [String:Any?]();
+    arguments.put("applicationId", _device.applicationId);
+    arguments.put("deviceId", _device.deviceId);
+    arguments.put("deviceToken", _device.deviceToken);
+    arguments.put("platform", _device.platform);
+    arguments.put("previousDeviceToken", _device.previousDeviceToken);
+    invoke("onRegistered", arguments);
+  }
+  
+  func mpnDeviceDidSuspend(_ device: MPNDevice) {
+    invoke("onSuspended");
+  }
+  
+  func mpnDeviceDidResume(_ device: MPNDevice) {
+    invoke("onResumed");
+  }
+  
+  func mpnDevice(_ device: MPNDevice, didChangeStatus status: MPNDevice.Status, timestamp: Int64) {
+    var arguments = [String:Any?]();
+    arguments.put("status", status.rawValue);
+    arguments.put("timestamp", timestamp);
+    invoke("onStatusChanged", arguments);
+  }
+  
+  func mpnDevice(_ device: MPNDevice, didFailRegistrationWithErrorCode code: Int, message: String?) {
+    var arguments = [String:Any?]();
+    arguments.put("errorCode", code);
+    arguments.put("errorMessage", message);
+    invoke("onRegistrationFailed", arguments);
+  }
+  
+  func mpnDeviceDidUpdateSubscriptions(_ device: MPNDevice) {
+    invoke("onSubscriptionsUpdated");
+  }
+  
+  func mpnDeviceDidResetBadge(_ device: MPNDevice) {
+    // TODO mpnDeviceDidResetBadge
+  }
+  
+  func mpnDevice(_ device: MPNDevice, didFailBadgeResetWithErrorCode code: Int, message: String?) {
+    // TODO didFailBadgeResetWithErrorCode
+  }
+  
+  func invoke(_ method: String, _ arguments: [String:Any?]) {
+    var arguments = arguments;
+    arguments.put("mpnDevId", _mpnDevId);
+    _plugin?.invokeMethod("MpnDeviceListener." + method, arguments);
+  }
+  
+  func invoke(_ method: String) {
+    invoke(method, [String:Any?]());
+  }
+}
+
+class MyMpnSubscriptionListener : MPNSubscriptionDelegate {
+  let _mpnSubId: String;
+  let _sub: MPNSubscription;
+  weak var _plugin: LightstreamerFlutterPlugin?;
+  
+  init(_ mpnSubId: String, _ sub: MPNSubscription, _ plugin: LightstreamerFlutterPlugin) {
+    self._mpnSubId = mpnSubId;
+    self._sub = sub;
+    self._plugin = plugin;
+  }
+  
+  func mpnSubscriptionDidAddDelegate(_ subscription: MPNSubscription) {}
+  
+  func mpnSubscriptionDidRemoveDelegate(_ subscription: MPNSubscription) {}
+  
+  func mpnSubscriptionDidSubscribe(_ subscription: MPNSubscription) {
+    var arguments = [String:Any?]()
+    invoke("onSubscription", arguments);
+  }
+  
+  func mpnSubscriptionDidUnsubscribe(_ subscription: MPNSubscription) {
+    var arguments = [String:Any?]()
+    invoke("onUnsubscription", arguments);
+  }
+  
+  func mpnSubscription(_ subscription: MPNSubscription, didFailSubscriptionWithErrorCode code: Int, message: String?) {
+    var arguments = [String:Any?]()
+    arguments.put("errorCode", code);
+    arguments.put("errorMessage", message);
+    invoke("onSubscriptionError", arguments);
+  }
+  
+  func mpnSubscription(_ subscription: MPNSubscription, didFailUnsubscriptionWithErrorCode code: Int, message: String?) {
+    var arguments = [String:Any?]()
+    arguments.put("errorCode", code);
+    arguments.put("errorMessage", message);
+    invoke("onUnsubscriptionError", arguments);
+  }
+  
+  func mpnSubscriptionDidTrigger(_ subscription: MPNSubscription) {
+    var arguments = [String:Any?]()
+    invoke("onTriggered", arguments);
+  }
+  
+  func mpnSubscription(_ subscription: MPNSubscription, didChangeStatus status: MPNSubscription.Status, timestamp: Int64) {
+    var arguments = [String:Any?]()
+    arguments.put("status", status.rawValue);
+    arguments.put("timestamp", timestamp);
+    // TODO why the check?
+    arguments.put("subscriptionId", status == .UNKNOWN ? nil : _sub.subscriptionId);
+    invoke("onStatusChanged", arguments);
+  }
+  
+  func mpnSubscription(_ subscription: MPNSubscription, didChangeProperty propertyName: String) {
+    var arguments = [String:Any?]()
+    arguments.put("property", propertyName);
+    switch (propertyName) {
+    case "status_timestamp":
+      arguments.put("value", _sub.statusTimestamp);
+    case "mode":
+      arguments.put("value", _sub.mode.rawValue);
+    case "adapter":
+      arguments.put("value", _sub.dataAdapter);
+    case "group":
+      arguments.put("value", _sub.itemGroup);
+    case "schema":
+      arguments.put("value", _sub.fieldSchema);
+    case "notification_format":
+      arguments.put("value", _sub.actualNotificationFormat);
+    case "trigger":
+      arguments.put("value", _sub.actualTriggerExpression);
+    case "requested_buffer_size":
+      let bs: String? = switch _sub.requestedBufferSize {
+      case nil: nil
+      case .unlimited: "unlimited"
+      case .limited(var val): "\(val)"
+      }
+      arguments.put("value", bs);
+    case "requested_max_frequency":
+      var fr: String? = switch _sub.requestedMaxFrequency {
+      case nil: nil
+      case .unlimited: "unlimited"
+      case .limited(var val): "\(val)"
+      }
+      arguments.put("value", fr);
+    default:
+      break
+    }
+    invoke("onPropertyChanged", arguments);
+  }
+  
+  func mpnSubscription(_ subscription: MPNSubscription, didFailModificationWithErrorCode code: Int, message: String?, property: String) {
+    var arguments = [String:Any?]()
+    arguments.put("errorCode", code);
+    arguments.put("errorMessage", message);
+    arguments.put("propertyName", property);
+    invoke("onModificationError", arguments);
+  }
+  
+  func invoke(_ method: String, _ arguments: [String:Any?]) {
+    var arguments = arguments;
+    arguments.put("mpnSubId", _mpnSubId);
+    _plugin?.invokeMethod("MpnSubscriptionListener." + method, arguments);
   }
 }
