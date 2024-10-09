@@ -500,7 +500,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   }
   
   func Client_getSubscriptions(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
-    // TODO improve performance
     let client = try getClient(call);
     let subs = client.subscriptions;
     var res = [String]();
@@ -657,7 +656,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   }
   
   func Client_getMpnSubscriptions(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
-    // TODO improve performance
     let client = try getClient(call);
     let filter: String? = call.argumentOrNull("filter");
     let filter_: LightstreamerClient.MPNSubscriptionStatus = switch filter {
@@ -711,7 +709,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   }
   
   func Client_findMpnSubscription(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
-    // TODO improve performance
     let client = try getClient(call);
     let subscriptionId: String = call.argument("subscriptionId");
     let sub: MPNSubscription! = client.findMPNSubscription(subscriptionId);
@@ -1228,7 +1225,6 @@ class MySubscriptionListener : SubscriptionDelegate {
   }
   
   func subscription(_ subscription: Subscription, didUpdateItem update: any ItemUpdate) {
-    // TODO improve performance
     var arguments = [String:Any?]();
     arguments.put("itemName", update.itemName);
     arguments.put("itemPos", update.itemPos);

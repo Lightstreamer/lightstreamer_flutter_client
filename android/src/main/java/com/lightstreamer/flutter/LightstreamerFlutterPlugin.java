@@ -465,7 +465,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     }
 
     void Client_getSubscriptions(MethodCall call, MethodChannel.Result result) {
-        // TODO improve performance
         LightstreamerClient client = getClient(call);
         List<Subscription> subs = client.getSubscriptions();
         List<String> res = new ArrayList<>();
@@ -623,7 +622,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     }
 
     void Client_getMpnSubscriptions(MethodCall call, MethodChannel.Result result) {
-        // TODO improve performance
         LightstreamerClient client = getClient(call);
         String filter = (String) call.argument("filter");
         List<MpnSubscription> subs = client.getMpnSubscriptions(filter);
@@ -670,7 +668,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     }
 
     void Client_findMpnSubscription(MethodCall call, MethodChannel.Result result) {
-        // TODO improve performance
         LightstreamerClient client = getClient(call);
         String subscriptionId = (String) call.argument("subscriptionId");
         MpnSubscription sub = client.findMpnSubscription(subscriptionId);
@@ -1115,7 +1112,6 @@ class MySubscriptionListener implements SubscriptionListener {
 
     @Override
     public void onItemUpdate(@NonNull ItemUpdate update) {
-        // TODO improve performance
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("itemName", update.getItemName());
         arguments.put("itemPos", update.getItemPos());
