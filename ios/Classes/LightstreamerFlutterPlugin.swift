@@ -339,16 +339,16 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     {
       result.append("; Expires=" + formatCookieDate(expires));
     }
-    // TODO switch to iOS 13?
-//    switch (c.sameSitePolicy)
-//    {
-//    case nil:
-//      break
-//    case .sameSiteLax:
-//      result.append("; SameSite=Lax");
-//    case .sameSiteStrict:
-//      result.append("; SameSite=Strict");
-//    }
+    if #available(iOS 13.0, *) {
+      switch (c.sameSitePolicy) {
+      case .sameSiteLax:
+        result.append("; SameSite=Lax");
+      case .sameSiteStrict:
+        result.append("; SameSite=Strict");
+      default:
+        break
+      }
+    }
     if (c.isSecure)
     {
       result.append("; secure");
