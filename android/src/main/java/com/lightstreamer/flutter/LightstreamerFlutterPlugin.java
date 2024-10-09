@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -125,8 +124,8 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 case "MpnSubscription":
                     MpnSubscription_handle(methodName, call, result);
                     break;
-                case "AndroidMpnBuilder":
-                    AndroidMpnBuilder_handle(methodName, call, result);
+                case "FirebaseMpnBuilder":
+                    FirebaseMpnBuilder_handle(methodName, call, result);
                     break;
                 default:
                     if (channelLogger.isErrorEnabled()) {
@@ -310,10 +309,10 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         }
     }
 
-    void AndroidMpnBuilder_handle(String method, MethodCall call, MethodChannel.Result result) {
+    void FirebaseMpnBuilder_handle(String method, MethodCall call, MethodChannel.Result result) {
         switch (method) {
             case "build":
-                AndroidMpnBuilder_build(call, result);
+                FirebaseMpnBuilder_build(call, result);
                 break;
             default:
                 if (channelLogger.isErrorEnabled()) {
@@ -734,7 +733,7 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    void AndroidMpnBuilder_build(MethodCall call, MethodChannel.Result result) {
+    void FirebaseMpnBuilder_build(MethodCall call, MethodChannel.Result result) {
         String collapseKey = call.argument("collapseKey");
         String priority = call.argument("priority");
         String timeToLive = call.argument("timeToLive");

@@ -111,7 +111,7 @@ void main() {
 
   if (Platform.isAndroid) {
     test('android builder', () async {
-      var builder = new AndroidMpnBuilder();
+      var builder = new FirebaseMpnBuilder();
       var format = await builder
           .setTitle("TITLE")
           .setBody("BODY")
@@ -325,7 +325,7 @@ void main() {
         assertEqual("0<1", sub.getTriggerExpression());
         await exps.until("trigger 0<1");
         if (Platform.isAndroid) {
-          sub.setNotificationFormat(await AndroidMpnBuilder().setTitle("my_title_2").build());
+          sub.setNotificationFormat(await FirebaseMpnBuilder().setTitle("my_title_2").build());
           assertEqual("{\"android\":{\"notification\":{\"title\":\"my_title_2\"}}}", sub.getNotificationFormat());
           await exps.until("format {\"android\":{\"notification\":{\"title\":\"my_title_2\"}}}");
         } else {
@@ -383,7 +383,7 @@ void main() {
         subCopy.setItemGroup("count");
         subCopy.setFieldSchema("count");
         if (Platform.isAndroid) {
-          subCopy.setNotificationFormat(await AndroidMpnBuilder().setTitle("my_title_2").build());
+          subCopy.setNotificationFormat(await FirebaseMpnBuilder().setTitle("my_title_2").build());
         } else {
           subCopy.setNotificationFormat(await ApnsMpnBuilder().setTitle("my_title_2").build());
         }
@@ -1089,7 +1089,7 @@ void main() {
 
 Future<String> buildFormat() async {
   if (Platform.isAndroid) {
-    return await AndroidMpnBuilder()
+    return await FirebaseMpnBuilder()
             .setTitle("my_title")
             .setBody("my_body")
             .setIcon("my_icon")

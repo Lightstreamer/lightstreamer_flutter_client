@@ -1,6 +1,6 @@
 import 'package:lightstreamer_flutter_client/src/client.dart';
 
-class AndroidMpnBuilder {
+class FirebaseMpnBuilder {
   String? _collapseKey;
   String? _priority;
   String? _timeToLive;
@@ -18,9 +18,9 @@ class AndroidMpnBuilder {
   Map<String, String>? _data;
   String? _notificationFormat;
 
-  AndroidMpnBuilder();
+  FirebaseMpnBuilder();
 
-  AndroidMpnBuilder.from(String notificationFormat) : _notificationFormat = notificationFormat;
+  FirebaseMpnBuilder.from(String notificationFormat) : _notificationFormat = notificationFormat;
 
   Future<String> build() async {
     var arguments = <String, dynamic>{
@@ -41,10 +41,10 @@ class AndroidMpnBuilder {
       'data': _data,
       'notificationFormat': _notificationFormat,
     };
-    return await NativeBridge.instance.invokeMethod('AndroidMpnBuilder.build', arguments);
+    return await NativeBridge.instance.invokeMethod('FirebaseMpnBuilder.build', arguments);
   }
 
-  AndroidMpnBuilder setCollapseKey(String? collapseKey) {
+  FirebaseMpnBuilder setCollapseKey(String? collapseKey) {
     _collapseKey = collapseKey;
     return this;
   }
@@ -53,7 +53,7 @@ class AndroidMpnBuilder {
     return _collapseKey;
   }
 
-  AndroidMpnBuilder setPriority(String? priority) {
+  FirebaseMpnBuilder setPriority(String? priority) {
     _priority = priority;
     return this;
   }
@@ -62,7 +62,7 @@ class AndroidMpnBuilder {
     return _priority;
   }
 
-  AndroidMpnBuilder setTimeToLive(String? timeToLive) {
+  FirebaseMpnBuilder setTimeToLive(String? timeToLive) {
     _timeToLive = timeToLive;
     return this;
   }
@@ -71,7 +71,7 @@ class AndroidMpnBuilder {
     return _timeToLive;
   }
 
-  AndroidMpnBuilder setTimeToLiveAsInteger(int? timeToLive) {
+  FirebaseMpnBuilder setTimeToLiveAsInteger(int? timeToLive) {
     _timeToLive = timeToLive == null ? null : '$timeToLive';
     return this;
   }
@@ -81,7 +81,7 @@ class AndroidMpnBuilder {
     return t == null ? null : int.parse(t);
   }
 
-  AndroidMpnBuilder setTitle(String? title) {
+  FirebaseMpnBuilder setTitle(String? title) {
     _title = title;
     return this;
   }
@@ -90,7 +90,7 @@ class AndroidMpnBuilder {
     return _title;
   }
 
-  AndroidMpnBuilder setTitleLocKey(String? titleLocKey) {
+  FirebaseMpnBuilder setTitleLocKey(String? titleLocKey) {
     _titleLocKey = titleLocKey;
     return this;
   }
@@ -99,7 +99,7 @@ class AndroidMpnBuilder {
     return _titleLocKey;
   }
 
-  AndroidMpnBuilder setTitleLocArguments(List<String>? titleLocArguments) {
+  FirebaseMpnBuilder setTitleLocArguments(List<String>? titleLocArguments) {
     _titleLocArguments = titleLocArguments?.toList();
     return this;
   }
@@ -108,7 +108,7 @@ class AndroidMpnBuilder {
     return _titleLocArguments?.toList();
   }
 
-  AndroidMpnBuilder setBody(String? body) {
+  FirebaseMpnBuilder setBody(String? body) {
     _body = body;
     return this;
   }
@@ -117,7 +117,7 @@ class AndroidMpnBuilder {
     return _body;
   }
 
-  AndroidMpnBuilder setBodyLocKey(String? bodyLocKey) {
+  FirebaseMpnBuilder setBodyLocKey(String? bodyLocKey) {
     _bodyLocKey = bodyLocKey;
     return this;
   }
@@ -126,7 +126,7 @@ class AndroidMpnBuilder {
     return _bodyLocKey;
   }
 
-  AndroidMpnBuilder setBodyLocArguments(List<String>? bodyLocArguments) {
+  FirebaseMpnBuilder setBodyLocArguments(List<String>? bodyLocArguments) {
     _bodyLocArguments = bodyLocArguments?.toList();
     return this;
   }
@@ -135,7 +135,7 @@ class AndroidMpnBuilder {
     return _bodyLocArguments?.toList();
   }
 
-  AndroidMpnBuilder setIcon(String? icon) {
+  FirebaseMpnBuilder setIcon(String? icon) {
     _icon = icon;
     return this;
   }
@@ -144,7 +144,7 @@ class AndroidMpnBuilder {
     return _icon;
   }
 
-  AndroidMpnBuilder setSound(String? sound) {
+  FirebaseMpnBuilder setSound(String? sound) {
     _sound = sound;
     return this;
   }
@@ -153,7 +153,7 @@ class AndroidMpnBuilder {
     return _sound;
   }
 
-  AndroidMpnBuilder setTag(String? tag) {
+  FirebaseMpnBuilder setTag(String? tag) {
     _tag = tag;
     return this;
   }
@@ -162,7 +162,7 @@ class AndroidMpnBuilder {
     return _tag;
   }
 
-  AndroidMpnBuilder setColor(String? color) {
+  FirebaseMpnBuilder setColor(String? color) {
     _color = color;
     return this;
   }
@@ -171,7 +171,7 @@ class AndroidMpnBuilder {
     return _color;
   }
 
-  AndroidMpnBuilder setClickAction(String? clickAction) {
+  FirebaseMpnBuilder setClickAction(String? clickAction) {
     _clickAction = clickAction;
     return this;
   }
@@ -180,7 +180,7 @@ class AndroidMpnBuilder {
     return _clickAction;
   }
 
-  AndroidMpnBuilder setData(Map<String, String>? data) {
+  FirebaseMpnBuilder setData(Map<String, String>? data) {
     _data = data == null ? null : Map.from(data);
     return this;
   }
