@@ -1404,8 +1404,7 @@ class MyMpnSubscriptionListener implements MpnSubscriptionListener {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("status", status);
         arguments.put("timestamp", timestamp);
-        // TODO why the check?
-        arguments.put("subscriptionId", "UNKNOWN".equals(status) ? null : _sub.getSubscriptionId());
+        arguments.put("subscriptionId", _sub.getSubscriptionId());
         invoke("onStatusChanged", arguments);
     }
 

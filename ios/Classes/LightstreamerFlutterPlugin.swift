@@ -1467,8 +1467,7 @@ class MyMpnSubscriptionListener : MPNSubscriptionDelegate {
     var arguments = [String:Any?]()
     arguments.put("status", status.rawValue);
     arguments.put("timestamp", timestamp);
-    // TODO why the check?
-    arguments.put("subscriptionId", status == .UNKNOWN ? nil : _sub.subscriptionId);
+    arguments.put("subscriptionId", _sub.subscriptionId);
     invoke("onStatusChanged", arguments);
   }
   
