@@ -143,9 +143,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
 
     void Client_handle(String method, MethodCall call, MethodChannel.Result result) {
         switch (method) {
-            case "create":
-                Client_create(call, result);
-                break;
             case "connect":
                 Client_connect(call, result);
                 break;
@@ -320,13 +317,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 }
                 result.notImplemented();
         }
-    }
-
-    void Client_create(MethodCall call, MethodChannel.Result result) {
-        LightstreamerClient client = createClient(call);
-        String id = call.argument("id");
-        client.addListener(new MyClientListener(id, client, this));
-        result.success(null);
     }
 
     void Client_setLoggerProvider(MethodCall call, MethodChannel.Result result) {
@@ -917,32 +907,13 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         result.success(null);
     }
 
-    LightstreamerClient createClient(MethodCall call) {
-        String id = call.argument("id");
-        LightstreamerClient ls = _clientMap.get(id);
-        if (ls != null) {
-            String errMsg = "LightstreamerClient " + id + " already exists";
-            if (channelLogger.isErrorEnabled()) {
-                channelLogger.error(errMsg, null);
-            }
-            throw new IllegalStateException(errMsg);
-        }
-        String serverAddress = call.argument("serverAddress");
-        String adapterSet = call.argument("adapterSet");
-        ls = new LightstreamerClient(serverAddress, adapterSet);
-        _clientMap.put(id, ls);
-        return ls;
-    }
-
     LightstreamerClient getClient(MethodCall call) {
         String id = call.argument("id");
         LightstreamerClient ls = _clientMap.get(id);
         if (ls == null) {
-            String errMsg = "A LightstreamerClient wit id " + id + " doesn't exist";
-            if (channelLogger.isErrorEnabled()) {
-                channelLogger.error(errMsg, null);
-            }
-            throw new IllegalStateException(errMsg);
+            ls = new LightstreamerClient(null, null);
+            _clientMap.put(id, ls);
+            ls.addListener(new MyClientListener(id, ls, this));
         }
         return ls;
     }

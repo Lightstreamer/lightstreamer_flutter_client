@@ -50,7 +50,7 @@ void main() {
   });
 
   test('MpnSubscription errors', () async {
-    client = await LightstreamerClient.create(host, "TEST");
+    client = LightstreamerClient(host, "TEST");
     var sub = new MpnSubscription("MERGE", ["count"], ["count"]);
     sub.setNotificationFormat('{}');
     await client.registerForMpn(MpnDevice());
@@ -70,7 +70,7 @@ void main() {
 
   test('subscribeToSameObjectTwice', () async {
     var exps = Expectations();
-    var client2 = await LightstreamerClient.create(host, "TEST");
+    var client2 = LightstreamerClient(host, "TEST");
 
     device = MpnDevice();
     devListener = BaseDeviceListener();
@@ -98,7 +98,7 @@ void main() {
 
     client2.disconnect();
 
-    client = await LightstreamerClient.create(host, "TEST");
+    client = LightstreamerClient(host, "TEST");
     await client.registerForMpn(device);
     await client.connect();
     await exps.value('onSubscriptionsUpdated');
@@ -148,7 +148,7 @@ void main() {
     group(transport, () {
 
       setUp(() async {
-        client = await LightstreamerClient.create(host, "TEST");
+        client = LightstreamerClient(host, "TEST");
         /* create an Android device */
         device = new MpnDevice();
         devListener = new BaseDeviceListener();
@@ -427,7 +427,7 @@ void main() {
       test('serverSubscription', () async {
         var exps = new Expectations();
         var dev2 = MpnDevice();
-        var client2 = await LightstreamerClient.create(host, "TEST");
+        var client2 = LightstreamerClient(host, "TEST");
         subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
         client2.connect();
         await client2.registerForMpn(dev2);
@@ -464,7 +464,7 @@ void main() {
       test('serverSubscriptionNotification', () async {
         var exps = new Expectations();
         var dev2 = MpnDevice();
-        var client2 = await LightstreamerClient.create(host, "TEST");
+        var client2 = LightstreamerClient(host, "TEST");
         subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
         client2.connect();
         await client2.registerForMpn(dev2);
@@ -492,7 +492,7 @@ void main() {
       test('serverSubscriptionUnsubscription', () async {
         var exps = new Expectations();
         var dev2 = MpnDevice();
-        var client2 = await LightstreamerClient.create(host, "TEST");
+        var client2 = LightstreamerClient(host, "TEST");
         subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
         client2.connect();
         await client2.registerForMpn(dev2);
@@ -524,7 +524,7 @@ void main() {
       test('findMpnSubscription_found', () async {
         var exps = new Expectations();
         var dev2 = MpnDevice();
-        var client2 = await LightstreamerClient.create(host, "TEST");
+        var client2 = LightstreamerClient(host, "TEST");
         subListener.fStatusChanged = (status, ts) => exps.signal('onStatusChanged $status');
         client2.connect();
         await client2.registerForMpn(dev2);

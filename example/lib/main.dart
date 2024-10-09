@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     // LightstreamerClient.enableLog();
 
-    _client = await LightstreamerClient.create("https://push.lightstreamer.com/", "DEMO");
+    _client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
     _client.addListener(_MyClientListener(this));
   }
 

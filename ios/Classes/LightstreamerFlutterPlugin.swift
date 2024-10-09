@@ -99,8 +99,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   
   func Client_handle(_ method: String, _ call: FlutterMethodCall, _ result: FlutterResult) throws {
     switch (method) {
-    case "create":
-      try Client_create(call, result);
     case "connect":
       try Client_connect(call, result);
     case "disconnect":
@@ -241,41 +239,15 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
   }
   
-  func createClient(_ call: FlutterMethodCall) throws -> LightstreamerClient {
-    let id: String = call.argument("id");
-    let ls_: LightstreamerClient? = _clientMap.get(id);
-    if (ls_ != nil) {
-      let errMsg = "LightstreamerClient " + id + " already exists";
-      if (channelLogger.isErrorEnabled) {
-        channelLogger.error(errMsg);
-      }
-      throw IllegalStateException(errMsg);
-    }
-    let serverAddress: String? = call.argument("serverAddress");
-    let adapterSet: String? = call.argument("adapterSet");
-    let ls = LightstreamerClient(serverAddress: serverAddress, adapterSet: adapterSet);
-    _clientMap.put(id, ls);
-    return ls;
-  }
-  
   func getClient(_ call: FlutterMethodCall) throws -> LightstreamerClient {
     let id: String = call.argument("id");
-    let ls: LightstreamerClient? = _clientMap.get(id);
+    var ls: LightstreamerClient! = _clientMap.get(id);
     if (ls == nil) {
-      let errMsg = "A LightstreamerClient wit id " + id + " doesn't exist";
-      if (channelLogger.isErrorEnabled) {
-        channelLogger.error(errMsg);
-      }
-      throw IllegalStateException(errMsg);
+      ls = LightstreamerClient(serverAddress: nil, adapterSet: nil);
+      _clientMap.put(id, ls);
+      ls.addDelegate(MyClientListener_(id, ls, self));
     }
-    return ls!;
-  }
-  
-  func Client_create(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
-    let client = try createClient(call);
-    let id: String = call.argument("id");
-    client.addDelegate(MyClientListener_(id, client, self));
-    result(nil);
+    return ls;
   }
   
   func Client_setLoggerProvider(_ call: FlutterMethodCall, _ result: FlutterResult) {

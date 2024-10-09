@@ -46,9 +46,8 @@ class NativeBridge {
     _listenerChannel.setMethodCallHandler(_listenerChannelHandler);
   }
 
-  Future<void> client_create(String clientId, LightstreamerClient client, Map<String, dynamic> arguments) async {
+  void client_create(String clientId, LightstreamerClient client) {
     _clientMap[clientId] = client;
-    return await invokeMethod('LightstreamerClient.create', arguments);
   }
 
   Future<void> client_subscribe(String clientId, String subId, Subscription sub, Map<String, dynamic> arguments) async {

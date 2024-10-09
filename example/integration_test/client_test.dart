@@ -16,7 +16,8 @@ void main() {
 
   test('channel errors', () async {
     try {
-      client = await LightstreamerClient.create('', '');
+      client = LightstreamerClient('', '');
+      await client.connect();
       fail('Expected PlatformException');
     } on PlatformException catch(e) {
       assertEqual('Lightstreamer Internal Error', e.code);
@@ -24,7 +25,7 @@ void main() {
     }
 
     try {
-      client = await LightstreamerClient.create(host, 'TEST');
+      client = LightstreamerClient(host, 'TEST');
       client.connectionOptions.setContentLength(-1);
       await client.connect();
       fail('Expected PlatformException');
@@ -35,7 +36,7 @@ void main() {
   }, skip: Platform.isIOS ? "When a precondition fails, Swift Client SDK throws an unrecoverable exception" : false);
 
   test('Subscription errors', () async {
-    client = await LightstreamerClient.create(host, "TEST");
+    client = LightstreamerClient(host, "TEST");
     var sub = new Subscription("MERGE", ["count"], ["count"]);
     client.subscribe(sub);
     try {
@@ -55,8 +56,7 @@ void main() {
     group(transport, () {
 
       setUp(() async {
-        client =
-            await LightstreamerClient.create(host, "TEST");
+        client = LightstreamerClient(host, "TEST");
         listener = new BaseClientListener();
         subListener = new BaseSubscriptionListener();
         msgListener = new BaseMessageListener();
@@ -135,8 +135,7 @@ void main() {
 
       test('error', () async {
         var exps = new Expectations();
-        client =
-            await LightstreamerClient.create(host, "XXX");
+        client = LightstreamerClient(host, "XXX");
         listener = new BaseClientListener();
         client.addListener(listener);
         listener.fServerError = (code, msg) {

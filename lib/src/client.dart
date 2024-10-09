@@ -16,23 +16,12 @@ class LightstreamerClient {
   late final ConnectionOptions connectionOptions;
   final List<ClientListener> _listeners = [];
 
-  LightstreamerClient._() : _id = '${_idGenerator++}' {
+  LightstreamerClient(String? serverAddress, String? adapterSet) : _id = '${_idGenerator++}' {
     connectionDetails = ConnectionDetails._(_id);
     connectionOptions = ConnectionOptions._(_id);
-  }
-
-  // TODO factory method or initialization method?
-  static Future<LightstreamerClient> create(String? serverAddress, String? adapterSet) async {
-    var client = LightstreamerClient._();
-    client.connectionDetails._serverAddress = serverAddress;
-    client.connectionDetails._adapterSet = adapterSet;
-    var arguments = <String, dynamic>{
-      "id": client._id,
-      "serverAddress": serverAddress,
-      "adapterSet": adapterSet
-    };
-    await NativeBridge.instance.client_create(client._id, client, arguments);
-    return client;
+    connectionDetails._serverAddress = serverAddress;
+    connectionDetails._adapterSet = adapterSet;
+    NativeBridge.instance.client_create(_id, this);
   }
 
   static Future<void> setLoggerProvider(LoggerProvider provider) async {
