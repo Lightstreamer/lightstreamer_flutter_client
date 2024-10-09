@@ -130,9 +130,9 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     case "setLoggerProvider":
       Client_setLoggerProvider(call, result);
     case "addCookies":
-      Client_addCookies(call, result);
+      try Client_addCookies(call, result);
     case "getCookies":
-      Client_getCookies(call, result);
+      try Client_getCookies(call, result);
     default:
       if (channelLogger.isErrorEnabled) {
         channelLogger.error("Unknown method " + call.method);
@@ -293,13 +293,95 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     result(nil);
   }
   
-  func Client_addCookies(_ call: FlutterMethodCall, _ result: FlutterResult) {
-    // TODO
+  func Client_addCookies(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let uri: String = call.argument("uri");
+    let cookies: [String] = call.argument("cookies");
+    let uri_: URL! = URL(string: uri)
+    if (uri_ == nil) {
+      throw IllegalStateException("Invalid URL `\(uri)` in LightstreamerClient.addCookies")
+    }
+    let cookies_ = cookies.flatMap({ c in HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie":c], for: uri_)})
+    LightstreamerClient.addCookies(cookies_, forURL: uri_);
+    result(nil);
   }
   
-  func Client_getCookies(_ call: FlutterMethodCall, _ result: FlutterResult) {
-    // TODO
+  func Client_getCookies(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let uri: String = call.argument("uri");
+    let uri_: URL! = URL(string: uri)
+    if (uri_ == nil) {
+      throw IllegalStateException("Invalid URL `\(uri)` in LightstreamerClient.getCookies")
+    }
+    let res = LightstreamerClient.getCookiesForURL(uri_)?.map({c in cookieToString(c)}) ?? []
+    result(res)
   }
+  
+  /**
+   * Formats a cookie according to the Set-Cookie header specification.
+   *
+   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
+   */
+  func cookieToString(_ c: HTTPCookie) -> String {
+    var result = ""
+    result.append(c.name);
+    result.append("=");
+    result.append(c.value);
+    if (!c.domain.isEmpty)
+    {
+      result.append("; domain=");
+      result.append(c.domain);
+    }
+    if (!c.path.isEmpty)
+    {
+      result.append("; path=");
+      result.append(c.path);
+    }
+    if let expires = c.expiresDate
+    {
+      result.append("; Expires=" + formatCookieDate(expires));
+    }
+    // TODO switch to iOS 13?
+//    switch (c.sameSitePolicy)
+//    {
+//    case nil:
+//      break
+//    case .sameSiteLax:
+//      result.append("; SameSite=Lax");
+//    case .sameSiteStrict:
+//      result.append("; SameSite=Strict");
+//    }
+    if (c.isSecure)
+    {
+      result.append("; secure");
+    }
+    if (c.isHTTPOnly)
+    {
+      result.append("; HttpOnly");
+    }
+    return result;
+  }
+  
+  /**
+   * Formats a date according to the HTTP-date standard.
+   *
+   * See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
+   */
+  func formatCookieDate(_ d: Date) -> String {
+    // Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
+    // <day-name> One of "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", or "Sun" (case-sensitive).
+    // <month> One of "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" (case sensitive).
+    let calendar = Calendar(identifier: .gregorian)
+    let dayName = dayNames[calendar.component(.weekday, from: d)]
+    let day = calendar.component(.day, from: d)
+    let month = monthNames[calendar.component(.month, from: d)]
+    let year = calendar.component(.month, from: d)
+    let hour = calendar.component(.hour, from: d)
+    let minute = calendar.component(.minute, from: d)
+    let second = calendar.component(.second, from: d)
+    return "\(dayName), \(day) \(month) \(year) \(hour):\(minute):\(second) GMT"
+  }
+  
+  let monthNames = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  let dayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   
   func Client_connect(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
     let client = try getClient(call);

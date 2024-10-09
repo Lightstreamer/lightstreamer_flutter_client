@@ -1,6 +1,6 @@
 // ignore_for_file: unnecessary_new, prefer_interpolation_to_compose_strings
 
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, Cookie;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
@@ -618,6 +618,34 @@ void main() {
         await exps.value("onItemUpdate");
         var u = updates[1];
         expect(u.getValueByPosition(1), matches('value=\\d+'));
+      });
+
+      test('cookies', () async {
+        // clear cookies
+        var cookies0_ = await LightstreamerClient.getCookies(host);
+        cookies0_.forEach((c) => c.maxAge = 0);
+        await LightstreamerClient.addCookies(host, cookies0_);
+        
+        var cookies0 = await LightstreamerClient.getCookies(host);
+        assertEqual(0, cookies0.length);
+
+        var cookie = Cookie.fromSetCookieValue("X-Client=client");
+        await LightstreamerClient.addCookies(host, [cookie]);
+
+        var exps = new Expectations();
+        listener.fStatusChange = (status) {
+          if (status.startsWith("CONNECTED")) {
+            exps.signal();
+          }
+        };
+        client.connect();
+        await exps.value();
+
+        var cookies = await LightstreamerClient.getCookies(host);
+        assertEqual(2, cookies.length);
+        var cookies_ = cookies.map((c) => c.toString()).join(" ");
+        expect(cookies_, contains("X-Client=client"));
+        expect(cookies_, contains("X-Server=server"));
       });
 
     }); // group
