@@ -493,16 +493,22 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             return;
         }
         // mpnDevId is unknown: get a device token and create a new device
+        if (channelLogger.isDebugEnabled()) {
+            channelLogger.debug("Obtaining MPN Device Token", null);
+        }
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
             @Override
             public void onComplete(@NonNull Task<String> task) {
                 if (!task.isSuccessful()) {
-                    String errMsg = "MPN Device Token is unavailable";
+                    String errMsg = "MPN Device Token not available";
                     if (channelLogger.isErrorEnabled()) {
-                        channelLogger.error(errMsg, null);
+                        channelLogger.error(errMsg, task.getException());
                     }
                     result.error("Lightstreamer Internal Error", errMsg, task.getException());
                     return;
+                }
+                if (channelLogger.isDebugEnabled()) {
+                    channelLogger.debug("MPN Device Token obtained", null);
                 }
                 // TODO synchronize access to `_mpnDeviceMap`?
                 if (_mpnDeviceMap.containsKey(mpnDevId)) {

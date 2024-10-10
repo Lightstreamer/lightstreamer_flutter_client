@@ -540,6 +540,9 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
       
       result(nil);
     }
+    if (channelLogger.isDebugEnabled) {
+      channelLogger.debug("Obtaining MPN Device Token")
+    }
     DispatchQueue.main.async { [weak self] in
       guard let self = self else {
         return
@@ -553,6 +556,9 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   var tokenListeners = [((String)->(), (String)->())]()
   
   public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    if (self.channelLogger.isDebugEnabled) {
+      self.channelLogger.debug("MPN Device Token obtained")
+    }
     let token = deviceToken.map { data in String(format: "%02x", data) }.joined()
     // fire the success listeners and then remove them
     for (onTokenSuccess, _) in tokenListeners {
@@ -562,7 +568,10 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   }
 
   public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    let errMsg = "AppDelegate: MPN registration failed with error: \(error) (user info: \((error as NSError).userInfo))"
+    let errMsg = "MPN Device Token not available: \(error) (user info: \((error as NSError).userInfo))"
+    if (self.channelLogger.isErrorEnabled) {
+      self.channelLogger.error(errMsg)
+    }
     // fire the error listeners and then remove them
     for (_, onTokenError) in tokenListeners {
       onTokenError(errMsg)
