@@ -1415,11 +1415,11 @@ class MyMpnDeviceListener : MPNDeviceDelegate {
   }
   
   func mpnDeviceDidResetBadge(_ device: MPNDevice) {
-    // TODO mpnDeviceDidResetBadge
+    // TODO to be implemented
   }
   
   func mpnDevice(_ device: MPNDevice, didFailBadgeResetWithErrorCode code: Int, message: String?) {
-    // TODO didFailBadgeResetWithErrorCode
+    // TODO to be implemented
   }
   
   func invoke(_ method: String, _ arguments: [String:Any?]) {
