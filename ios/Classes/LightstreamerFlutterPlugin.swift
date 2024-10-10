@@ -1071,7 +1071,7 @@ fileprivate class MyClientListener_ : ClientDelegate {
       let bwt: String? = switch client.connectionOptions.realMaxBandwidth {
       case nil: nil
       case .unlimited: "unlimited"
-      case .limited(var val): "\(val)"
+      case .limited(let val): "\(val)"
       case .unmanaged: "unmanaged"
       }
       arguments.put("value", bwt);
@@ -1250,16 +1250,16 @@ class MySubscriptionListener : SubscriptionDelegate {
   }
   
   func subscriptionDidUnsubscribe(_ subscription: Subscription) {
-    var arguments = [String:Any?]();
+    let arguments = [String:Any?]();
     invoke("onUnsubscription", arguments);
   }
   
   func subscription(_ subscription: Subscription, didReceiveRealFrequency frequency: RealMaxFrequency?) {
     var arguments = [String:Any?]();
-    var freq: String? = switch frequency {
+    let freq: String? = switch frequency {
     case nil: nil
     case .unlimited: "unlimited"
-    case .limited(var val): "\(val)"
+    case .limited(let val): "\(val)"
     }
     arguments.put("frequency", freq);
     invoke("onRealMaxFrequency", arguments);
@@ -1297,13 +1297,13 @@ class MyMpnSubscription {
     let bs_: String? = switch _sub.requestedBufferSize {
     case nil: nil
     case .unlimited: "unlimited"
-    case .limited(var bs): "\(bs)"
+    case .limited(let bs): "\(bs)"
     }
     dto.put("bufferSize", bs_);
     let mf_: String? = switch _sub.requestedMaxFrequency {
     case nil: nil
     case .unlimited: "unlimited"
-    case .limited(var mf): "\(mf)"
+    case .limited(let mf): "\(mf)"
     }
     dto.put("requestedMaxFrequency", mf_);
     dto.put("notificationFormat", _sub.notificationFormat);
@@ -1403,12 +1403,12 @@ class MyMpnSubscriptionListener : MPNSubscriptionDelegate {
   func mpnSubscriptionDidRemoveDelegate(_ subscription: MPNSubscription) {}
   
   func mpnSubscriptionDidSubscribe(_ subscription: MPNSubscription) {
-    var arguments = [String:Any?]()
+    let arguments = [String:Any?]()
     invoke("onSubscription", arguments);
   }
   
   func mpnSubscriptionDidUnsubscribe(_ subscription: MPNSubscription) {
-    var arguments = [String:Any?]()
+    let arguments = [String:Any?]()
     invoke("onUnsubscription", arguments);
   }
   
@@ -1427,7 +1427,7 @@ class MyMpnSubscriptionListener : MPNSubscriptionDelegate {
   }
   
   func mpnSubscriptionDidTrigger(_ subscription: MPNSubscription) {
-    var arguments = [String:Any?]()
+    let arguments = [String:Any?]()
     invoke("onTriggered", arguments);
   }
   
@@ -1461,14 +1461,14 @@ class MyMpnSubscriptionListener : MPNSubscriptionDelegate {
       let bs: String? = switch _sub.requestedBufferSize {
       case nil: nil
       case .unlimited: "unlimited"
-      case .limited(var val): "\(val)"
+      case .limited(let val): "\(val)"
       }
       arguments.put("value", bs);
     case "requested_max_frequency":
-      var fr: String? = switch _sub.requestedMaxFrequency {
+      let fr: String? = switch _sub.requestedMaxFrequency {
       case nil: nil
       case .unlimited: "unlimited"
-      case .limited(var val): "\(val)"
+      case .limited(let val): "\(val)"
       }
       arguments.put("value", fr);
     default:
