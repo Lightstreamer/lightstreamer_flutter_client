@@ -58,6 +58,7 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = LightstreamerFlutterPlugin(registrar)
     registrar.addMethodCallDelegate(instance, channel: instance._methodChannel)
+    registrar.addApplicationDelegate(instance)
   }
   
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -97,7 +98,7 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
   }
   
-  func Client_handle(_ method: String, _ call: FlutterMethodCall, _ result: FlutterResult) throws {
+  func Client_handle(_ method: String, _ call: FlutterMethodCall, _ result: @escaping FlutterResult) throws {
     switch (method) {
     case "connect":
       try Client_connect(call, result);
@@ -500,7 +501,7 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     result(nil);
   }
   
-  func Client_registerForMpn(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+  func Client_registerForMpn(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) throws {
     let client = try getClient(call);
     let mpnDevId: String = call.argument("mpnDevId");
     let device_ = _mpnDeviceMap.get(mpnDevId);
@@ -510,25 +511,63 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
       return;
     }
     // mpnDevId is unknown: get a device token and create a new device
-    
-    // TODO get real device token
-    // TODO synchronize access to `_mpnDeviceMap`?
-    if (_mpnDeviceMap.keys.contains(mpnDevId)) {
-      let errMsg = "MpnDevice " + mpnDevId + " already exists";
-      if (channelLogger.isErrorEnabled) {
-        channelLogger.error(errMsg);
+    let onTokenError = { [weak self] errMsg in
+      guard let self = self else {
+        return
       }
-      result(FlutterError(code: "Lightstreamer Internal Error", message: errMsg, details: nil));
-      return;
+      if (self.channelLogger.isErrorEnabled) {
+        self.channelLogger.error(errMsg);
+      }
+      result(FlutterError(code: "Lightstreamer Internal Error", message: errMsg, details: nil))
     }
-    // TODO String token = task.getResult();
-    let token = "tok123"
-    let device = MPNDevice(deviceToken: token);
-    device.addDelegate(MyMpnDeviceListener(mpnDevId, device, self));
-    _mpnDeviceMap.put(mpnDevId, device);
-    client.register(forMPN: device);
-    
-    result(nil);
+    let onTokenSuccess = { [weak self] token in
+      guard let self = self else {
+        return
+      }
+      // TODO synchronize access to `_mpnDeviceMap`?
+      if (_mpnDeviceMap.keys.contains(mpnDevId)) {
+        let errMsg = "MpnDevice " + mpnDevId + " already exists";
+        if (channelLogger.isErrorEnabled) {
+          channelLogger.error(errMsg);
+        }
+        result(FlutterError(code: "Lightstreamer Internal Error", message: errMsg, details: nil));
+        return;
+      }
+      let device = MPNDevice(deviceToken: token);
+      device.addDelegate(MyMpnDeviceListener(mpnDevId, device, self));
+      _mpnDeviceMap.put(mpnDevId, device);
+      client.register(forMPN: device);
+      
+      result(nil);
+    }
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else {
+        return
+      }
+      self.tokenListeners.append((onTokenSuccess, onTokenError))
+      UIApplication.shared.registerForRemoteNotifications()
+    }
+  }
+  
+  // NB the array should be accessed inside the main dispatch queue
+  var tokenListeners = [((String)->(), (String)->())]()
+  
+  public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    let token = deviceToken.map { data in String(format: "%02x", data) }.joined()
+    // fire the success listeners and then remove them
+    for (onTokenSuccess, _) in tokenListeners {
+      onTokenSuccess(token)
+    }
+    tokenListeners.removeAll()
+  }
+
+  public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    let errMsg = "AppDelegate: MPN registration failed with error: \(error) (user info: \((error as NSError).userInfo))"
+    // fire the error listeners and then remove them
+    for (_, onTokenError) in tokenListeners {
+      onTokenError(errMsg)
+    }
+    tokenListeners.removeAll()
   }
   
   func Client_subscribeMpn(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
