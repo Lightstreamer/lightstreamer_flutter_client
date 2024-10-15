@@ -3,7 +3,7 @@
 part of 'client.dart';
 
 /// A bridge manages the communication between this Flutter component (the Flutter app targeting Android/iOS using the Lightstreamer Flutter Client SDK)
-/// and the Android/iOS component (the process running the Lightstreamer Android/iOS Client SDK 
+/// and the native Android/iOS component (the process running the Lightstreamer Android/iOS Client SDK 
 /// that performs the operations requested by the Flutter component).
 /// See also: https://docs.flutter.dev/platform-integration/platform-channels
 class NativeBridge {
@@ -26,7 +26,7 @@ class NativeBridge {
   /// Maps an mpnSubId (i.e. `MpnSubscription._id`) to an MpnSubscription.
   /// The mapping is created either when
   /// 1. `LightstreamerClient.subscribeMpn` is called, or
-  /// 2. a Server MpnSubscription (i.e. an MpnSubscription not created by a user) is sent by the Android component 
+  /// 2. a Server MpnSubscription (i.e. an MpnSubscription not created by a user) is sent by the native component 
   ///    through `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
   final Map<String, MpnSubscription> _mpnSubMap = {};
 
@@ -37,9 +37,9 @@ class NativeBridge {
   /// and it is removed when any ClientMessageListener event is notified.
   final Map<String, ClientMessageListener> _msgListenerMap = {};
 
-  /// The channel through which this Flutter component forwards the procedure calls directed to the Android component.
+  /// The channel through which this Flutter component forwards the procedure calls directed to the native component.
   final MethodChannel _methodChannel = const MethodChannel('com.lightstreamer.flutter/methods');
-  /// The channel through which the listener events fired by the Android component are communicated to this Flutter component.
+  /// The channel through which the listener events fired by the native component are communicated to this Flutter component.
   final MethodChannel _listenerChannel = const MethodChannel('com.lightstreamer.flutter/listeners');
 
   NativeBridge._() {
