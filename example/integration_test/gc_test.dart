@@ -15,6 +15,10 @@ void main() {
     bridge.cleanResources();
   });
 
+  Future<String> getFormat() async {
+    return  Platform.isAndroid ? FirebaseMpnBuilder().setTitle("title").build() : ApnsMpnBuilder().setTitle("title").build();
+  }
+
   test('collect clients', () async {
     Object? client = LightstreamerClient(null, null);
     var ref = WeakReference(client);
@@ -30,142 +34,81 @@ void main() {
   });
 
   test('collect subscriptions', () async {
-    LightstreamerClient? client = LightstreamerClient(null, null);
-    var clientRef = WeakReference(client);
+    var client = LightstreamerClient(null, null);
     Subscription? sub = Subscription("MERGE", ['itm'], ['fld']);
-    var subRef = WeakReference(sub);
+    var ref = WeakReference(sub);
     client.subscribe(sub);
 
     sub = null;
 
     await forceGC(timeout: timeout);
-    expect(subRef.target, isNotNull);
-
-    client = null;
-
-    await forceGC(timeout: timeout);
-    expect(clientRef.target, isNull);
-    expect(subRef.target, isNull);
-
-    expect(bridge.nClients, 1);
+    expect(ref.target, isNull);
     expect(bridge.nSubscriptions, 1);
 
     bridge.cleanResources();
-    expect(bridge.nClients, 0);
-    expect(bridge.nSubscriptions, 0);
-  });
-
-  test('collect inactive subscriptions', () async {
-    LightstreamerClient? client = LightstreamerClient(null, null);
-    Subscription? sub = Subscription("MERGE", ['itm'], ['fld']);
-    var subRef = WeakReference(sub);
-    client.subscribe(sub);
-
-    sub = null;
-
-    await forceGC(timeout: timeout);
-    expect(subRef.target, isNotNull);
-
-    client.unsubscribe(subRef.target!);
-    
-    await forceGC(timeout: timeout);
-    expect(subRef.target, isNull);
-
-    expect(bridge.nClients, 1);
-    expect(bridge.nSubscriptions, 1);
-
-    bridge.cleanResources();
-    expect(bridge.nClients, 1);
     expect(bridge.nSubscriptions, 0);
   });
 
   test('collect mpn device', () async {
-    LightstreamerClient? client = LightstreamerClient(null, null);
-    var clientRef = WeakReference(client);
+    var client = LightstreamerClient(null, null);
     MpnDevice? device = MpnDevice();
-    var deviceRef = WeakReference(device);
-    client.registerForMpn(device);
+    var ref = WeakReference(device);
+    await client.registerForMpn(device);
 
     device = null;
 
     await forceGC(timeout: timeout);
-    expect(deviceRef.target, isNotNull);
-
-    client = null;
-
-    await forceGC(timeout: timeout);
-    expect(clientRef.target, isNull);
-    expect(deviceRef.target, isNull);
-
-    expect(bridge.nClients, 1);
+    expect(ref.target, isNull);
     expect(bridge.nDevices, 1);
 
     bridge.cleanResources();
-    expect(bridge.nClients, 0);
     expect(bridge.nDevices, 0);
   });
 
   test('collect mpn subscriptions', () async {
-    LightstreamerClient? client = LightstreamerClient(null, null);
-    var clientRef = WeakReference(client);
+    var client = LightstreamerClient(null, null);
     var device = MpnDevice();
     await client.registerForMpn(device);
     MpnSubscription? sub = MpnSubscription("MERGE", ['itm'], ['fld']);
-    if (Platform.isAndroid) {
-      sub.setNotificationFormat(await FirebaseMpnBuilder().setTitle("title").build());
-    } else {
-      sub.setNotificationFormat(await ApnsMpnBuilder().setTitle("title").build());
-    }
-    var subRef = WeakReference(sub);
+    sub.setNotificationFormat(await getFormat());
+    var ref = WeakReference(sub);
     client.subscribeMpn(sub, false);
 
     sub = null;
 
     await forceGC(timeout: timeout);
-    expect(subRef.target, isNotNull);
-
-    client = null;
-
-    await forceGC(timeout: timeout);
-    expect(clientRef.target, isNull);
-    expect(subRef.target, isNull);
-
-    expect(bridge.nClients, 1);
+    expect(ref.target, isNull);
     expect(bridge.nMpnSubscriptions, 1);
 
     bridge.cleanResources();
-    expect(bridge.nClients, 0);
     expect(bridge.nMpnSubscriptions, 0);
   });
-
-  test('collect inactive mpn subscriptions', () async {
+  
+  test('collect all', () async {
     LightstreamerClient? client = LightstreamerClient(null, null);
-    var device = MpnDevice();
+    MpnDevice? device = MpnDevice();
     await client.registerForMpn(device);
-    MpnSubscription? sub = MpnSubscription("MERGE", ['itm'], ['fld']);
-    if (Platform.isAndroid) {
-      sub.setNotificationFormat(await FirebaseMpnBuilder().setTitle("title").build());
-    } else {
-      sub.setNotificationFormat(await ApnsMpnBuilder().setTitle("title").build());
-    }
-    var subRef = WeakReference(sub);
-    client.subscribeMpn(sub, false);
+    MpnSubscription? mpnSub = MpnSubscription("MERGE", ['itm'], ['fld']);
+    mpnSub.setNotificationFormat(await getFormat());
+    client.subscribeMpn(mpnSub, false);
+    Subscription? sub = Subscription("MERGE", ['itm'], ['fld']);
+    client.subscribe(sub);
 
+    client = null;
+    device = null;
+    mpnSub = null;
     sub = null;
-
+   
     await forceGC(timeout: timeout);
-    expect(subRef.target, isNotNull);
-
-    client.unsubscribeMpn(subRef.target!);
-    
-    await forceGC(timeout: timeout);
-    expect(subRef.target, isNull);
-
     expect(bridge.nClients, 1);
+    expect(bridge.nSubscriptions, 1);
+    expect(bridge.nDevices, 1);
     expect(bridge.nMpnSubscriptions, 1);
 
-    bridge.cleanResources();
-    expect(bridge.nClients, 1);
+    await bridge.cleanResources();
+    expect(bridge.nClients, 0);
+    expect(bridge.nSubscriptions, 0);
+    expect(bridge.nDevices, 0);
     expect(bridge.nMpnSubscriptions, 0);
   });
 }

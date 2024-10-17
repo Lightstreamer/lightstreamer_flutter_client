@@ -47,31 +47,33 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     static final com.lightstreamer.log.Logger channelLogger = com.lightstreamer.log.LogManager.getLogger("lightstreamer.flutter");
     static final AtomicInteger _mpnSubIdGenerator = new AtomicInteger();
 
-    // TODO potential memory leak: objects are added to the maps but never removed
-
     /**
      * Maps a clientId (i.e. the `id` field of a MethodCall object) to a LightstreamerClient.
      * The mapping is created when any LightstreamerClient method is called by the Flutter component.
+     * It is removed when the map is cleaned.
      */
     final Map<String, LightstreamerClient> _clientMap = new HashMap<>();
     /**
      * Maps a subId (i.e. the `subId` field of a MethodCall object) to a Subscription.
      * The mapping is created when `LightstreamerClient.subscribe` is called.
+     * It is removed when the map is cleaned.
      */
     final Map<String, Subscription> _subMap = new HashMap<>();
+    /**
+     * Maps an mpnDevId (i.e. the `mpnDevId` field of a MethodCall object) to an MpnDevice.
+     * The mapping is created when `LightstreamerClient.registerForMpn` is called.
+     * It is removed when the map is cleaned.
+     */
+    final Map<String, MpnDevice> _mpnDeviceMap = new HashMap<>();
     /**
      * Maps an mpnSubId (i.e. the `mpnSubId` field of a MethodCall object) to an MpnSubscription.
      * The mapping is created either when
      * 1. `LightstreamerClient.subscribeMpn` is called, or
      * 2. a Server MpnSubscription (i.e. an MpnSubscription not created in response to a `LightstreamerClient.subscribeMpn` call)
      *    is returned by `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
+     * The mapping is removed when the map is cleaned.
      */
     final Map<String, MyMpnSubscription> _mpnSubMap = new HashMap<>();
-    /**
-     * Maps an mpnDevId (i.e. the `mpnDevId` field of a MethodCall object) to an MpnDevice.
-     * The mapping is created when `LightstreamerClient.registerForMpn` is called.
-     */
-    final Map<String, MpnDevice> _mpnDeviceMap = new HashMap<>();
     /**
      * The channel through which the procedure calls requested by the Flutter component are received.
      */
@@ -190,6 +192,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
                 break;
             case "getCookies":
                 Client_getCookies(call, result);
+                break;
+            case "cleanResources":
+                Client_cleanResources(call, result);
                 break;
             default:
                 if (channelLogger.isErrorEnabled()) {
@@ -339,6 +344,37 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         URI uri_ = URI.create(uri);
         List<String> res = LightstreamerClient.getCookies(uri_).stream().map(LightstreamerFlutterPlugin::cookieToString).collect(Collectors.toList());
         result.success(res);
+    }
+
+    void Client_cleanResources(MethodCall call, MethodChannel.Result result) {
+        List<String> clientIds = call.argument("clientIds");
+        List<String> subIds = call.argument("subIds");
+        List<String> mpnDevIds = call.argument("mpnDevIds");
+        List<String> mpnSubIds = call.argument("mpnSubIds");
+        int removedClientIds = 0;
+        for (String id : clientIds) {
+            Object res = _clientMap.remove(id);
+            removedClientIds += res == null ? 0 : 1;
+        }
+        int removedSubIds = 0;
+        for (String id : subIds) {
+            Object res = _subMap.remove(id);
+            removedSubIds += res == null ? 0 : 1;
+        }
+        int removedDevIds = 0;
+        for (String id : mpnDevIds) {
+            Object res = _mpnDeviceMap.remove(id);
+            removedDevIds += res == null ? 0 : 1;
+        }
+        int removedMpnSubIds = 0;
+        for (String id : mpnSubIds) {
+            Object res = _mpnSubMap.remove(id);
+            removedMpnSubIds += res == null ? 0 : 1;
+        }
+        if (channelLogger.isDebugEnabled()) {
+            channelLogger.debug("Cleaned clients: " + removedClientIds + " subscriptions: " + removedSubIds + " devices: " + removedDevIds + " mpn subscriptions: " + removedMpnSubIds, null);
+        }
+        result.success(null);
     }
 
     void Client_connect(MethodCall call, MethodChannel.Result result) {

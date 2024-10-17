@@ -15,31 +15,33 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   let channelLogger = LogManager.getLogger("lightstreamer.flutter")
   var _mpnSubIdGenerator = 0
   
-  // TODO potential memory leak: objects are added to the maps but never removed
-  
   /**
    * Maps a clientId (i.e. the `id` field of a MethodCall object) to a LightstreamerClient.
    * The mapping is created when any LightstreamerClient method is called by the Flutter component.
+   * It is removed when the map is cleaned.
    */
   var _clientMap = [String:LightstreamerClient]();
   /**
    * Maps a subId (i.e. the `subId` field of a MethodCall object) to a Subscription.
    * The mapping is created when `LightstreamerClient.subscribe` is called.
+   * It is removed when the map is cleaned.
    */
   var _subMap = [String:Subscription]();
+  /**
+   * Maps an mpnDevId (i.e. the `mpnDevId` field of a MethodCall object) to an MpnDevice.
+   * The mapping is created when `LightstreamerClient.registerForMpn` is called.
+   * It is removed when the map is cleaned.
+   */
+  var _mpnDeviceMap = [String:MPNDevice]();
   /**
    * Maps an mpnSubId (i.e. the `mpnSubId` field of a MethodCall object) to an MpnSubscription.
    * The mapping is created either when
    * 1. `LightstreamerClient.subscribeMpn` is called, or
    * 2. a Server MpnSubscription (i.e. an MpnSubscription not created in response to a `LightstreamerClient.subscribeMpn` call)
    *    is returned by `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
+   * The mapping is removed when the map is cleaned.
    */
   var _mpnSubMap = [String:MyMpnSubscription]();
-  /**
-   * Maps an mpnDevId (i.e. the `mpnDevId` field of a MethodCall object) to an MpnDevice.
-   * The mapping is created when `LightstreamerClient.registerForMpn` is called.
-   */
-  var _mpnDeviceMap = [String:MPNDevice]();
   
   /**
    * The channel through which the procedure calls requested by the Flutter component are received.
@@ -132,6 +134,8 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
       try Client_addCookies(call, result);
     case "getCookies":
       try Client_getCookies(call, result);
+    case "cleanResources":
+      try Client_cleanResources(call, result);
     default:
       if (channelLogger.isErrorEnabled) {
         channelLogger.error("Unknown method " + call.method);
@@ -355,6 +359,37 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   
   let monthNames = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   let dayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  
+  func Client_cleanResources(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    let clientIds: [String] = call.argument("clientIds")
+    let subIds: [String] = call.argument("subIds")
+    let mpnDevIds: [String] = call.argument("mpnDevIds")
+    let mpnSubIds: [String] = call.argument("mpnSubIds")
+    var removedClientIds = 0
+    for id in clientIds {
+      let res = _clientMap.removeValue(forKey: id)
+      removedClientIds += res == nil ? 0 : 1
+    }
+    var removedSubIds = 0
+    for id in subIds {
+      let res = _subMap.removeValue(forKey: id)
+      removedSubIds += res == nil ? 0 : 1
+    }
+    var removedDevIds = 0
+    for id in mpnDevIds {
+      let res = _mpnDeviceMap.removeValue(forKey: id)
+      removedDevIds += res == nil ? 0 : 1
+    }
+    var removedMpnSubIds = 0
+    for id in mpnSubIds {
+      let res = _mpnSubMap.removeValue(forKey: id)
+      removedMpnSubIds += res == nil ? 0 : 1
+    }
+    if (channelLogger.isDebugEnabled) {
+      channelLogger.debug("Cleaned clients: \(removedClientIds) subscriptions: \(removedSubIds) devices: \(removedDevIds) mpn subscriptions: \(removedMpnSubIds)")
+    }
+    result(nil)
+  }
   
   func Client_connect(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
     let client = try getClient(call);

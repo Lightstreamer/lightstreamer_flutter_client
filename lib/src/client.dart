@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
 import 'package:lightstreamer_flutter_client/src/log_manager.dart';
 import 'package:lightstreamer_flutter_client/src/logger.dart';
+import 'package:lightstreamer_flutter_client/src/utils.dart';
 
 part 'native_bridge.dart';
 part 'item_update.dart';
@@ -22,6 +24,18 @@ class LightstreamerClient {
     connectionDetails._serverAddress = serverAddress;
     connectionDetails._adapterSet = adapterSet;
     NativeBridge.instance.client_create(_id, this);
+  }
+
+  /// Removes from the internal maps the library objects (LightstreamerClients, Subscriptions etc.) that are inaccessible (i.e. eligible to be garbage collected).
+  /// This method is automatically called when `subscribe` or `subscribeMpn` are invoked.
+  ///
+  /// Rationale:
+  /// The internal maps are of type MyWeakMap, which holds values in weak references.
+  /// Periodically, these maps must be cleaned to remove cleared weak references.
+  /// Since `subscribe` and `subscribeMpn` are the most frequently used methods, it makes sense to perform the cleaning when they are invoked.
+  @visibleForTesting
+  static Future<void> cleanResources() {
+    return NativeBridge.instance.cleanResources();
   }
 
   static Future<void> setLoggerProvider(LoggerProvider provider) async {
@@ -80,6 +94,8 @@ class LightstreamerClient {
     // NB _remoteActive is set after the remote call to ensure that, when the call returns,
     // the remote image of the local subscription has been created
     sub._remoteActive = true;
+    //
+    cleanResources(); // no need to await here
   }
 
   Future<void> unsubscribe(Subscription sub) async {
@@ -145,6 +161,8 @@ class LightstreamerClient {
     // NB _remoteActive is set after the remote call to ensure that, when the call returns,
     // the remote image of the local subscription has been created
     sub._remoteActive = true;
+    //
+    cleanResources(); // no need to await here
   }
 
   Future<void> unsubscribeMpn(MpnSubscription sub) async {
@@ -483,7 +501,6 @@ class Subscription {
   int? _keyPosition;
   // _remoteActive is true iff the remote image of this subscription has been created,
   // i.e. `LightstreamerClient.subscribe` has been called with this Subscription as an argument
-  // TODO when does _remoteActive become false?
   bool _remoteActive = false;
 
   Map<String, dynamic> _toMap() {
@@ -814,7 +831,6 @@ class MpnSubscription {
   String? _subscriptionId;
   // _remoteActive is true iff the remote image of this subscription has been created,
   // i.e. `LightstreamerClient.subscribeMpn` has been called with this MpnSubscription as an argument
-  // TODO when does _remoteActive become false?
   bool _remoteActive = false;
 
   Map<String, dynamic> _toMap() {

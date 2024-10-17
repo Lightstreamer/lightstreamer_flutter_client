@@ -8,6 +8,37 @@ void assertFalse(bool cnd) => expect(cnd, isFalse);
 void assertNull(Object? obj) => expect(obj, isNull);
 void assertNotNull(Object? obj) => expect(obj, isNotNull);
 
+/// Adapted from: https://github.com/dart-lang/leak_tracker/blob/main/pkgs/leak_tracker/lib/src/leak_tracking/helpers.dart
+/// 
+/// Forces garbage collection by aggressive memory allocation.
+///
+/// Use [timeout] to limit waiting time.
+///
+/// The method is helpful for testing in combination with [WeakReference] to
+/// ensure an object is not held by another object from garbage collection.
+Future<void> forceGC({
+  Duration? timeout,
+}) async {
+  final stopwatch = timeout == null ? null : (Stopwatch()..start());
+
+  final storage = <List<int>>[];
+
+  void allocateMemory() {
+    storage.add(List.generate(30000, (n) => n));
+    if (storage.length > 100) {
+      storage.removeAt(0);
+    }
+  }
+
+  while (true) {
+    if ((stopwatch?.elapsed ?? Duration.zero) > (timeout ?? Duration.zero)) {
+      break;
+    }
+    await Future<void>.delayed(Duration.zero);
+    allocateMemory();
+  }
+}
+
 enum _State { s1, s2, s3, s4, s5, s6, s7, s8, s9, sa }
 
 class Expectations {

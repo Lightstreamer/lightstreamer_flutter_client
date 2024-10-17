@@ -9,26 +9,28 @@ part of 'client.dart';
 class NativeBridge {
   static final instance = NativeBridge._();
 
-  // TODO potential memory leak: objects are added to the maps but never removed
-
   /// Maps a clientId (i.e. `LightstreamerClient._id`) to a LightstreamerClient.
   /// The mapping is created when the LightstreamerClient constructor is called.
-  final Map<String, LightstreamerClient> _clientMap = {};
+  /// It is removed when the value is no longer accessible and the map has been cleaned.
+  final MyWeakMap<LightstreamerClient> _clientMap = MyWeakMap();
 
   /// Maps a subId (i.e. `Subscription._id`) to a Subscription.
   /// The mapping is created when `LightstreamerClient.subscribe` is called.
-  final Map<String, Subscription> _subMap = {};
+  /// It is removed when the value is no longer accessible and the map has been cleaned.
+  final MyWeakMap<Subscription> _subMap = MyWeakMap();
 
   /// Maps an mpnDevId (i.e. `MpnDevice._id`) to an MpnDevice.
   /// The mapping is created when `LightstreamerClient.registerForMpn` is called.
-  final Map<String, MpnDevice> _mpnDeviceMap = {};
+  /// It is removed when the value is no longer accessible and the map has been cleaned.
+  final MyWeakMap<MpnDevice> _mpnDeviceMap = MyWeakMap();
 
   /// Maps an mpnSubId (i.e. `MpnSubscription._id`) to an MpnSubscription.
   /// The mapping is created either when
   /// 1. `LightstreamerClient.subscribeMpn` is called, or
   /// 2. a Server MpnSubscription (i.e. an MpnSubscription not created by a user) is sent by the native component 
   ///    through `LightstreamerClient.getMpnSubscriptions` or `LightstreamerClient.findMpnSubscription`.
-  final Map<String, MpnSubscription> _mpnSubMap = {};
+  /// The mapping is removed when the value is no longer accessible and the map has been cleaned.
+  final MyWeakMap<MpnSubscription> _mpnSubMap = MyWeakMap();
 
   int _msgIdGenerator = 0;
 
@@ -41,6 +43,29 @@ class NativeBridge {
   final MethodChannel _methodChannel = const MethodChannel('com.lightstreamer.flutter/methods');
   /// The channel through which the listener events fired by the native component are communicated to this Flutter component.
   final MethodChannel _listenerChannel = const MethodChannel('com.lightstreamer.flutter/listeners');
+
+  @visibleForTesting
+  int get nClients => _clientMap.length;
+
+  @visibleForTesting
+  int get nSubscriptions => _subMap.length;
+
+  @visibleForTesting
+  int get nDevices => _mpnDeviceMap.length;
+
+  @visibleForTesting
+  int get nMpnSubscriptions => _mpnSubMap.length;
+
+  @visibleForTesting
+  Future<void> cleanResources() async {
+    var arguments = { // NB side effects
+      'clientIds': _clientMap.clean(),
+      'subIds':    _subMap.clean(),
+      'mpnDevIds': _mpnDeviceMap.clean(),
+      'mpnSubIds': _mpnSubMap.clean(),
+    };
+    return await invokeMethod("LightstreamerClient.cleanResources", arguments);
+  }
 
   NativeBridge._() {
     _listenerChannel.setMethodCallHandler(_listenerChannelHandler);
