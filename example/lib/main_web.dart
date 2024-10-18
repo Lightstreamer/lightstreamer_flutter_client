@@ -1,219 +1,226 @@
 import 'package:flutter/material.dart';
-/*
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-*/
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 
-late final String fcmToken;
+String _lastUpdate = " ---- ";
 
-void main() async {
-  // TODO complete firebase configuration
-  /*
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  fcmToken = (await FirebaseMessaging.instance.getToken(vapidKey: "BGxHjswNaj-9T1cur3TJuyUCgL9yudMZDDcEV43zpSxnZDvS7KbqnwAGSRz9zWbqySTa0Oij-i29xxRWEF0WtA8"))!;
+Color highlightColorLast = Colors.blueGrey;
 
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-  print('User granted permission: ${settings.authorizationStatus}');
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
-
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
-    }
-  });
-  */
-
-  runApp(MyApp());
+void main() {
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Web App',
-      home: MyHomePage(),
-    );
-  }
+  MyAppState createState() => MyAppState();
 }
 
-class MyHomePage extends StatefulWidget {
+class MyAppState extends State<MyApp> {
+  String _status = 'Unknown';
+  final myController = TextEditingController();
+  final mySubController = TextEditingController();
+
+  late LightstreamerClient _client;
+  Subscription? _subscription;
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
+  void initState() {
+    super.initState();
+    
+    LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
-class _MyClientListener extends ClientListener {
-  void onStatusChange(status) {
-    print(status);
-  }
-}
-
-class _MyMsgListener extends ClientMessageListener {
-  void onProcessed(String originalMessage, String response) {
-    print('onProcessed $originalMessage $response');
-  }
-}
-
-class _MySubListener extends SubscriptionListener {
-  void onItemUpdate(ItemUpdate u) {
-    print('${u.getValue("last_price")}|${u.getValue("time")}|${u.getValue("stock_name")}');
-  }
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  LightstreamerClient _client;
-  Subscription? _sub = null;
-  MpnSubscription? _mpnSub = null;
-  late final MpnDevice _device;
-
-  _MyHomePageState() : _client = new LightstreamerClient("https://push.lightstreamer.com", "DEMO") {
-    LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.INFO));
-
-    var listener = new _MyClientListener();
-    _client.addListener(listener);
-    _device = new MpnDevice(fcmToken, "com.lightstreamer.push_demo.android.fcm", "Google");
+    _client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+    _client.addListener(_MyClientListener(this));
   }
 
-  void _start() {
+  void _startRealTime() async {
+    _client.connectionOptions.setKeepaliveInterval(10000);
     _client.connect();
   }
 
-  void _stop() {
+  void _stopRealTime() async {
     _client.disconnect();
   }
 
-  void _send() {
-    _client.sendMessage('hello world', null, -1, new _MyMsgListener());
+  void _getStatus() async {
+    String result = _client.getStatus();
+    setState(() {
+      _status = result;
+    });
   }
 
-  void _subscribe() {
-    if (_sub == null) {
-      _sub = new Subscription("MERGE", ["item2"], ["last_price", "time", "stock_name"]);
-      var sub = _sub!;
-      sub.setDataAdapter("QUOTE_ADAPTER");
-      sub.addListener(new _MySubListener());
-      _client.subscribe(sub);
+  void _sendMessage() async {
+    _client.sendMessage(myController.text, null, null, _MyClientMessageListener(this), true);
+  }
+
+  void _subscribe() async {
+    if (_subscription != null) {
+      _client.unsubscribe(_subscription!);
     }
+    var items = mySubController.text.split(",");
+    var fields = [ "last_price", "time", "stock_name" ];
+    var sub = Subscription("MERGE", items, fields);
+    sub.setDataAdapter("QUOTE_ADAPTER");
+    sub.setRequestedMaxFrequency("1");
+    sub.setRequestedSnapshot("yes");
+    sub.addListener(_MySubscriptionListener(this));
+    _subscription = sub;
+    _client.subscribe(sub);
   }
 
-  void _unsubscribe() {
-    if (_sub != null) {
-      var sub = _sub!;
-      sub.removeListener(sub.getListeners()[0]);
+  void _unsubscribe() async {
+    _subscription = null;
+    for (var sub in _client.getSubscriptions()) {
       _client.unsubscribe(sub);
-      _sub = null;
     }
   }
 
-  void _register() {
-    _client.registerForMpn(_device);
+  void _values(String item, String fieldName, String fieldValue) {
+    setState(() {
+      _lastUpdate = "$item,$fieldName,$fieldValue\n$_lastUpdate";
+      highlightColorLast = Colors.yellow;
+    });
   }
 
-  void _subscribeMpn() {
-    if (_mpnSub == null) {
-      var item = "item2";
-      var builder = new FirebaseMpnBuilder();
-      builder.setData({
-        "item": item,
-        "stockName": "\${stock_name}",
-        "lastPrice": "\${last_price}"
-      });
-      var notificationFormat = builder.build();
-      var sub = new MpnSubscription("MERGE", [item], ["stock_name", "last_price"]);
-      sub.setNotificationFormat(notificationFormat);
-      sub.setDataAdapter("QUOTE_ADAPTER");
-      _client.subscribeMpn(sub, true);
-      _mpnSub = sub;
-    }
+  void _clientStatus(String msg) {
+    setState(() {
+      _status = msg;
+    });
   }
 
-  void _unsubscribeMpn() {
-    if (_mpnSub != null) {
-      var sub = _mpnSub!;
-      _client.unsubscribeMpn(sub);
-      _mpnSub = null;
-    }
-  }
-
-  void _unsubscribeAllMpn() {
-    _client.unsubscribeMpnSubscriptions("ALL");
-    _mpnSub = null;
+  void _clientMessage(String msg) {
+    setState(() {
+      _status = msg;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Flutter Web App'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: _start,
-                  child: Text('Connect'),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Lightstreamer Flutter Plugin Example'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: _startRealTime,
+                child: const Text('Start Realtime from Lightstreamer'),
+              ),
+              ElevatedButton(
+                onPressed: _stopRealTime,
+                child: const Text('Stop Realtime from Lightstreamer'),
+              ),
+              ElevatedButton(
+                onPressed: _getStatus,
+                child: const Text('Get Status'),
+              ),
+              Text('Status of the connection: $_status\n'),
+              TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter a message to send',
                 ),
-                ElevatedButton(
-                  onPressed: _stop,
-                  child: Text('Disconnect'),
+                controller: myController,
+              ),
+              ElevatedButton(
+                onPressed: _sendMessage,
+                child: const Text('Send Message'),
+              ),
+              TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter the list of items to subscribe',
                 ),
-                ElevatedButton(
-                  onPressed: _subscribe,
-                  child: Text('Subscribe'),
-                ),
-                ElevatedButton(
-                  onPressed: _unsubscribe,
-                  child: Text('Unsubscribe'),
-                ),
-                ElevatedButton(
-                  onPressed: _send,
-                  child: Text('Send hello'),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: _register,
-                  child: Text('Register MPN'),
-                ),
-                ElevatedButton(
-                  onPressed: _subscribeMpn,
-                  child: Text('Subscribe MPN'),
-                ),
-                ElevatedButton(
-                  onPressed: _unsubscribeMpn,
-                  child: Text('Unsubscribe MPN'),
-                ),
-                ElevatedButton(
-                  onPressed: _unsubscribeAllMpn,
-                  child: Text('UnsubscribeAll MPN'),
-                ),
-              ],
-            ),
-          ],
+                controller: mySubController,
+              ),
+              ElevatedButton(
+                onPressed: _subscribe,
+                child: const Text('Subscribe'),
+              ),
+              ElevatedButton(
+                onPressed: _unsubscribe,
+                child: const Text('Unsubscribe'),
+              ),
+              Text(_lastUpdate,
+                  maxLines: 20,
+                  style: TextStyle(backgroundColor: highlightColorLast),
+                  overflow: TextOverflow.fade,
+                  textDirection: TextDirection.ltr,
+                  textAlign: TextAlign.justify),
+            ],
+          ),
         ),
       ),
     );
+  }
+}
+
+class _MyClientListener extends ClientListener {
+  final MyAppState _state;
+
+  _MyClientListener(MyAppState state) : _state = state;
+
+  @override
+  void onServerError(int errorCode, String errorMessage) {
+    _state._clientStatus('ERROR $errorCode: $errorMessage');
+  }
+
+  @override
+  void onStatusChange(String status) {
+    _state._clientStatus(status);
+  }
+}
+
+class _MySubscriptionListener extends SubscriptionListener {
+  final MyAppState _state;
+
+  _MySubscriptionListener(MyAppState state) : _state = state;
+
+  @override
+  void onItemUpdate(ItemUpdate update) {
+    var itemName = update.getItemName()!;
+    update.forEachField((name, _, value) {
+      _state._values(itemName, name ?? '', value ?? '');
+    });
+  }
+
+  @override
+  void onSubscriptionError(int errorCode, String errorMessage) {
+    _state._clientStatus('ERROR $errorCode: $errorMessage');
+  }
+}
+
+class _MyClientMessageListener extends ClientMessageListener {
+  final MyAppState _state;
+
+  _MyClientMessageListener(MyAppState state) : _state = state;
+
+  @override
+  void onAbort(String originalMessage, bool sentOnNetwork) {
+    _state._clientMessage('ERROR: Message aborted: $originalMessage');
+  }
+
+  @override
+  void onDeny(String originalMessage, int errorCode, String errorMessage) {
+    _state._clientMessage('ERROR: Message denied: $errorCode - $errorMessage');
+  }
+
+  @override
+  void onDiscarded(String originalMessage) {
+    _state._clientMessage('ERROR: Message discarded: $originalMessage');
+  }
+
+  @override
+  void onError(String originalMessage) {
+    _state._clientMessage('ERROR: Message error: $originalMessage');
+  }
+
+  @override
+  void onProcessed(String originalMessage, String response) {
+    _state._clientMessage('SUCCESS: Message processed: $originalMessage $response');
   }
 }
