@@ -199,7 +199,7 @@ LightstreamerClient.setLoggerProvider(loggerProvider);
 
 ### Web Push Notifications
 
-The library offers support for Web Push Notifications on Apple platforms via **Apple Push Notification Service (APNs)** and Google platforms  via  **Firebase Cloud Messaging (FCM)**. With Web Push, subscriptions deliver their updates via push notifications even when the application is offline.
+The library offers support for Web Push Notifications on Apple platforms via **Apple Push Notification Service (APNs)** and Google platforms via  **Firebase Cloud Messaging (FCM)**. With Web Push, subscriptions deliver their updates via push notifications even when the application is offline.
 
 To receive notifications, you need to subscribe to a `MpnSubscription`: it contains subscription details and the listener needed to monitor its status. Real-time data is routed via native push notifications.
 
