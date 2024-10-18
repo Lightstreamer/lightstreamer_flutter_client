@@ -58,19 +58,19 @@ interface class ItemUpdate {
     return _jsonFieldsByPosition[fieldPosition];
   }
 
-  Map<String,String> getChangedFields() {
+  Map<String,String?> getChangedFields() {
     return {..._changedFields};
   }
 
-  Map<int,String> getChangedFieldsByPosition() {
+  Map<int,String?> getChangedFieldsByPosition() {
     return {..._changedFieldsByPosition};
   }
 
-  Map<String,String> getFields() {
+  Map<String,String?> getFields() {
     return {..._fields};
   }
 
-  Map<int,String> getFieldsByPosition() {
+  Map<int,String?> getFieldsByPosition() {
     return {..._fieldsByPosition};
   }
 }
