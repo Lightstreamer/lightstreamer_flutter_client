@@ -10,6 +10,6 @@
 
 @implementation LightstreamerFlutterClientPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftLightstreamerFlutterClientPlugin registerWithRegistrar:registrar];
+  [LightstreamerFlutterPlugin registerWithRegistrar:registrar];
 }
 @end
