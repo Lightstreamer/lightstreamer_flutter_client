@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 
 String _lastUpdate = " ---- ";
 
-Color highlightcolorLast = Colors.blueGrey;
+Color highlightColorLast = Colors.blueGrey;
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  MyAppState createState() => MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   String _status = 'Unknown';
   final myController = TextEditingController();
   final mySubController = TextEditingController();
@@ -26,37 +25,34 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  Future<void> initPlatformState() async {
-    // LightstreamerClient.enableLog();
+    
+    LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
     _client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
     _client.addListener(_MyClientListener(this));
   }
 
-  Future<void> _startRealTime() async {
+  void _startRealTime() async {
     _client.connectionOptions.setKeepaliveInterval(10000);
-    _client.connect();
+    await _client.connect();
   }
 
-  Future<void> _stopRealTime() async {
-    _client.disconnect();
+  void _stopRealTime() async {
+    await _client.disconnect();
   }
 
-  Future<void> _getStatus() async {
+  void _getStatus() async {
     String result = await _client.getStatus();
     setState(() {
       _status = result;
     });
   }
 
-  Future<void> _sendMessage() async {
+  void _sendMessage() async {
     await _client.sendMessage(myController.text, null, null, _MyClientMessageListener(this), true);
   }
 
-  Future<void> _subscribe() async {
+  void _subscribe() async {
     var items = mySubController.text.split(",");
     var fields = [ "last_price", "time", "stock_name" ];
     var sub = Subscription("MERGE", items, fields);
@@ -69,9 +65,8 @@ class _MyAppState extends State<MyApp> {
 
   void _values(String item, String fieldName, String fieldValue) {
     setState(() {
-      _lastUpdate =
-          item + "," + fieldName + "," + fieldValue + "\n" + _lastUpdate;
-      highlightcolorLast = Colors.yellow;
+      _lastUpdate = "$item,$fieldName,$fieldValue\n$_lastUpdate";
+      highlightColorLast = Colors.yellow;
     });
   }
 
@@ -81,13 +76,13 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _clientmessages(String msg) {
+  void _clientMessage(String msg) {
     setState(() {
       _status = msg;
     });
   }
 
-  Future<void> _unsubscribe() async {
+  void _unsubscribe() async {
     for (var sub in await _client.getSubscriptions()) {
       await _client.unsubscribe(sub);
     }
@@ -102,64 +97,50 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Center(
           child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               ElevatedButton(
-                child: const Text('Start Realtime from Lightstreamer'),
                 onPressed: _startRealTime,
+                child: const Text('Start Realtime from Lightstreamer'),
               ),
               ElevatedButton(
-                child: const Text('Stop Realtime from Lightstreamer'),
                 onPressed: _stopRealTime,
+                child: const Text('Stop Realtime from Lightstreamer'),
               ),
               ElevatedButton(
-                child: const Text('Get Status'),
                 onPressed: _getStatus,
+                child: const Text('Get Status'),
               ),
               Text('Status of the connection: $_status\n'),
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Enter a message to send',
                 ),
                 controller: myController,
               ),
               ElevatedButton(
-                child: const Text('Send Message'),
                 onPressed: _sendMessage,
+                child: const Text('Send Message'),
               ),
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Enter the list of items to subscribe',
                 ),
                 controller: mySubController,
               ),
               ElevatedButton(
-                child: const Text('Subscribe'),
                 onPressed: _subscribe,
+                child: const Text('Subscribe'),
               ),
               ElevatedButton(
-                child: const Text('Unsubscribe'),
                 onPressed: _unsubscribe,
+                child: const Text('Unsubscribe'),
               ),
               Text(_lastUpdate,
                   maxLines: 20,
-                  style: TextStyle(backgroundColor: highlightcolorLast),
+                  style: TextStyle(backgroundColor: highlightColorLast),
                   overflow: TextOverflow.fade,
                   textDirection: TextDirection.ltr,
                   textAlign: TextAlign.justify),
@@ -172,9 +153,9 @@ class _MyAppState extends State<MyApp> {
 }
 
 class _MyClientListener extends ClientListener {
-  final _MyAppState _state;
+  final MyAppState _state;
 
-  _MyClientListener(_MyAppState state) : _state = state;
+  _MyClientListener(MyAppState state) : _state = state;
 
   @override
   void onServerError(int errorCode, String errorMessage) {
@@ -188,9 +169,9 @@ class _MyClientListener extends ClientListener {
 }
 
 class _MySubscriptionListener extends SubscriptionListener {
-  final _MyAppState _state;
+  final MyAppState _state;
 
-  _MySubscriptionListener(_MyAppState state) : _state = state;
+  _MySubscriptionListener(MyAppState state) : _state = state;
 
   @override
   void onItemUpdate(ItemUpdate update) {
@@ -207,27 +188,32 @@ class _MySubscriptionListener extends SubscriptionListener {
 }
 
 class _MyClientMessageListener extends ClientMessageListener {
-  final _MyAppState _state;
+  final MyAppState _state;
 
-  _MyClientMessageListener(_MyAppState state) : _state = state;
+  _MyClientMessageListener(MyAppState state) : _state = state;
 
+  @override
   void onAbort(String originalMessage, bool sentOnNetwork) {
-    _state._clientmessages('ERROR: Message aborted: $originalMessage');
+    _state._clientMessage('ERROR: Message aborted: $originalMessage');
   }
 
+  @override
   void onDeny(String originalMessage, int errorCode, String errorMessage) {
-    _state._clientmessages('ERROR: Message denied: $errorCode - $errorMessage');
+    _state._clientMessage('ERROR: Message denied: $errorCode - $errorMessage');
   }
 
+  @override
   void onDiscarded(String originalMessage) {
-    _state._clientmessages('ERROR: Message discarded: $originalMessage');
+    _state._clientMessage('ERROR: Message discarded: $originalMessage');
   }
 
+  @override
   void onError(String originalMessage) {
-    _state._clientmessages('ERROR: Message error: $originalMessage');
+    _state._clientMessage('ERROR: Message error: $originalMessage');
   }
 
+  @override
   void onProcessed(String originalMessage, String response) {
-    _state._clientmessages('SUCCESS: Message processed: $originalMessage $response');
+    _state._clientMessage('SUCCESS: Message processed: $originalMessage $response');
   }
 }
