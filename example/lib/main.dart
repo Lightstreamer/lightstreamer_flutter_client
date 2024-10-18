@@ -186,7 +186,7 @@ class _MySubscriptionListener extends SubscriptionListener {
   void onItemUpdate(ItemUpdate update) {
     var itemName = update.getItemName()!;
     for (var field in update.getFields().entries) {
-      _state._values(itemName, field.key, field.value);
+      _state._values(itemName, field.key, field.value ?? '');
     }
   }
 
