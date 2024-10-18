@@ -20,7 +20,11 @@ class MyAppState extends State<MyApp> {
   String _status = 'Unknown';
   final myController = TextEditingController();
   final mySubController = TextEditingController();
+
+  // WARNING keep strong references to LightstreamerClients, Subscriptions, MpnDevices and MpnSubscriptions 
+  // to receive related events
   late LightstreamerClient _client;
+  Subscription? _subscription;
 
   @override
   void initState() {
@@ -53,6 +57,9 @@ class MyAppState extends State<MyApp> {
   }
 
   void _subscribe() async {
+    if (_subscription != null) {
+      await _client.unsubscribe(_subscription!);
+    }
     var items = mySubController.text.split(",");
     var fields = [ "last_price", "time", "stock_name" ];
     var sub = Subscription("MERGE", items, fields);
@@ -60,7 +67,15 @@ class MyAppState extends State<MyApp> {
     sub.setRequestedMaxFrequency("1");
     sub.setRequestedSnapshot("yes");
     sub.addListener(_MySubscriptionListener(this));
+    _subscription = sub;
     await _client.subscribe(sub);
+  }
+
+  void _unsubscribe() async {
+    _subscription = null;
+    for (var sub in await _client.getSubscriptions()) {
+      await _client.unsubscribe(sub);
+    }
   }
 
   void _values(String item, String fieldName, String fieldValue) {
@@ -80,12 +95,6 @@ class MyAppState extends State<MyApp> {
     setState(() {
       _status = msg;
     });
-  }
-
-  void _unsubscribe() async {
-    for (var sub in await _client.getSubscriptions()) {
-      await _client.unsubscribe(sub);
-    }
   }
 
   @override
