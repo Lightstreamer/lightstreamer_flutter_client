@@ -214,7 +214,8 @@ void main() {
         await exps.value("realMaxBandwidth=40");
         // request an unlimited bandwidth: the meta-data adapter cuts it to 40 (which is the configured limit)
         client.connectionOptions.setRequestedMaxBandwidth("unlimited");
-        await exps.value("realMaxBandwidth=40");
+        // NB the listener isn't notified again because the value isn't changed
+        // await exps.value("realMaxBandwidth=40");
       });
 
       test('clear snapshot', () async {
