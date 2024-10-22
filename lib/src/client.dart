@@ -484,7 +484,7 @@ class LightstreamerClient {
    * 
    * By registering an MPN device, the client enables MPN functionalities such as [subscribe].
    * 
-   * @general_edition_note MPN is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** MPN is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -517,7 +517,7 @@ class LightstreamerClient {
    * the same subscriptions have been activated before or not. In fact, since MPN subscriptions are persistent, if they are activated every time the app starts and
    * the <code>coalescing</code> flag is not set, every activation is a <i>new</i> MPN subscription, leading to multiple push notifications for the same event.
    * 
-   * @general_edition_note MPN is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** MPN is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -557,7 +557,7 @@ class LightstreamerClient {
    * 
    * This operation removes the MpnSubscription from the list of "active" subscriptions.
    * 
-   * @general_edition_note MPN is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** MPN is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -585,7 +585,7 @@ class LightstreamerClient {
    * By specifying a status filter it is possible to unsubscribe multiple MPN subscriptions at once. E.g. by passing <code>TRIGGERED</code> it is possible
    * to unsubscribe all triggered MPN subscriptions. This operation removes the involved MPN subscriptions from the list of "active" subscriptions.
    * 
-   * @general_edition_note MPN is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** MPN is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -620,7 +620,7 @@ class LightstreamerClient {
    * [MpnSubscription.getSubscriptionId] value to verify the equivalence of two MpnSubscription objects. Substitutions may happen
    * when an MPN subscription is modified, or when it is coalesced with a pre-existing subscription.
    * 
-   * @general_edition_note MPN is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** MPN is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -656,7 +656,7 @@ class LightstreamerClient {
    * [MpnSubscription.getSubscriptionId] value to verify the equivalence of two MpnSubscription objects. Substitutions may happen
    * when an MPN subscription is modified, or when it is coalesced with a pre-existing subscription.
    * 
-   * @general_edition_note MPN is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** MPN is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -769,7 +769,7 @@ class ConnectionDetails {
    * the specified scheme is internally converted to match the related WebSocket protocol (i.e. http becomes ws 
    * while https becomes wss).
    *
-   * @general_edition_note WSS/HTTPS is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** WSS/HTTPS is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -848,7 +848,7 @@ class ConnectionDetails {
    * scheme is internally converted to match the related WebSocket protocol (i.e. http becomes ws while 
    * https becomes wss).
    * 
-   * @general_edition_note Server Clustering is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** Server Clustering is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -877,7 +877,7 @@ class ConnectionDetails {
    * is when a Server cluster is in place and it is configured in such a way that the port used for all bind_session requests
    * differs from the port used for the initial create_session request.
    * 
-   * @general_edition_note Server Clustering is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** Server Clustering is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at /dashboard).
    * 
    * **Lifecycle** If a session is not currently active, null is returned;
@@ -1423,7 +1423,7 @@ class ConnectionOptions {
    * A limit on bandwidth may already be posed by the Metadata Adapter, but the client can 
    * further restrict this limit. The limit applies to the bytes received in each streaming or polling connection.
    * 
-   * @general_edition_note Bandwidth Control is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** Bandwidth Control is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -1719,7 +1719,7 @@ class ConnectionOptions {
    * supplied in setServerAddress. This may be needed in a test environment, if the Server address specified 
    * is actually a local address to a specific Server instance in the cluster. <BR>
    * 
-   * @general_edition_note Server Clustering is an optional feature, available depending on Edition and License Type.
+   * **General Edition Note** Server Clustering is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
@@ -2411,7 +2411,7 @@ class Subscription {
    * requests may be refused if any frequency limit is posed on the server
    * side for some item.
    *
-   * @general_edition_note A further global frequency limit could also be imposed by the Server,
+   * **General Edition Note** A further global frequency limit could also be imposed by the Server,
    * depending on Edition and License Type; this specific limit also applies to RAW mode and
    * to unfiltered dispatching.
    * To know what features are enabled by your license, please see the License tab of the
@@ -3407,7 +3407,7 @@ class MpnSubscription {
    * server side and this request can only be issued in order to further
    * reduce the frequency, not to rise it beyond these limits.
    *
-   * @general_edition_note A further global frequency limit could also be imposed by the Server,
+   * **General Edition Note** A further global frequency limit could also be imposed by the Server,
    * depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the
    * Monitoring Dashboard (by default, available at /dashboard).
