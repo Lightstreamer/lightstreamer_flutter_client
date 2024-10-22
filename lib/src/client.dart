@@ -164,7 +164,7 @@ class LightstreamerClient {
    * library to access the Server. Obviously, only cookies whose domain is compatible
    * with the Server domain will be used internally.
    * 
-   * @lifecycle This method should be invoked before calling the
+   * **Lifecycle** This method should be invoked before calling the
    * [LightstreamerClient.connect] method. However it can be invoked at any time;
    * it will affect the internal cookie set immediately and the sending of cookies
    * on the next HTTP request or WebSocket establishment.
@@ -217,7 +217,7 @@ class LightstreamerClient {
    * Note that as "polling connection" we mean a loop of polling requests, each of which requires opening a 
    * synchronous (i.e. not streaming) connection to Lightstreamer Server.
    * 
-   * @lifecycle Note that the request to connect is accomplished by the client in a separate thread; this means 
+   * **Lifecycle** Note that the request to connect is accomplished by the client in a separate thread; this means 
    * that an invocation to [getStatus] right after connect() might not reflect the change yet. <BR> 
    * When the request to connect is finally being executed, if the current status
    * of the client is not DISCONNECTED, then nothing will be done.
@@ -244,7 +244,7 @@ class LightstreamerClient {
    * Note that active Subscription instances, associated with this LightstreamerClient instance, are preserved 
    * to be re-subscribed to on future Sessions.
    * 
-   * @lifecycle  Note that the request to disconnect is accomplished by the client in a separate thread; this 
+   * **Lifecycle**  Note that the request to disconnect is accomplished by the client in a separate thread; this 
    * means that an invocation to [getStatus] right after disconnect() might not reflect the change yet. <BR> 
    * When the request to disconnect is finally being executed, if the status of the client is "DISCONNECTED", 
    * then nothing will be done.
@@ -289,7 +289,7 @@ class LightstreamerClient {
    * session available). Active Subscription are automatically persisted across different sessions as long as a 
    * related unsubscribe call is not issued.
    * 
-   * @lifecycle Subscriptions can be given to the LightstreamerClient at any time. Once done the Subscription 
+   * **Lifecycle** Subscriptions can be given to the LightstreamerClient at any time. Once done the Subscription 
    * immediately enters the "active" state. <BR>
    * Once "active", a Subscription instance cannot be provided again to a LightstreamerClient unless it is 
    * first removed from the "active" state through a call to [unsubscribe]. <BR>
@@ -320,7 +320,7 @@ class LightstreamerClient {
    * By bringing back a Subscription to the "inactive" state, the unsubscription from all its items is 
    * requested to Lightstreamer Server.
    * 
-   * @lifecycle Subscription can be unsubscribed from at any time. Once done the Subscription immediately 
+   * **Lifecycle** Subscription can be unsubscribed from at any time. Once done the Subscription immediately 
    * exits the "active" state. <BR>
    * Note that forwarding of the unsubscription to the server is made in a separate thread. <BR>
    * The unsubscription will be notified through a [SubscriptionListener.onUnsubscription] event.
@@ -389,7 +389,7 @@ class LightstreamerClient {
    * is assumed. In this case, no checks on missing, duplicated or overtaken messages are performed at all,
    * so as to optimize the processing and allow the highest possible throughput.
    * 
-   * @lifecycle Since a message is handled by the Metadata Adapter associated to the current connection, a
+   * **Lifecycle** Since a message is handled by the Metadata Adapter associated to the current connection, a
    * message can be sent only if a connection is currently active. If the special enqueueWhileDisconnected 
    * flag is specified it is possible to call the method at any time and the client will take care of sending
    * the message as soon as a connection is available, otherwise, if the current status is "DISCONNECTED*", 
@@ -434,7 +434,7 @@ class LightstreamerClient {
    *  
    * The same listener can be added to several different LightstreamerClient instances.
    *
-   * @lifecycle A listener can be added at any time. A call to add a listener already 
+   * **Lifecycle** A listener can be added at any time. A call to add a listener already 
    * present will be ignored.
    * 
    * - [listener] An object that will receive the events as documented in the 
@@ -454,7 +454,7 @@ class LightstreamerClient {
   /**
    * Removes a listener from the LightstreamerClient instance so that it will not receive events anymore.
    * 
-   * @lifecycle a listener can be removed at any time.
+   * **Lifecycle** a listener can be removed at any time.
    * 
    * - [listener] The listener to be removed.
    * 
@@ -488,7 +488,7 @@ class LightstreamerClient {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @lifecycle An [MpnDevice] can be registered at any time. The registration will be notified through a [MpnDeviceListener.onRegistered] event.
+   * **Lifecycle** An [MpnDevice] can be registered at any time. The registration will be notified through a [MpnDeviceListener.onRegistered] event.
    * Note that forwarding of the registration to the server is made in a separate thread.
    * 
    * - [device] An [MpnDevice] instance, carrying all the information about the MPN device.
@@ -521,7 +521,7 @@ class LightstreamerClient {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @lifecycle An MpnSubscription can be given to the LightstreamerClient once an MpnDevice registration has been requested. The MpnSubscription
+   * **Lifecycle** An MpnSubscription can be given to the LightstreamerClient once an MpnDevice registration has been requested. The MpnSubscription
    * immediately enters the "active" state.<BR>
    * Once "active", an MpnSubscription instance cannot be provided again to an LightstreamerClient unless it is first removed from the "active" state through
    * a call to [unsubscribe].<BR>
@@ -561,7 +561,7 @@ class LightstreamerClient {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @lifecycle An MpnSubscription can be unsubscribed from at any time. Once done the MpnSubscription immediately exits the "active" state.<BR>
+   * **Lifecycle** An MpnSubscription can be unsubscribed from at any time. Once done the MpnSubscription immediately exits the "active" state.<BR>
    * Note that forwarding of the unsubscription to the server is made in a separate thread.<BR>
    * The unsubscription will be notified through an [MpnSubscriptionListener.onUnsubscription] event.
    * 
@@ -589,7 +589,7 @@ class LightstreamerClient {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @lifecycle Multiple unsubscription can be requested at any time. Once done the involved MPN subscriptions immediately exit the "active" state.<BR>
+   * **Lifecycle** Multiple unsubscription can be requested at any time. Once done the involved MPN subscriptions immediately exit the "active" state.<BR>
    * Note that forwarding of the unsubscription to the server is made in a separate thread.<BR>
    * The unsubscription will be notified through an [MpnSubscriptionListener.onUnsubscription] event to all involved MPN subscriptions.
    * 
@@ -624,7 +624,7 @@ class LightstreamerClient {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @lifecycle The collection is available once an MpnDevice registration has been requested, but reflects the actual server's collection only
+   * **Lifecycle** The collection is available once an MpnDevice registration has been requested, but reflects the actual server's collection only
    * after an [MpnDeviceListener.onSubscriptionsUpdated] event has been notified.
    * 
    * - [filter] An MPN subscription status name to be used to select the MPN subscriptions to return. If null all existing MPN subscriptions
@@ -738,7 +738,7 @@ class ConnectionDetails {
    * 
    * **Default** The default Adapter Set, configured as "DEFAULT" on the Server.
    * 
-   * @lifecycle The Adapter Set name should be set on the [LightstreamerClient.connectionDetails] object 
+   * **Lifecycle** The Adapter Set name should be set on the [LightstreamerClient.connectionDetails] object 
    * before calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: 
    * the supplied value will be used for the next time a new session is requested to the server. <BR>
    * This setting can also be specified in the [LightstreamerClient] constructor.
@@ -775,7 +775,7 @@ class ConnectionDetails {
    * 
    * **Default** if no server address is supplied the client will be unable to connect.
    * 
-   * @lifecycle This method can be called at any time. If called while connected, it will be applied when the next 
+   * **Lifecycle** This method can be called at any time. If called while connected, it will be applied when the next 
    * session creation request is issued. This setting can also be specified in the [LightstreamerClient]
    * constructor.
    * 
@@ -820,7 +820,7 @@ class ConnectionDetails {
    * **Default** If no username is supplied, no user information will be sent at session initiation. 
    * The Metadata Adapter, however, may still allow the session.
    * 
-   * @lifecycle The username should be set on the [LightstreamerClient.connectionDetails] object before 
+   * **Lifecycle** The username should be set on the [LightstreamerClient.connectionDetails] object before 
    * calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: the 
    * supplied value will be used for the next time a new session is requested to the server.
    * 
@@ -852,7 +852,7 @@ class ConnectionDetails {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @lifecycle If a session is not currently active, null is returned;
+   * **Lifecycle** If a session is not currently active, null is returned;
    * soon after a session is established, the value may become available.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -880,7 +880,7 @@ class ConnectionDetails {
    * @general_edition_note Server Clustering is an optional feature, available depending on Edition and License Type.
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at /dashboard).
    * 
-   * @lifecycle If a session is not currently active, null is returned;
+   * **Lifecycle** If a session is not currently active, null is returned;
    * soon after a session is established, the value will become available.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -904,7 +904,7 @@ class ConnectionDetails {
    * Note that in case of polling or in case rebind requests are needed, subsequent requests related to the same 
    * session may, in principle, expose a different IP address to the Server; these changes would not be reported.
    * 
-   * @lifecycle If a session is not currently active, null is returned;
+   * **Lifecycle** If a session is not currently active, null is returned;
    * soon after a session is established, the value may become available.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -920,7 +920,7 @@ class ConnectionDetails {
   /**
    * Inquiry method that gets the ID associated by the server to this client session.
    * 
-   * @lifecycle If a session is not currently active, null is returned;
+   * **Lifecycle** If a session is not currently active, null is returned;
    * soon after a session is established, the value will become available.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -941,7 +941,7 @@ class ConnectionDetails {
    * **Default**  If no password is supplied, no password information will be sent at session initiation. 
    * The Metadata Adapter, however, may still allow the session.
    * 
-   * @lifecycle The username should be set on the [LightstreamerClient.connectionDetails] object before calling 
+   * **Lifecycle** The username should be set on the [LightstreamerClient.connectionDetails] object before calling 
    * the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied 
    * value will be used for the next time a new session is requested to the server. <BR>
    * NOTE: The password string will be stored in the current instance. That is necessary in order to allow 
@@ -1044,7 +1044,7 @@ class ConnectionOptions {
    * **Default** A length decided by the library, to ensure the best performance.
    * It can be of a few MB or much higher, depending on the environment.
    * 
-   * @lifecycle The content length should be set before calling 
+   * **Lifecycle** The content length should be set before calling 
    * the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value will 
    * be used for the next streaming connection (either a bind or a brand new session).
    * 
@@ -1082,7 +1082,7 @@ class ConnectionOptions {
    * 
    * **Default** 100 (0.1 seconds)
    * 
-   * @lifecycle This value can be set and changed at any time.
+   * **Lifecycle** This value can be set and changed at any time.
    * 
    * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "firstRetryMaxDelay" on any 
@@ -1120,7 +1120,7 @@ class ConnectionOptions {
    * 
    * **Default** null (full Stream-Sense enabled).
    * 
-   * @lifecycle This method can be called at any time. If called while the client is connecting or connected it will instruct 
+   * **Lifecycle** This method can be called at any time. If called while the client is connecting or connected it will instruct 
    * to switch connection type to match the given configuration.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -1181,7 +1181,7 @@ class ConnectionOptions {
    * 
    * **Default** null (meaning no extra headers are sent).
    * 
-   * @lifecycle This setting should be performed before calling the
+   * **Lifecycle** This setting should be performed before calling the
    * [LightstreamerClient.connect] method. However, the value can be changed
    * at any time: the supplied value will be used for the next HTTP request or WebSocket establishment.
    * 
@@ -1222,7 +1222,7 @@ class ConnectionOptions {
    * 
    * **Default**  19000 (19 seconds).
    * 
-   * @lifecycle The idle timeout should be set before calling the 
+   * **Lifecycle** The idle timeout should be set before calling the 
    * [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value 
    * will be used for the next polling request.
    * 
@@ -1243,7 +1243,7 @@ class ConnectionOptions {
    * 
    * If the returned value is 0, it means that the interval is to be decided by the Server upon the next connection.
    * 
-   * @lifecycle If the value has just been set and a connection to Lightstreamer Server has not been
+   * **Lifecycle** If the value has just been set and a connection to Lightstreamer Server has not been
    * established yet, the returned value is the time that is being requested to the Server.
    * Afterwards, the returned value is the time used by the Server, that may be different, because
    * of Server side constraints.
@@ -1266,7 +1266,7 @@ class ConnectionOptions {
    * 
    * **Default** 0 (meaning that the Server will send keepalive packets based on its own configuration).
    * 
-   * @lifecycle The keepalive interval should be set before 
+   * **Lifecycle** The keepalive interval should be set before 
    * calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied 
    * value will be used for the next streaming connection (either a bind or a brand new session). <BR>
    * Note that, after a connection, the value may be changed to the one imposed by the Server.
@@ -1320,7 +1320,7 @@ class ConnectionOptions {
    * 
    * **Default** 0 (pure "asynchronous polling" is configured).
    * 
-   * @lifecycle The polling interval should be set before calling 
+   * **Lifecycle** The polling interval should be set before calling 
    * the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value will
    * be used for the next polling request. <BR>
    * Note that, after each polling request, the value may be changed to the one imposed by the Server.
@@ -1347,7 +1347,7 @@ class ConnectionOptions {
    * or because bandwidth management is not supported (in this case it is always "unlimited"),
    * but also because of number rounding.
    * 
-   * @lifecycle If a connection to Lightstreamer Server is not currently active, null is returned;
+   * **Lifecycle** If a connection to Lightstreamer Server is not currently active, null is returned;
    * soon after the connection is established, the value will become available.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -1385,7 +1385,7 @@ class ConnectionOptions {
    * 
    * **Default** 3000 (3 seconds).
    * 
-   * @lifecycle This value can be set and changed at any time.
+   * **Lifecycle** This value can be set and changed at any time.
    * 
    * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "reconnectTimeout" on any 
@@ -1429,7 +1429,7 @@ class ConnectionOptions {
    * 
    * **Default** "unlimited"
    * 
-   * @lifecycle The bandwidth limit can be set and changed at any time. If a connection is currently active, the bandwidth 
+   * **Lifecycle** The bandwidth limit can be set and changed at any time. If a connection is currently active, the bandwidth 
    * limit for the connection is changed on the fly. Remember that the Server may apply a different limit.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -1505,7 +1505,7 @@ class ConnectionOptions {
    * 
    * **Default** 4000 (4 seconds).
    * 
-   * @lifecycle This value can be set and changed at any time.
+   * **Lifecycle** This value can be set and changed at any time.
    * 
    * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "retryDelay" on any 
@@ -1563,7 +1563,7 @@ class ConnectionOptions {
    * 
    * **Default** 0 (meaning that the mechanism is disabled).
    * 
-   * @lifecycle This setting should be performed before calling the
+   * **Lifecycle** This setting should be performed before calling the
    * [LightstreamerClient.connect] method. However, the value can be changed
    * at any time: the setting will be obeyed immediately, unless a higher heartbeat
    * frequency was notified to the Server for the current connection. The setting
@@ -1617,7 +1617,7 @@ class ConnectionOptions {
    * 
    * **Default** 15000 (15 seconds).
    * 
-   * @lifecycle This value can be set and changed at any time.
+   * **Lifecycle** This value can be set and changed at any time.
    * 
    * **Notification** A change to this setting will be notified through a
    * call to [ClientListener.onPropertyChange] with argument "sessionRecoveryTimeout" on any 
@@ -1647,7 +1647,7 @@ class ConnectionOptions {
    * 
    * **Default** 2000 (2 seconds).
    * 
-   * @lifecycle  This value can be set and changed at any time.
+   * **Lifecycle**  This value can be set and changed at any time.
    * 
    * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "stalledTimeout" on any 
@@ -1684,7 +1684,7 @@ class ConnectionOptions {
    * 
    * **Default** false
    * 
-   * @lifecycle This setting should be performed before calling the
+   * **Lifecycle** This setting should be performed before calling the
    * [LightstreamerClient.connect] method. However, the value can be changed
    * at any time: the supplied value will be used for the next HTTP request or WebSocket establishment.
    * 
@@ -1725,7 +1725,7 @@ class ConnectionOptions {
    * 
    * **Default** false.
    * 
-   * @lifecycle This method can be called at any time. If called while connected, it will be applied when the 
+   * **Lifecycle** This method can be called at any time. If called while connected, it will be applied when the 
    * next session creation request is issued.
    * 
    * **Notification** A change to this setting will be notified through a call to 
@@ -1764,7 +1764,7 @@ class ConnectionOptions {
    * 
    * **Default** false.
    * 
-   * @lifecycle This setting should be performed before 
+   * **Lifecycle** This setting should be performed before 
    * calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value will 
    * be used for the next streaming connection (either a bind or a brand new session).
    * 
@@ -1923,7 +1923,7 @@ class Subscription {
    * 
    * The same listener can be added to several different Subscription instances.
    *
-   * @lifecycle A listener can be added at any time. A call to add a listener already 
+   * **Lifecycle** A listener can be added at any time. A call to add a listener already 
    * present will be ignored.
    * 
    * - [listener] An object that will receive the events as documented in the 
@@ -1944,7 +1944,7 @@ class Subscription {
    * Removes a listener from the Subscription instance so that it will not receive 
    * events anymore.
    * 
-   * @lifecycle a listener can be removed at any time.
+   * **Lifecycle** a listener can be removed at any time.
    * 
    * - [listener] The listener to be removed.
    * 
@@ -1976,7 +1976,7 @@ class Subscription {
    * This method can only be used if the Subscription mode is COMMAND and the Subscription 
    * was initialized using a "Field Schema".
    *
-   * @lifecycle This method can be called at any time after the first 
+   * **Lifecycle** This method can be called at any time after the first 
    * [SubscriptionListener.onSubscription] event.
    * @throws IllegalStateException if the Subscription mode is not COMMAND or if the 
    * [SubscriptionListener.onSubscription] event for this Subscription was not 
@@ -1994,7 +1994,7 @@ class Subscription {
    * This method can only be used if the Subscription mode is COMMAND
    * and the Subscription was initialized using a "Field Schema".
    *  
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * @throws IllegalStateException if the Subscription mode is not 
    * COMMAND or if the [SubscriptionListener.onSubscription] event for this Subscription
@@ -2009,7 +2009,7 @@ class Subscription {
    * Inquiry method that can be used to read the second-level Data Adapter name configured 
    * through [setCommandSecondLevelDataAdapter].
    *
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * @throws IllegalStateException if the Subscription mode is not COMMAND
    * 
    * **Returns** the name of the second-level Data Adapter.
@@ -2033,7 +2033,7 @@ class Subscription {
    * **Default** The default Data Adapter for the Adapter Set,
    * configured as "DEFAULT" on the Server.
    *
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    *
    * @throws IllegalStateException if the Subscription is currently 
@@ -2053,7 +2053,7 @@ class Subscription {
    * Inquiry method that can be used to read the "Field List" specified for second-level 
    * Subscriptions.
    *
-   * @lifecycle This method can only be called if the second-level of this Subscription 
+   * **Lifecycle** This method can only be called if the second-level of this Subscription 
    * has been initialized using a "Field List"
    * @throws IllegalStateException if the Subscription mode is not COMMAND
    * 
@@ -2084,7 +2084,7 @@ class Subscription {
    * associated second-level Subscription is also unsubscribed from. <BR> 
    * Specifying null as parameter will disable the two-level behavior.
    *       
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalArgumentException if any of the field names in the "Field List"
@@ -2108,7 +2108,7 @@ class Subscription {
    * Inquiry method that can be used to read the "Field Schema" specified for second-level 
    * Subscriptions.
    *
-   * @lifecycle This method can only be called if the second-level of this Subscription has 
+   * **Lifecycle** This method can only be called if the second-level of this Subscription has 
    * been initialized using a "Field Schema".
    * @throws IllegalStateException if the Subscription mode is not COMMAND
    * 
@@ -2139,7 +2139,7 @@ class Subscription {
    * associated second-level Subscription is also unsubscribed from. <BR>
    * Specify null as parameter will disable the two-level behavior.
    * 
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalStateException if the Subscription is currently 
@@ -2158,7 +2158,7 @@ class Subscription {
    * Inquiry method that can be used to read the name of the Data Adapter specified for this 
    * Subscription through [setDataAdapter].
    
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the name of the Data Adapter; returns null if no name has been configured, 
    * so that the "DEFAULT" Adapter Set is used.
@@ -2183,7 +2183,7 @@ class Subscription {
    * **Default** The default Data Adapter for the Adapter Set,
    * configured as "DEFAULT" on the Server.
    *
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalStateException if the Subscription is currently 
@@ -2200,7 +2200,7 @@ class Subscription {
   /**
    * Inquiry method that can be used to read the "Field List" specified for this Subscription.
    *
-   * @lifecycle  This method can only be called if the Subscription has been initialized 
+   * **Lifecycle**  This method can only be called if the Subscription has been initialized 
    * using a "Field List".
    * 
    * **Returns** the "Field List" to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
@@ -2215,7 +2215,7 @@ class Subscription {
    * Any call to this method will override any "Field List" or "Field Schema"
    * previously specified.
    * 
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalArgumentException if any of the field names in the list
@@ -2231,7 +2231,7 @@ class Subscription {
   /**
    * Inquiry method that can be used to read the field schema specified for this Subscription.
    *
-   * @lifecycle This method can only be called if the Subscription has been initialized 
+   * **Lifecycle** This method can only be called if the Subscription has been initialized 
    * using a "Field Schema"
    * 
    * **Returns** the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
@@ -2246,7 +2246,7 @@ class Subscription {
    * Any call to this method will override any "Field List" or "Field Schema"
    * previously specified.
    * 
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalStateException if the Subscription is currently 
@@ -2261,7 +2261,7 @@ class Subscription {
   /**
    * Inquiry method that can be used to read the item group specified for this Subscription.
    *
-   * @lifecycle This method can only be called if the Subscription has been initialized
+   * **Lifecycle** This method can only be called if the Subscription has been initialized
    * using an "Item Group"
    * 
    * **Returns** the "Item Group" to be subscribed to through the server, or null if the Subscription was initialized with an "Item List" or was not initialized at all.
@@ -2276,7 +2276,7 @@ class Subscription {
    * Any call to this method will override any "Item List" or "Item Group"
    * previously specified.
    * 
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalStateException if the Subscription is currently 
@@ -2294,7 +2294,7 @@ class Subscription {
    * Note that if the single-item-constructor was used, this method will return an array 
    * of length 1 containing such item.
    *
-   * @lifecycle This method can only be called if the Subscription has been initialized 
+   * **Lifecycle** This method can only be called if the Subscription has been initialized 
    * with an "Item List".
    * 
    * **Returns** the "Item List" to be subscribed to through the server, or null if the Subscription was initialized with an "Item Group" or was not initialized at all.
@@ -2309,7 +2309,7 @@ class Subscription {
     * Any call to this method will override any "Item List" or "Item Group"
     * previously specified.
     * 
-    * @lifecycle This method can only be called while the Subscription
+    * **Lifecycle** This method can only be called while the Subscription
     * instance is in its "inactive" state.
     * 
     * @throws IllegalArgumentException if any of the item names in the "Item List"
@@ -2326,7 +2326,7 @@ class Subscription {
     * Inquiry method that can be used to read the mode specified for this
     * Subscription.
     * 
-    * @lifecycle This method can be called at any time.
+    * **Lifecycle** This method can be called at any time.
     * 
     * **Returns** the Subscription mode specified in the constructor.
     */
@@ -2338,7 +2338,7 @@ class Subscription {
    * [setRequestedBufferSize], to be requested to the Server for 
    * this Subscription.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns**  An integer number, representing the buffer size to be requested to the server,
    * or the string "unlimited", or null.
@@ -2362,7 +2362,7 @@ class Subscription {
    * subscriptions and "unlimited" for DISTINCT subscriptions. See 
    * the "General Concepts" document for further details.
    *
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalStateException if the Subscription is currently 
@@ -2386,7 +2386,7 @@ class Subscription {
    * through [setRequestedMaxFrequency], to be requested to the 
    * Server for this Subscription.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns**  A decimal number, representing the max frequency to be requested to the server
    * (expressed in updates per second), or the strings "unlimited" or "unfiltered", or null.
@@ -2422,7 +2422,7 @@ class Subscription {
    * limit to the subscription (the same as "unlimited"); see the "General Concepts"
    * document for further details.
    *
-   * @lifecycle This method can can be called at any time with some
+   * **Lifecycle** This method can can be called at any time with some
    * differences based on the Subscription status:
    * <ul>
    * <li>If the Subscription instance is in its "inactive" state then
@@ -2467,7 +2467,7 @@ class Subscription {
    * configured through [setRequestedSnapshot], to be requested 
    * to the Server for this Subscription.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns**  "yes", "no", null, or an integer number.
    */
@@ -2484,7 +2484,7 @@ class Subscription {
    * **Default** "yes" if the Subscription mode is not "RAW",
    * null otherwise.
    * 
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalStateException if the Subscription is currently 
@@ -2519,7 +2519,7 @@ class Subscription {
    * Inquiry method that can be used to read the selector name  
    * specified for this Subscription through [setSelector].
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the name of the selector.
    */
@@ -2534,7 +2534,7 @@ class Subscription {
    *
    * **Default** null (no selector).
    *
-   * @lifecycle This method can only be called while the Subscription
+   * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
    * @throws IllegalStateException if the Subscription is currently 
@@ -2555,7 +2555,7 @@ class Subscription {
    * [LightstreamerClient.subscribe] method and back to 
    * "inactive" through the [LightstreamerClient.unsubscribe] one.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** true/false if the Subscription is "active" or not.
    * 
@@ -2574,7 +2574,7 @@ class Subscription {
    * [LightstreamerClient.unsubscribe] calls and server 
    * sent unsubscription events. 
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** true/false if the Subscription is subscribed to
    * through the server or not.
@@ -2595,7 +2595,7 @@ class Subscription {
    * Note that internal data is cleared when the Subscription is 
    * unsubscribed from.
    *
-   * @lifecycle This method can be called at any time; if called 
+   * **Lifecycle** This method can be called at any time; if called 
    * to retrieve a value that has not been received yet, then it will return null. 
    * @throws IllegalArgumentException if an invalid item name or field name is specified.
    * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
@@ -2749,7 +2749,7 @@ class MpnDevice {
    * 
    * The same listener can be added to several different MPN device objects.<BR>
    * 
-   * @lifecycle A listener can be added at any time. A call to add a listener already present will be ignored.
+   * **Lifecycle** A listener can be added at any time. A call to add a listener already present will be ignored.
    * 
    * - [listener] An object that will receive the events as documented in the [MpnDeviceListener] interface.
    * 
@@ -2767,7 +2767,7 @@ class MpnDevice {
   /**
    * Removes a listener from the MPN device object so that it will not receive events anymore.
    * 
-   * @lifecycle A listener can be removed at any time.
+   * **Lifecycle** A listener can be removed at any time.
    * 
    * - [listener] The listener to be removed.
    * 
@@ -2797,7 +2797,7 @@ class MpnDevice {
    * The application ID of this MPN device, corresponding to the package name of the application. In the [MpnDevice]
    * implementation it is determined automatically from the Application Context during creation and is used by the server as part of the device identification.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the MPN device application ID.
    */
@@ -2813,7 +2813,7 @@ class MpnDevice {
    * Note: a device token change, if the previous device token was correctly stored on the Shared Preferences storage, does not cause the device ID to change: the
    * server moves previous MPN subscriptions from the previous token to the new one and the device ID remains unaltered.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the MPN device ID.
    */
@@ -2827,7 +2827,7 @@ class MpnDevice {
    * In the [MpnDevice] implementation it is passed during creation and 
    * is used by the server as part of the device identification.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the MPN device token.
    */
@@ -2841,7 +2841,7 @@ class MpnDevice {
    * In the [MpnDevice] implementation it equals to the constant <code>Google</code>
    * and is used by the server as part of the device identification.
    *  
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the MPN device platform.
    */
@@ -2856,7 +2856,7 @@ class MpnDevice {
    * the Shared Preferences storage during creation and is used by the server to restore MPN subscriptions associated with this previous token. May be null if 
    * no MPN device has been registered yet on the application.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the previous MPN device token, or null if no MPN device has been registered yet.
    */
@@ -2875,7 +2875,7 @@ class MpnDevice {
    * [isRegistered] and [isSuspended] are both true.</li>
    * </ul>
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the status of the device.
    * 
@@ -2889,7 +2889,7 @@ class MpnDevice {
   /**
    * The server-side timestamp of the device status.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** The server-side timestamp of the device status.
    * 
@@ -2904,7 +2904,7 @@ class MpnDevice {
    * 
    * This flag is switched to true by server sent registration events, and back to false in case of client disconnection or server sent suspension events.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** true if the MPN device object is currently registered on the server.
    * 
@@ -2920,7 +2920,7 @@ class MpnDevice {
    * An MPN device may be suspended if errors occur during push notification delivery.<BR>
    * This flag is switched to true by server sent suspension events, and back to false in case of client disconnection or server sent resume events.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** true if the MPN device object is currently suspended on the server.
    * 
@@ -3093,7 +3093,7 @@ class MpnSubscription {
    * 
    * The same listener can be added to several different MpnSubscription instances.<BR>
    * 
-   * @lifecycle A listener can be added at any time. A call to add a listener already present will be ignored.
+   * **Lifecycle** A listener can be added at any time. A call to add a listener already present will be ignored.
    * 
    * - [listener] An object that will receive the events as documented in the [MpnSubscriptionListener]  interface.
    * 
@@ -3111,7 +3111,7 @@ class MpnSubscription {
   /**
    * Removes a listener from the MpnSubscription instance so that it will not receive events anymore.
    * 
-   * @lifecycle A listener can be removed at any time.
+   * **Lifecycle** A listener can be removed at any time.
    * 
    * - [listener] The listener to be removed.
    * 
@@ -3141,7 +3141,7 @@ class MpnSubscription {
    * Inquiry method that can be used to read the name of the Data Adapter specified for this 
    * MpnSubscription through [setDataAdapter].
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the name of the Data Adapter; returns null if no name has been configured, 
    * so that the "DEFAULT" Adapter Set is used.
@@ -3166,7 +3166,7 @@ class MpnSubscription {
    * **Default** The default Data Adapter for the Adapter Set,
    * configured as "DEFAULT" on the Server.
    *
-   * @lifecycle This method can only be called while the MpnSubscription
+   * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
@@ -3188,7 +3188,7 @@ class MpnSubscription {
    * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
    * fields are always expressed with a "Field Schema"", even if originally the MPN subscription used a "Field List".
    *
-   * @lifecycle  This method can only be called if the MpnSubscription has been initialized 
+   * **Lifecycle**  This method can only be called if the MpnSubscription has been initialized 
    * using a "Field List".
    * 
    * **Returns** the "Field List" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field Schema" or was not initialized at all.
@@ -3203,7 +3203,7 @@ class MpnSubscription {
    * Any call to this method will override any "Field List" or "Field Schema"
    * previously specified.
    * 
-   * @lifecycle This method can only be called while the MpnSubscription
+   * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
@@ -3224,7 +3224,7 @@ class MpnSubscription {
    * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
    * fields are always expressed with a "Field Schema"", even if originally the MPN subscription used a "Field List".
    *
-   * @lifecycle This method can only be called if the MpnSubscription has been initialized 
+   * **Lifecycle** This method can only be called if the MpnSubscription has been initialized 
    * using a "Field Schema"
    * 
    * **Returns** the "Field Schema" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field List" or was not initialized at all.
@@ -3239,7 +3239,7 @@ class MpnSubscription {
    * Any call to this method will override any "Field List" or "Field Schema"
    * previously specified.
    * 
-   * @lifecycle This method can only be called while the MpnSubscription
+   * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
@@ -3260,7 +3260,7 @@ class MpnSubscription {
    * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
    * items are always expressed with an "Item Group"", even if originally the MPN subscription used an "Item List".
    *
-   * @lifecycle This method can only be called if the MpnSubscription has been initialized
+   * **Lifecycle** This method can only be called if the MpnSubscription has been initialized
    * using an "Item Group"
    * 
    * **Returns** the "Item Group" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item List" or was not initialized at all.
@@ -3275,7 +3275,7 @@ class MpnSubscription {
    * Any call to this method will override any "Item List" or "Item Group"
    * previously specified.
    * 
-   * @lifecycle This method can only be called while the MpnSubscription
+   * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
@@ -3297,7 +3297,7 @@ class MpnSubscription {
    * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
    * items are always expressed with an "Item Group"", even if originally the MPN subscription used an "Item List".
    *
-   * @lifecycle This method can only be called if the MpnSubscription has been initialized 
+   * **Lifecycle** This method can only be called if the MpnSubscription has been initialized 
    * with an "Item List".
    * 
    * **Returns** the "Item List" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item Group" or was not initialized at all.
@@ -3312,7 +3312,7 @@ class MpnSubscription {
    * Any call to this method will override any "Item List" or "Item Group"
    * previously specified.
    * 
-   * @lifecycle This method can only be called while the MpnSubscription
+   * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
@@ -3331,7 +3331,7 @@ class MpnSubscription {
    * Inquiry method that can be used to read the mode specified for this
    * MpnSubscription.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the MpnSubscription mode specified in the constructor.
    */
@@ -3343,7 +3343,7 @@ class MpnSubscription {
    * [setRequestedBufferSize], to be requested to the Server for 
    * this MpnSubscription.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns**  An integer number, representing the buffer size to be requested to the server,
    * or the string "unlimited", or null.
@@ -3365,7 +3365,7 @@ class MpnSubscription {
    * subscriptions and "unlimited" for DISTINCT subscriptions. See 
    * the "General Concepts" document for further details.
    *
-   * @lifecycle This method can only be called while the MpnSubscription
+   * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
@@ -3391,7 +3391,7 @@ class MpnSubscription {
    * through [setRequestedMaxFrequency], to be requested to the 
    * Server for this MpnSubscription.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns**  A decimal number, representing the max frequency to be requested to the server
    * (expressed in updates per second), or the string "unlimited", or null.
@@ -3417,7 +3417,7 @@ class MpnSubscription {
    * limit to the subscription (the same as "unlimited"); see the "General Concepts"
    * document for further details.
    *
-   * @lifecycle This method can only be called while the MpnSubscription
+   * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
@@ -3470,7 +3470,7 @@ class MpnSubscription {
    * named arguments are always mapped to its corresponding indexed argument, even if originally the trigger expression used a named argument.<BR>
    * Note: the content of this property may be subject to length restrictions (See the "General Concepts" document for more information).
    * 
-   * @lifecycle This property can be changed at any time.
+   * **Lifecycle** This property can be changed at any time.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>trigger</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
@@ -3520,7 +3520,7 @@ class MpnSubscription {
    * named arguments are always mapped to its corresponding indexed argument, even if originally the notification format used a named argument.<BR>
    * Note: the content of this property may be subject to length restrictions (See the "General Concepts" document for more information).
    * 
-   * @lifecycle This property can be changed at any time.
+   * **Lifecycle** This property can be changed at any time.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>notification_format</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
@@ -3546,7 +3546,7 @@ class MpnSubscription {
    * The status of an MpnSubscription is changed to "active" through the [LightstreamerClient.subscribe] method and back to "inactive"
    * through the [LightstreamerClient.unsubscribe] and [LightstreamerClient.unsubscribeMpnSubscriptions] ones.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** true if the MpnSubscription is currently "active", false otherwise.
    * 
@@ -3565,7 +3565,7 @@ class MpnSubscription {
    * [LightstreamerClient.unsubscribe] or [LightstreamerClient.unsubscribeMpnSubscriptions] calls, and server sent 
    * unsubscription events.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** true if the MpnSubscription has been successfully subscribed on the server, false otherwise.
    * 
@@ -3584,7 +3584,7 @@ class MpnSubscription {
    * [LightstreamerClient.subscribe] call on a copy of it, deleted with [LightstreamerClient.unsubscribe] or
    * [LightstreamerClient.unsubscribeMpnSubscriptions] calls, and server sent subscription events.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** true if the MpnSubscription's trigger expression has been evaluated to true at least once, false otherwise.
    * 
@@ -3630,7 +3630,7 @@ class MpnSubscription {
    * the trigger expression has been evaluated to true at least once. In this status [isActive], [isSubscribed] and [isTriggered] are all true.</li>
    * </ul>
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the status of the subscription.
    * 
@@ -3644,7 +3644,7 @@ class MpnSubscription {
   /**
    * The server-side timestamp of the subscription status.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>status_timestamp</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
@@ -3668,7 +3668,7 @@ class MpnSubscription {
    * Two MpnSubscription objects with the same subscription ID always represent the same server-side MPN subscription. It is the client's duty to keep the status
    * and properties of these objects up to date and aligned.
    * 
-   * @lifecycle This method can be called at any time.
+   * **Lifecycle** This method can be called at any time.
    * 
    * **Returns** the MPN subscription ID.
    */
