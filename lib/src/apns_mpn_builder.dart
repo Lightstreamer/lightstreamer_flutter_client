@@ -74,7 +74,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert` field.
    
-   - [alert]: A string to be used for the `aps.alert` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert` field value, or nil to clear it.
    */
   ApnsMpnBuilder setAlert(String? val) {
     _alert = val;
@@ -91,7 +91,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.badge` field with a string value.
    
-   - [badge]: A string to be used for the `aps.badge` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.badge` field value, or nil to clear it.
    */
   ApnsMpnBuilder setBadge(String? val) {
     _badge = val;
@@ -108,7 +108,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.body` field.
    
-   - [body]: A string to be used for the `aps.alert.body` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert.body` field value, or nil to clear it.
    */
   ApnsMpnBuilder setBody(String? val) {
     _body = val;
@@ -125,7 +125,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.loc-args` field.
    
-   - [bodyLocArguments]: An array of strings to be used for the `aps.alert.loc-args` field value, or nil to clear it.
+   - [val]: An array of strings to be used for the `aps.alert.loc-args` field value, or nil to clear it.
    */
   ApnsMpnBuilder setBodyLocArguments(List<String>? val) {
     _bodyLocArguments = val?.toList();
@@ -142,7 +142,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.loc-key` field.
    
-   - [bodyLocKey]: A string to be used for the `aps.alert.loc-key` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert.loc-key` field value, or nil to clear it.
    */
   ApnsMpnBuilder setBodyLocKey(String? val) {
     _bodyLocKey = val;
@@ -159,7 +159,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.category` field.
    
-   - [category]: A string to be used for the `aps.category` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.category` field value, or nil to clear it.
    */
   ApnsMpnBuilder setCategory(String? val) {
     _category = val;
@@ -176,7 +176,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.content-available` field with a string value.
    
-   - [contentAvailable]: A string to be used for the `aps.content-available` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.content-available` field value, or nil to clear it.
    */
   ApnsMpnBuilder setContentAvailable(String? val) {
     _contentAvailable = val;
@@ -193,7 +193,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.mutable-content` field with a string value.
    
-   - [mutableContent]: A string to be used for the `aps.mutable-content` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.mutable-content` field value, or nil to clear it.
    */
   ApnsMpnBuilder setMutableContent(String? val) {
     _mutableContent = val;
@@ -210,7 +210,7 @@ class ApnsMpnBuilder {
   /**
    Sets fields in the root of the notification format (excluding `aps`).
    
-   - [customData]: A dictionary to be used for fields in the root of the notification format (excluding `aps`), or nil to clear them.
+   - [val]: A dictionary to be used for fields in the root of the notification format (excluding `aps`), or nil to clear them.
    */
   ApnsMpnBuilder setCustomData(Map<String, dynamic>? val) {
     _customData = val == null ? null : Map.from(val);
@@ -228,7 +228,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.launch-image` field.
    
-   - [launchImage]: A string to be used for the `aps.alert.launch-image` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert.launch-image` field value, or nil to clear it.
    */
   ApnsMpnBuilder setLaunchImage(String? val) {
     _launchImage = val;
@@ -245,7 +245,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.action-loc-key` field.
    
-   - [locActionKey]: A string to be used for the `aps.alert.action-loc-key` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert.action-loc-key` field value, or nil to clear it.
    */
   ApnsMpnBuilder setLocActionKey(String? val) {
     _locActionKey = val;
@@ -262,7 +262,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.sound` field.
    
-   - [sound]: A string to be used for the `aps.sound` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.sound` field value, or nil to clear it.
    */
   ApnsMpnBuilder setSound(String? val) {
     _sound = val;
@@ -279,7 +279,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.thread-id` field.
    
-   - [threadId]: A string to be used for the `aps.thread-id` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.thread-id` field value, or nil to clear it.
    */
   ApnsMpnBuilder setThreadId(String? val) {
     _threadId = val;
@@ -296,7 +296,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.title` field.
    
-   - [title]: A string to be used for the `aps.alert.title` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert.title` field value, or nil to clear it.
    */
   ApnsMpnBuilder setTitle(String? val) {
     _title = val;
@@ -313,7 +313,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.subtitle` field.
    
-   - [subtitle]: A string to be used for the `aps.alert.subtitle` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert.subtitle` field value, or nil to clear it.
    */
   ApnsMpnBuilder setSubtitle(String? val) {
     _subtitle = val;
@@ -330,7 +330,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.title-loc-args` field.
    
-   - [titleLocArguments]: An array of strings to be used for the `aps.alert.title-loc-args` field value, or nil to clear it.
+   - [val]: An array of strings to be used for the `aps.alert.title-loc-args` field value, or nil to clear it.
    */
   ApnsMpnBuilder setTitleLocArguments(List<String>? val) {
     _titleLocArguments = val?.toList();
@@ -347,7 +347,7 @@ class ApnsMpnBuilder {
   /**
    Sets the `aps.alert.title-loc-key` field.
    
-   - [titleLocKey]: A string to be used for the `aps.alert.title-loc-key` field value, or nil to clear it.
+   - [val]: A string to be used for the `aps.alert.title-loc-key` field value, or nil to clear it.
    */
   ApnsMpnBuilder setTitleLocKey(String? val) {
     _titleLocKey = val;
