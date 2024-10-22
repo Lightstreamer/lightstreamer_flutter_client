@@ -736,7 +736,7 @@ class ConnectionDetails {
    * server side through an "adapters.xml" file; the name is configured through the "id" attribute in 
    * the &lt;adapters_conf&gt; element.
    * 
-   * @default The default Adapter Set, configured as "DEFAULT" on the Server.
+   * **Default** The default Adapter Set, configured as "DEFAULT" on the Server.
    * 
    * @lifecycle The Adapter Set name should be set on the [LightstreamerClient.connectionDetails] object 
    * before calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: 
@@ -773,7 +773,7 @@ class ConnectionDetails {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @default if no server address is supplied the client will be unable to connect.
+   * **Default** if no server address is supplied the client will be unable to connect.
    * 
    * @lifecycle This method can be called at any time. If called while connected, it will be applied when the next 
    * session creation request is issued. This setting can also be specified in the [LightstreamerClient]
@@ -817,7 +817,7 @@ class ConnectionDetails {
    * 
    * The Metadata Adapter is responsible for checking the credentials (username and password).
    * 
-   * @default If no username is supplied, no user information will be sent at session initiation. 
+   * **Default** If no username is supplied, no user information will be sent at session initiation. 
    * The Metadata Adapter, however, may still allow the session.
    * 
    * @lifecycle The username should be set on the [LightstreamerClient.connectionDetails] object before 
@@ -938,7 +938,7 @@ class ConnectionDetails {
    * 
    * The Metadata Adapter is responsible for checking the credentials (username and password).
    * 
-   * @default  If no password is supplied, no password information will be sent at session initiation. 
+   * **Default**  If no password is supplied, no password information will be sent at session initiation. 
    * The Metadata Adapter, however, may still allow the session.
    * 
    * @lifecycle The username should be set on the [LightstreamerClient.connectionDetails] object before calling 
@@ -1041,7 +1041,7 @@ class ConnectionOptions {
    * be closed and a new bind connection will be automatically reopened.<BR>
    * NOTE that this setting only applies to the "HTTP-STREAMING" case (i.e. not to WebSockets).
    * 
-   * @default A length decided by the library, to ensure the best performance.
+   * **Default** A length decided by the library, to ensure the best performance.
    * It can be of a few MB or much higher, depending on the environment.
    * 
    * @lifecycle The content length should be set before calling 
@@ -1080,7 +1080,7 @@ class ConnectionOptions {
    * the active servers be stopped. Note that this delay is only applied before the first reconnection: should such 
    * reconnection fail, only the setting of [setRetryDelay] will be applied.
    * 
-   * @default 100 (0.1 seconds)
+   * **Default** 100 (0.1 seconds)
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
@@ -1118,7 +1118,7 @@ class ConnectionOptions {
    * Note that if the Stream-Sense algorithm is disabled, the client may still enter the "CONNECTED:STREAM-SENSING" status; 
    * however, in that case, if it eventually finds out that streaming is not possible, no recovery will be tried.
    * 
-   * @default null (full Stream-Sense enabled).
+   * **Default** null (full Stream-Sense enabled).
    * 
    * @lifecycle This method can be called at any time. If called while the client is connecting or connected it will instruct 
    * to switch connection type to match the given configuration.
@@ -1179,7 +1179,7 @@ class ConnectionOptions {
    * The use of custom headers might also cause the
    * client to send an OPTIONS request to the server before opening the actual connection. 
    * 
-   * @default null (meaning no extra headers are sent).
+   * **Default** null (meaning no extra headers are sent).
    * 
    * @lifecycle This setting should be performed before calling the
    * [LightstreamerClient.connect] method. However, the value can be changed
@@ -1220,7 +1220,7 @@ class ConnectionOptions {
    * a high polling rate or because of bandwidth restrictions. Also, the Server may impose an upper limit on the wait time, 
    * in order to be able to check for client-side connection drops.
    * 
-   * @default  19000 (19 seconds).
+   * **Default**  19000 (19 seconds).
    * 
    * @lifecycle The idle timeout should be set before calling the 
    * [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value 
@@ -1264,7 +1264,7 @@ class ConnectionOptions {
    * order to be able to check for client-side connection drops.
    * If 0 is specified, the interval will be decided by the Server.
    * 
-   * @default 0 (meaning that the Server will send keepalive packets based on its own configuration).
+   * **Default** 0 (meaning that the Server will send keepalive packets based on its own configuration).
    * 
    * @lifecycle The keepalive interval should be set before 
    * calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied 
@@ -1318,7 +1318,7 @@ class ConnectionOptions {
    * The Server may, however, impose an upper limit on the polling interval, in order to be able to promptly detect 
    * terminated polling request sequences and discard related session information.
    * 
-   * @default 0 (pure "asynchronous polling" is configured).
+   * **Default** 0 (pure "asynchronous polling" is configured).
    * 
    * @lifecycle The polling interval should be set before calling 
    * the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value will
@@ -1383,7 +1383,7 @@ class ConnectionOptions {
    * The new connection may be either the opening of a new session or an attempt to recovery
    * the current session, depending on the kind of interruption.
    * 
-   * @default 3000 (3 seconds).
+   * **Default** 3000 (3 seconds).
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
@@ -1427,7 +1427,7 @@ class ConnectionOptions {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @default "unlimited"
+   * **Default** "unlimited"
    * 
    * @lifecycle The bandwidth limit can be set and changed at any time. If a connection is currently active, the bandwidth 
    * limit for the connection is changed on the fly. Remember that the Server may apply a different limit.
@@ -1503,7 +1503,7 @@ class ConnectionOptions {
    * <b>This setting imposes only a minimum delay. In order to avoid network congestion, the library may use a longer delay if the issue preventing the
    * establishment of a session persists.</b>
    * 
-   * @default 4000 (4 seconds).
+   * **Default** 4000 (4 seconds).
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
@@ -1561,7 +1561,7 @@ class ConnectionOptions {
    * whereas, for long polling, the [setIdleTimeout] setting has a similar function.</li>
    * </ul>
    * 
-   * @default 0 (meaning that the mechanism is disabled).
+   * **Default** 0 (meaning that the mechanism is disabled).
    * 
    * @lifecycle This setting should be performed before calling the
    * [LightstreamerClient.connect] method. However, the value can be changed
@@ -1615,7 +1615,7 @@ class ConnectionOptions {
    * A setting smaller than the Server timeouts may prevent such useless failures,
    * but, if too small, it may also prevent successful recovery in some cases.
    * 
-   * @default 15000 (15 seconds).
+   * **Default** 15000 (15 seconds).
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
@@ -1645,7 +1645,7 @@ class ConnectionOptions {
   /**
    * Setter method that sets the extra time the client is allowed to wait when an expected keepalive packet has not been received on a stream connection (and no actual data has arrived), before entering the "STALLED" status.
    * 
-   * @default 2000 (2 seconds).
+   * **Default** 2000 (2 seconds).
    * 
    * @lifecycle  This value can be set and changed at any time.
    * 
@@ -1682,7 +1682,7 @@ class ConnectionOptions {
    * process (and thus will still be available to the metadata adapter notifyUser method) but will not be sent on following 
    * requests. On the contrary, when set to true, the specified extra headers will be sent to the server on every request.
    * 
-   * @default false
+   * **Default** false
    * 
    * @lifecycle This setting should be performed before calling the
    * [LightstreamerClient.connect] method. However, the value can be changed
@@ -1723,7 +1723,7 @@ class ConnectionOptions {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @default false.
+   * **Default** false.
    * 
    * @lifecycle This method can be called at any time. If called while connected, it will be applied when the 
    * next session creation request is issued.
@@ -1762,7 +1762,7 @@ class ConnectionOptions {
    * because of its protection timeouts. In this case, a request for a fresh session will be reissued by the client and this 
    * may happen in cycle.
    * 
-   * @default false.
+   * **Default** false.
    * 
    * @lifecycle This setting should be performed before 
    * calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value will 
@@ -2030,7 +2030,7 @@ class Subscription {
    * file that defines the Adapter Set (a missing attribute configures the 
    * "DEFAULT" name).
    * 
-   * @default The default Data Adapter for the Adapter Set,
+   * **Default** The default Data Adapter for the Adapter Set,
    * configured as "DEFAULT" on the Server.
    *
    * @lifecycle This method can only be called while the Subscription
@@ -2180,7 +2180,7 @@ class Subscription {
    * items of the set in a single Subscription. Multiple Subscriptions
    * have to be defined.
    *
-   * @default The default Data Adapter for the Adapter Set,
+   * **Default** The default Data Adapter for the Adapter Set,
    * configured as "DEFAULT" on the Server.
    *
    * @lifecycle This method can only be called while the Subscription
@@ -2357,7 +2357,7 @@ class Subscription {
    * not been requested. Note that the Server may pose an upper limit on the
    * size of its internal buffers.
    *
-   * @default null, meaning to lean on the Server default based on the subscription
+   * **Default** null, meaning to lean on the Server default based on the subscription
    * mode. This means that the buffer size will be 1 for MERGE 
    * subscriptions and "unlimited" for DISTINCT subscriptions. See 
    * the "General Concepts" document for further details.
@@ -2417,7 +2417,7 @@ class Subscription {
    * To know what features are enabled by your license, please see the License tab of the
    * Monitoring Dashboard (by default, available at /dashboard).
    *
-   * @default null, meaning to lean on the Server default based on the subscription
+   * **Default** null, meaning to lean on the Server default based on the subscription
    * mode. This consists, for all modes, in not applying any frequency 
    * limit to the subscription (the same as "unlimited"); see the "General Concepts"
    * document for further details.
@@ -2481,7 +2481,7 @@ class Subscription {
    * The snapshot can be requested only if the
    * Subscription mode is MERGE, DISTINCT or COMMAND.
    *
-   * @default "yes" if the Subscription mode is not "RAW",
+   * **Default** "yes" if the Subscription mode is not "RAW",
    * null otherwise.
    * 
    * @lifecycle This method can only be called while the Subscription
@@ -2532,7 +2532,7 @@ class Subscription {
    *
    * It is executed on the Server and implemented by the Metadata Adapter.
    *
-   * @default null (no selector).
+   * **Default** null (no selector).
    *
    * @lifecycle This method can only be called while the Subscription
    * instance is in its "inactive" state.
@@ -3163,7 +3163,7 @@ class MpnSubscription {
    * items of the set in a single MpnSubscription. Multiple MpnSubscriptions
    * have to be defined.
    *
-   * @default The default Data Adapter for the Adapter Set,
+   * **Default** The default Data Adapter for the Adapter Set,
    * configured as "DEFAULT" on the Server.
    *
    * @lifecycle This method can only be called while the MpnSubscription
@@ -3360,7 +3360,7 @@ class MpnSubscription {
    * despite of bandwidth or frequency limits.<BR>
    * Note that the Server may pose an upper limit on the size of its internal buffers.
    *
-   * @default null, meaning to lean on the Server default based on the subscription
+   * **Default** null, meaning to lean on the Server default based on the subscription
    * mode. This means that the buffer size will be 1 for MERGE 
    * subscriptions and "unlimited" for DISTINCT subscriptions. See 
    * the "General Concepts" document for further details.
@@ -3412,7 +3412,7 @@ class MpnSubscription {
    * To know what features are enabled by your license, please see the License tab of the
    * Monitoring Dashboard (by default, available at /dashboard).
    *
-   * @default null, meaning to lean on the Server default based on the subscription
+   * **Default** null, meaning to lean on the Server default based on the subscription
    * mode. This consists, for all modes, in not applying any frequency 
    * limit to the subscription (the same as "unlimited"); see the "General Concepts"
    * document for further details.
