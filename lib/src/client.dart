@@ -69,11 +69,11 @@ class LightstreamerClient {
    * Each LightstreamerClient is the entry point to connect to a Lightstreamer server, 
    * subscribe to as many items as needed and to send messages. 
    * 
-   * @param serverAddress the address of the Lightstreamer Server to
+   * - [serverAddress] the address of the Lightstreamer Server to
    * which this LightstreamerClient will connect to. It is possible to specify it later
    * by using null here. See [ConnectionDetails.setServerAddress] 
    * for details.
-   * @param adapterSet the name of the Adapter Set mounted on Lightstreamer Server 
+   * - [adapterSet] the name of the Adapter Set mounted on Lightstreamer Server 
    * to be used to handle all requests in the Session associated with this 
    * LightstreamerClient. It is possible not to specify it at all or to specify 
    * it later by using null here. See [ConnectionDetails.setAdapterSet] 
@@ -137,7 +137,7 @@ class LightstreamerClient {
    *  </li>
    * </ul>
    *
-   * @param provider A [LoggerProvider] instance that will be used to generate log messages by the library classes.
+   * - [provider] A [LoggerProvider] instance that will be used to generate log messages by the library classes.
    */
   static Future<void> setLoggerProvider(LoggerProvider provider) async {
     var logger = provider.getLogger('lightstreamer');
@@ -169,9 +169,9 @@ class LightstreamerClient {
    * it will affect the internal cookie set immediately and the sending of cookies
    * on the next HTTP request or WebSocket establishment.
    * 
-   * @param uri the URI from which the supplied cookies were received. It cannot be null.
+   * - [uri] the URI from which the supplied cookies were received. It cannot be null.
    * 
-   * @param cookies a list of cookies.
+   * - [cookies] a list of cookies.
    * 
    * @see [getCookies]
    */
@@ -193,7 +193,7 @@ class LightstreamerClient {
    * <BR>See [addCookies] for clarifications on when cookies are directly stored
    * by the library and when not.
    *
-   * @param uri the URI to which the cookies should be sent.
+   * - [uri] the URI to which the cookies should be sent.
    * 
    * @return an immutable list with the various cookies that can
    * be sent in a HTTP request for the specified URI.
@@ -297,7 +297,7 @@ class LightstreamerClient {
    * A successful subscription to the server will be notified through a [SubscriptionListener.onSubscription]
    * event.
    * 
-   * @param subscription A Subscription object, carrying all the information needed to process real-time values.
+   * - [sub] A Subscription object, carrying all the information needed to process real-time values.
    * 
    * @see [unsubscribe]
    */
@@ -325,7 +325,7 @@ class LightstreamerClient {
    * Note that forwarding of the unsubscription to the server is made in a separate thread. <BR>
    * The unsubscription will be notified through a [SubscriptionListener.onUnsubscription] event.
    * 
-   * @param subscription An "active" Subscription object that was activated by this LightstreamerClient 
+   * - [sub] An "active" Subscription object that was activated by this LightstreamerClient 
    * instance.
    */
   Future<void> unsubscribe(Subscription sub) async {
@@ -401,21 +401,21 @@ class LightstreamerClient {
    * In the same way a message sent while the connection is not active might be sent because of a subsequent
    * connection.
    * 
-   * @param message a text message, whose interpretation is entirely demanded to the Metadata Adapter
+   * - [message] a text message, whose interpretation is entirely demanded to the Metadata Adapter
    * associated to the current connection.
-   * @param sequence an alphanumeric identifier, used to identify a subset of messages to be managed in sequence; 
+   * - [sequence] an alphanumeric identifier, used to identify a subset of messages to be managed in sequence; 
    * underscore characters are also allowed. If the "UNORDERED_MESSAGES" identifier is supplied, the message will 
    * be processed in the special way described above. The parameter is optional; if set to null, "UNORDERED_MESSAGES" 
    * is used as the sequence name. 
-   * @param delayTimeout a timeout, expressed in milliseconds. If higher than the Server configured timeout
+   * - [delayTimeout] a timeout, expressed in milliseconds. If higher than the Server configured timeout
    * on missing messages, the latter will be used instead. <BR> 
    * The parameter is optional; if a negative value is supplied, the Server configured timeout on missing
    * messages will be applied. <BR>
    * This timeout is ignored for the special "UNORDERED_MESSAGES" sequence, although a server-side timeout
    * on missing messages still applies.
-   * @param listener an object suitable for receiving notifications about the processing outcome. The parameter is 
+   * - [listener] an object suitable for receiving notifications about the processing outcome. The parameter is 
    * optional; if not supplied, no notification will be available.
-   * @param enqueueWhileDisconnected if this flag is set to true, and the client is in a disconnected status when
+   * - [enqueueWhileDisconnected] if this flag is set to true, and the client is in a disconnected status when
    * the provided message is handled, then the message is not aborted right away but is queued waiting for a new
    * session. Note that the message can still be aborted later when a new session is established.
    */
@@ -437,7 +437,7 @@ class LightstreamerClient {
    * @lifecycle A listener can be added at any time. A call to add a listener already 
    * present will be ignored.
    * 
-   * @param listener An object that will receive the events as documented in the 
+   * - [listener] An object that will receive the events as documented in the 
    * ClientListener interface.
    * 
    * @see [removeListener]
@@ -456,7 +456,7 @@ class LightstreamerClient {
    * 
    * @lifecycle a listener can be removed at any time.
    * 
-   * @param listener The listener to be removed.
+   * - [listener] The listener to be removed.
    * 
    * @see [addListener]
    */
@@ -491,7 +491,7 @@ class LightstreamerClient {
    * @lifecycle An [MpnDevice] can be registered at any time. The registration will be notified through a [MpnDeviceListener.onRegistered] event.
    * Note that forwarding of the registration to the server is made in a separate thread.
    * 
-   * @param device An [MpnDevice] instance, carrying all the information about the MPN device.
+   * - [device] An [MpnDevice] instance, carrying all the information about the MPN device.
    * @throws IllegalArgumentException if the specified device is null.
    * 
    * @see [subscribe]
@@ -528,8 +528,8 @@ class LightstreamerClient {
    * Note that forwarding of the subscription to the server is made in a separate thread.<BR>
    * A successful subscription to the server will be notified through an [MpnSubscriptionListener.onSubscription] event.
    * 
-   * @param subscription An MpnSubscription object, carrying all the information to route real-time data via push notifications.
-   * @param coalescing A flag that specifies if the MPN subscription must coalesce with any pre-existing MPN subscription with the same Adapter Set, Data Adapter,
+   * - [sub] An MpnSubscription object, carrying all the information to route real-time data via push notifications.
+   * - [coalescing] A flag that specifies if the MPN subscription must coalesce with any pre-existing MPN subscription with the same Adapter Set, Data Adapter,
    * Group, Schema and trigger expression.
    * @throws IllegalStateException if the given MPN subscription does not contain a field list/field schema.
    * @throws IllegalStateException if the given MPN subscription does not contain a item list/item group.
@@ -565,7 +565,7 @@ class LightstreamerClient {
    * Note that forwarding of the unsubscription to the server is made in a separate thread.<BR>
    * The unsubscription will be notified through an [MpnSubscriptionListener.onUnsubscription] event.
    * 
-   * @param subscription An "active" MpnSubscription object.
+   * - [sub] An "active" MpnSubscription object.
    * @throws IllegalStateException if the given MPN subscription is not active.
    * @throws IllegalStateException if there is no MPN device registered.
    * 
@@ -593,7 +593,7 @@ class LightstreamerClient {
    * Note that forwarding of the unsubscription to the server is made in a separate thread.<BR>
    * The unsubscription will be notified through an [MpnSubscriptionListener.onUnsubscription] event to all involved MPN subscriptions.
    * 
-   * @param filter A status name to be used to select the MPN subscriptions to unsubscribe. If null all existing MPN subscriptions
+   * - [filter] A status name to be used to select the MPN subscriptions to unsubscribe. If null all existing MPN subscriptions
    * are unsubscribed. Possible filter values are:<ul>
    * <li><code>ALL</code> or null</li>
    * <li><code>TRIGGERED</code></li>
@@ -627,7 +627,7 @@ class LightstreamerClient {
    * @lifecycle The collection is available once an MpnDevice registration has been requested, but reflects the actual server's collection only
    * after an [MpnDeviceListener.onSubscriptionsUpdated] event has been notified.
    * 
-   * @param filter An MPN subscription status name to be used to select the MPN subscriptions to return. If null all existing MPN subscriptions
+   * - [filter] An MPN subscription status name to be used to select the MPN subscriptions to return. If null all existing MPN subscriptions
    * are returned. Possible filter values are:<ul>
    * <li><code>ALL</code> or null</li>
    * <li><code>TRIGGERED</code></li>
@@ -659,7 +659,7 @@ class LightstreamerClient {
    * To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default,
    * available at /dashboard).
    * 
-   * @param subscriptionId The subscription ID to search for.
+   * - [subscriptionId] The subscription ID to search for.
    * @return the MpnSubscription with the specified ID, or null if not found.
    * @throws IllegalArgumentException if the given subscription ID is null.
    * @throws IllegalStateException if there is no MPN device registered.
@@ -745,7 +745,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "adapterSet" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param adapterSet The name of the Adapter Set to be used. A null value is equivalent to the "DEFAULT" name.
+   * - [newVal] The name of the Adapter Set to be used. A null value is equivalent to the "DEFAULT" name.
    */
   void setAdapterSet(String? newVal) {
     _adapterSet = newVal;
@@ -781,7 +781,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "serverAddress" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param serverAddress The full address of Lightstreamer Server. A null value can also be used, to restore the default value. 
+   * - [newVal] The full address of Lightstreamer Server. A null value can also be used, to restore the default value. 
    * An IPv4 or IPv6 can also be used in place of a hostname. Some examples of valid values include:
    * 
    * - `http://push.mycompany.com`
@@ -826,7 +826,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "user" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param user The username to be used for the authentication on Lightstreamer Server. The username can be null.
+   * - [newVal] The username to be used for the authentication on Lightstreamer Server. The username can be null.
    * 
    * @see [setPassword]
    */
@@ -951,7 +951,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "password" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param password The password to be used for the authentication on Lightstreamer Server. 
+   * - [newVal] The password to be used for the authentication on Lightstreamer Server. 
    *        The password can be null.
    *        
    * @see [setUser]
@@ -1050,7 +1050,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "contentLength" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param contentLength The length to be used by the Server for the response body on a HTTP stream connection.
+   * - [newVal] The length to be used by the Server for the response body on a HTTP stream connection.
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
    */
@@ -1086,7 +1086,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "firstRetryMaxDelay" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param firstRetryMaxDelay The max time (in milliseconds) to wait before trying a new connection.
+   * - [newVal] The max time (in milliseconds) to wait before trying a new connection.
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
    */
@@ -1125,7 +1125,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "forcedTransport" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param forcedTransport can be one of the following: 
+   * - [newVal] can be one of the following: 
    * <ul>
    *  <li>null: the Stream-Sense algorithm is enabled and the client will automatically connect using the most 
    *  appropriate transport and connection type among those made possible by the environment.</li>
@@ -1187,7 +1187,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "httpExtraHeaders" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param httpExtraHeaders a Map object containing header-name header-value pairs. Null can be specified to avoid extra 
+   * - [newVal] a Map object containing header-name header-value pairs. Null can be specified to avoid extra 
    * headers to be sent.
    */
   void setHttpExtraHeaders(Map<String, String>? newVal) {
@@ -1228,7 +1228,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "idleTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param idleTimeout The time (in milliseconds) the Server is allowed to wait for data to send upon polling requests.
+   * - [newVal] The time (in milliseconds) the Server is allowed to wait for data to send upon polling requests.
    * 
    * @throws IllegalArgumentException if a negative value is configured 
    */
@@ -1273,7 +1273,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "keepaliveInterval" on any 
    * ClientListener listening to the related LightstreamerClient.
    *
-   * @param keepaliveInterval the keepalive interval time (in milliseconds) to set, or 0.
+   * - [newVal] the keepalive interval time (in milliseconds) to set, or 0.
    * 
    * @throws IllegalArgumentException if a negative value is configured 
    * 
@@ -1327,7 +1327,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "pollingInterval" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param pollingInterval The time (in milliseconds) between subsequent polling requests. Zero is a legal value too, 
+   * - [newVal] The time (in milliseconds) between subsequent polling requests. Zero is a legal value too, 
    * meaning that the client will issue a new polling request as soon as a previous one has returned.
    * 
    * @throws IllegalArgumentException if a negative value is configured 
@@ -1389,7 +1389,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "reconnectTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param reconnectTimeout The idle time (in milliseconds) allowed in "STALLED" status before trying
+   * - [newVal] The idle time (in milliseconds) allowed in "STALLED" status before trying
    * to reconnect to the Server.
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
@@ -1438,7 +1438,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "realMaxBandwidth" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param maxBandwidth  A decimal number, which represents the maximum bandwidth requested for the streaming
+   * - [newVal]  A decimal number, which represents the maximum bandwidth requested for the streaming
    * or polling connection expressed in kbps (kilobits/sec). The string "unlimited" is also allowed, to mean that
    * the maximum bandwidth can be entirely decided on the Server side (the check is case insensitive).
    * 
@@ -1509,7 +1509,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "retryDelay" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param retryDelay The time (in milliseconds) to wait before trying a new connection.
+   * - [newVal] The time (in milliseconds) to wait before trying a new connection.
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
    * 
@@ -1571,7 +1571,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "reverseHeartbeatInterval" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param reverseHeartbeatInterval the interval, expressed in milliseconds, between subsequent reverse-heartbeats, or 0.
+   * - [newVal] the interval, expressed in milliseconds, between subsequent reverse-heartbeats, or 0.
    * 
    * @throws IllegalArgumentException if a negative value is configured
    */
@@ -1621,7 +1621,7 @@ class ConnectionOptions {
    * call to [ClientListener.onPropertyChange] with argument "sessionRecoveryTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param sessionRecoveryTimeout The maximum time allowed
+   * - [newVal] The maximum time allowed
    * for recovery attempts, expressed in milliseconds, including 0.
    *
    * @throws IllegalArgumentException if a negative value is passed.
@@ -1651,7 +1651,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "stalledTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param stalledTimeout The idle time (in milliseconds) allowed before entering the "STALLED" status.
+   * - [newVal] The idle time (in milliseconds) allowed before entering the "STALLED" status.
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
    * 
@@ -1690,7 +1690,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "httpExtraHeadersOnSessionCreationOnly" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param httpExtraHeadersOnSessionCreationOnly true/false to enable/disable the restriction on extra headers forwarding.
+   * - [newVal] true/false to enable/disable the restriction on extra headers forwarding.
    */
   void setHttpExtraHeadersOnSessionCreationOnly(bool newVal) {
     _httpExtraHeadersOnSessionCreationOnly = newVal;
@@ -1730,7 +1730,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "serverInstanceAddressIgnored" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param serverInstanceAddressIgnored true or false, to ignore or not the server instance address sent by the server.
+   * - [newVal] true or false, to ignore or not the server instance address sent by the server.
    * 
    * @see [ConnectionDetails.setServerAddress]
    */
@@ -1770,7 +1770,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "slowingEnabled" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @param slowingEnabled true or false, to enable or disable the heuristic algorithm that lowers the item update frequency.
+   * - [newVal] true or false, to enable or disable the heuristic algorithm that lowers the item update frequency.
    */
   void setSlowingEnabled(bool newVal) {
     _slowingEnabled = newVal;
@@ -1891,7 +1891,7 @@ class Subscription {
    * called while the instance is in the "inactive" state; the only exception is 
    * [setRequestedMaxFrequency].
    *
-   * @param subscriptionMode the subscription mode for the items, required by Lightstreamer Server. 
+   * - [mode] the subscription mode for the items, required by Lightstreamer Server. 
    * Permitted values are:
    * <ul>
    *  <li>MERGE</li>
@@ -1899,10 +1899,10 @@ class Subscription {
    *  <li>RAW</li>
    *  <li>COMMAND</li>
    * </ul>
-   * @param items an array of items to be subscribed to through Lightstreamer server. <BR>
+   * - [items] an array of items to be subscribed to through Lightstreamer server. <BR>
    * It is also possible specify the "Item List" or "Item Group" later through 
    * [setItems] and [setItemGroup].
-   * @param fields an array of fields for the items to be subscribed to through Lightstreamer Server. <BR>
+   * - [fields] an array of fields for the items to be subscribed to through Lightstreamer Server. <BR>
    * It is also possible to specify the "Field List" or "Field Schema" later through 
    * [setFields] and [setFieldSchema].
    * @throws IllegalArgumentException If no or invalid subscription mode is passed.
@@ -1924,7 +1924,7 @@ class Subscription {
    * @lifecycle A listener can be added at any time. A call to add a listener already 
    * present will be ignored.
    * 
-   * @param listener An object that will receive the events as documented in the 
+   * - [listener] An object that will receive the events as documented in the 
    * SubscriptionListener interface.
    * 
    * @see [removeListener]
@@ -1944,7 +1944,7 @@ class Subscription {
    * 
    * @lifecycle a listener can be removed at any time.
    * 
-   * @param listener The listener to be removed.
+   * - [listener] The listener to be removed.
    * 
    * @see [addListener]
    */
@@ -2036,7 +2036,7 @@ class Subscription {
    * "active".
    * @throws IllegalStateException if the Subscription mode is not "COMMAND".
    *
-   * @param dataAdapter the name of the Data Adapter. A null value 
+   * - [dataAdapter] the name of the Data Adapter. A null value 
    * is equivalent to the "DEFAULT" name.
    *  
    * @see [Subscription.setCommandSecondLevelFields]
@@ -2088,7 +2088,7 @@ class Subscription {
    * "active".
    * @throws IllegalStateException if the Subscription mode is not "COMMAND".
    * 
-   * @param fields An array of Strings containing a list of fields to
+   * - [fields] An array of Strings containing a list of fields to
    * be subscribed to through the server. <BR>
    * Ensure that no name conflict is generated between first-level and second-level
    * fields. In case of conflict, the second-level field will not be accessible
@@ -2140,7 +2140,7 @@ class Subscription {
    * "active".
    * @throws IllegalStateException if the Subscription mode is not "COMMAND".
    * 
-   * @param schemaName A String to be expanded into a field list by the
+   * - [schemaName] A String to be expanded into a field list by the
    * Metadata Adapter. 
    * 
    * @see [Subscription.setCommandSecondLevelFields]
@@ -2182,7 +2182,7 @@ class Subscription {
    * @throws IllegalStateException if the Subscription is currently 
    * "active".
    *
-   * @param dataAdapter the name of the Data Adapter. A null value 
+   * - [dataAdapter] the name of the Data Adapter. A null value 
    * is equivalent to the "DEFAULT" name.
    *  
    * @see [ConnectionDetails.setAdapterSet]
@@ -2215,7 +2215,7 @@ class Subscription {
    * @throws IllegalStateException if the Subscription is currently 
    * "active".
    * 
-   * @param fields an array of fields to be subscribed to through the server. 
+   * - [fields] an array of fields to be subscribed to through the server. 
    */
   void setFields(List<String>? fields) {
     _fields = fields?.toList();
@@ -2243,7 +2243,7 @@ class Subscription {
    * @throws IllegalStateException if the Subscription is currently 
    * "active".
    * 
-   * @param schemaName A String to be expanded into a field list by the
+   * - [schemaName] A String to be expanded into a field list by the
    * Metadata Adapter. 
    */
   void setFieldSchema(String? schemaName) {
@@ -2272,7 +2272,7 @@ class Subscription {
    * @throws IllegalStateException if the Subscription is currently 
    * "active".
    * 
-   * @param groupName A String to be expanded into an item list by the
+   * - [groupName] A String to be expanded into an item list by the
    * Metadata Adapter. 
    */
   void setItemGroup(String? groupName) {
@@ -2306,7 +2306,7 @@ class Subscription {
     * @throws IllegalStateException if the Subscription is currently 
     * "active".
     * 
-    * @param items an array of items to be subscribed to through the server. 
+    * - [items] an array of items to be subscribed to through the server. 
     */
   void setItems(List<String>? items) {
     _items = items?.toList();
@@ -2359,7 +2359,7 @@ class Subscription {
    * @throws IllegalArgumentException if the specified value is not
    * null nor "unlimited" nor a valid positive integer number.
    *
-   * @param size  An integer number, representing the length of the internal queuing buffers
+   * - [size]  An integer number, representing the length of the internal queuing buffers
    * to be used in the Server. If the string "unlimited" is supplied, then no buffer
    * size limit is requested (the check is case insensitive). It is also possible
    * to supply a null value to stick to the Server default (which currently
@@ -2432,7 +2432,7 @@ class Subscription {
    * null nor one of the special "unlimited" and "unfiltered" values nor
    * a valid positive number.
    *
-   * @param freq  A decimal number, representing the maximum update frequency (expressed in updates
+   * - [freq]  A decimal number, representing the maximum update frequency (expressed in updates
    * per second) for each item in the Subscription; for instance, with a setting
    * of 0.5, for each single item, no more than one update every 2 seconds
    * will be received. If the string "unlimited" is supplied, then no frequency
@@ -2488,7 +2488,7 @@ class Subscription {
    *  valid values.</li>
    * </ul>
    *
-   * @param required "yes"/"no" to request/not request snapshot
+   * - [required] "yes"/"no" to request/not request snapshot
    * delivery (the check is case insensitive). If the Subscription mode is 
    * DISTINCT, instead of "yes", it is also possible to supply an integer number, 
    * to specify the requested length of the snapshot (though the length of 
@@ -2529,7 +2529,7 @@ class Subscription {
    * @throws IllegalStateException if the Subscription is currently 
    * "active".
    *
-   * @param selector name of a selector, to be recognized by the
+   * - [selector] name of a selector, to be recognized by the
    * Metadata Adapter, or null to unset the selector.
    */
   void setSelector(String? selector) {
@@ -2587,8 +2587,8 @@ class Subscription {
    * @lifecycle This method can be called at any time; if called 
    * to retrieve a value that has not been received yet, then it will return null. 
    * @throws IllegalArgumentException if an invalid item name or field name is specified.
-   * @param itemNameOrPosition an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
-   * @param fieldNameOrPosition a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
+   * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
+   * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
    * @return the current value for the specified field of the specified item
    * (possibly null), or null if no value has been received yet.
    */
@@ -2642,9 +2642,9 @@ class Subscription {
    * [SubscriptionListener] rather than probing this method. <BR>
    * Note that internal data is cleared when the Subscription is unsubscribed from.
    *
-   * @param itemNameOrPosition an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
-   * @param keyValue the value of a key received on the COMMAND subscription.
-   * @param fieldNameOrPosition a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
+   * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
+   * - [keyValue] the value of a key received on the COMMAND subscription.
+   * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
    * @throws IllegalArgumentException if an invalid item name or field name is specified.
    * @throws IllegalStateException if the Subscription mode is not COMMAND.
    * @return the current value for the specified field of the specified key within the 
@@ -2738,7 +2738,7 @@ class MpnDevice {
    * 
    * @lifecycle A listener can be added at any time. A call to add a listener already present will be ignored.
    * 
-   * @param listener An object that will receive the events as documented in the [MpnDeviceListener] interface.
+   * - [listener] An object that will receive the events as documented in the [MpnDeviceListener] interface.
    * 
    * @see [removeListener]
    */
@@ -2756,7 +2756,7 @@ class MpnDevice {
    * 
    * @lifecycle A listener can be removed at any time.
    * 
-   * @param listener The listener to be removed.
+   * - [listener] The listener to be removed.
    * 
    * @see [addListener]
    */
@@ -2992,13 +2992,13 @@ class MpnSubscription {
    * The object can be supplied to [LightstreamerClient.subscribe] in order to bring the MPN subscription to "active" state.<BR>
    * Note that all of the methods used to describe the subscription to the server can only be called while the instance is in the "inactive" state.
    *
-   * @param subscriptionMode The subscription mode for the items, required by Lightstreamer Server. Permitted values are:<ul>
+   * - [mode] The subscription mode for the items, required by Lightstreamer Server. Permitted values are:<ul>
    * <li><code>MERGE</code></li>
    * <li><code>DISTINCT</code></li>
    * </ul>
-   * @param items An array of items to be subscribed to through Lightstreamer Server. It is also possible specify the "Item List" or
+   * - [items] An array of items to be subscribed to through Lightstreamer Server. It is also possible specify the "Item List" or
    * "Item Group" later through [setItems] and [setItemGroup].
-   * @param fields An array of fields for the items to be subscribed to through Lightstreamer Server. It is also possible to specify the "Field List" or
+   * - [fields] An array of fields for the items to be subscribed to through Lightstreamer Server. It is also possible to specify the "Field List" or
    * "Field Schema" later through [setFields] and [setFieldSchema].
    * @throws IllegalArgumentException If no or invalid subscription mode is passed.
    * @throws IllegalArgumentException If either the items or the fields array is left null.
@@ -3016,7 +3016,7 @@ class MpnSubscription {
    * The object can be supplied to [LightstreamerClient.subscribe] in order to bring the MPN subscription to "active" state.<BR>
    * Note that all of the methods used to describe the subscription to the server, except [setTriggerExpression] and [setNotificationFormat], can only be called while the instance is in the "inactive" state.
    * 
-   * @param copyFrom The Subscription object to copy properties from.
+   * - [sub] The Subscription object to copy properties from.
    */
   MpnSubscription.fromSubscription(Subscription sub) :
     _id = _nextMpnSubId(),
@@ -3036,7 +3036,7 @@ class MpnSubscription {
    *
    * Note that all of the methods used to describe the subscription to the server, except [setTriggerExpression] and [setNotificationFormat], can only be called while the instance is in the "inactive" state.
    * 
-   * @param copyFrom The MpnSubscription object to copy properties from.
+   * - [sub] The MpnSubscription object to copy properties from.
    */
   MpnSubscription.fromMpnSubscription(MpnSubscription sub) :
     _id = _nextMpnSubId(),
@@ -3082,7 +3082,7 @@ class MpnSubscription {
    * 
    * @lifecycle A listener can be added at any time. A call to add a listener already present will be ignored.
    * 
-   * @param listener An object that will receive the events as documented in the [MpnSubscriptionListener]  interface.
+   * - [listener] An object that will receive the events as documented in the [MpnSubscriptionListener]  interface.
    * 
    * @see [removeListener]
    */
@@ -3100,7 +3100,7 @@ class MpnSubscription {
    * 
    * @lifecycle A listener can be removed at any time.
    * 
-   * @param listener The listener to be removed.
+   * - [listener] The listener to be removed.
    * 
    * @see [addListener]
    */
@@ -3159,7 +3159,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>adapter</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param dataAdapter the name of the Data Adapter. A null value 
+   * - [dataAdapter] the name of the Data Adapter. A null value 
    * is equivalent to the "DEFAULT" name.
    * @throws IllegalStateException if the Subscription is currently 
    * "active".
@@ -3196,7 +3196,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>schema</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param fields an array of fields to be subscribed to through the server. 
+   * - [fields] an array of fields to be subscribed to through the server. 
    * @throws IllegalArgumentException if any of the field names in the list
    * contains a space or is empty/null.
    * @throws IllegalStateException if the MpnSubscription is currently 
@@ -3232,7 +3232,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>schema</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param schemaName A String to be expanded into a field list by the
+   * - [schemaName] A String to be expanded into a field list by the
    * Metadata Adapter. 
    * 
    * @throws IllegalStateException if the MpnSubscription is currently 
@@ -3268,7 +3268,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>group</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param groupName A String to be expanded into an item list by the
+   * - [groupName] A String to be expanded into an item list by the
    * Metadata Adapter. 
    * @throws IllegalStateException if the MpnSubscription is currently 
    * "active".
@@ -3305,7 +3305,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>group</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param items an array of items to be subscribed to through the server. 
+   * - [items] an array of items to be subscribed to through the server. 
    * @throws IllegalArgumentException if any of the item names in the "Item List"
    * contains a space or is a number or is empty/null.
    * @throws IllegalStateException if the MpnSubscription is currently 
@@ -3358,7 +3358,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>requested_buffer_size</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param size  An integer number, representing the length of the internal queuing buffers
+   * - [size]  An integer number, representing the length of the internal queuing buffers
    * to be used in the Server. If the string "unlimited" is supplied, then no buffer
    * size limit is requested (the check is case insensitive). It is also possible
    * to supply a null value to stick to the Server default (which currently
@@ -3410,7 +3410,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>requested_max_frequency</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param freq  A decimal number, representing the maximum update frequency (expressed in updates
+   * - [freq]  A decimal number, representing the maximum update frequency (expressed in updates
    * per second) for each item in the Subscription; for instance, with a setting
    * of 0.5, for each single item, no more than one update every 2 seconds
    * will be received. If the string "unlimited" is supplied, then no frequency
@@ -3462,7 +3462,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>trigger</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param expr the boolean expression that acts as a trigger to deliver the push notification. If the value is null, no trigger is set on the subscription.
+   * - [trigger] the boolean expression that acts as a trigger to deliver the push notification. If the value is null, no trigger is set on the subscription.
    * 
    * @see [isTriggered]
    */
@@ -3512,7 +3512,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>notification_format</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @param format the JSON structure to be used as the format of push notifications.
+   * - [format] the JSON structure to be used as the format of push notifications.
    * 
    * @see [FirebaseMpnBuilder]
    * @see [ApnsMpnBuilder]

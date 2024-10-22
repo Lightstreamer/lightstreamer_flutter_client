@@ -100,7 +100,7 @@ interface class ItemUpdate {
   /**
    * Returns the current value for the specified field.
    * 
-   * @param fieldName The field name as specified within the "Field List".
+   * - [fieldName] The field name as specified within the "Field List".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
    * @return The value of the specified field; it can be null in the following cases:<BR>
    * <ul>
@@ -118,7 +118,7 @@ interface class ItemUpdate {
   /**
    * Returns the current value for the specified field.
    * 
-   * @param fieldPos The 1-based position of the field within the "Field List" or "Field Schema".
+   * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
    * @return The value of the specified field; it can be null in the following cases:<BR>
    * <ul>
@@ -139,7 +139,7 @@ interface class ItemUpdate {
    * 
    * If the Subscription mode is COMMAND then the change is meant as 
    * relative to the same key.
-   * @param fieldName The field name as specified within the "Field List".
+   * - [fieldName] The field name as specified within the "Field List".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
    * @return Unless the Subscription mode is COMMAND, the return value is true in the following cases:
    * <ul>
@@ -167,7 +167,7 @@ interface class ItemUpdate {
    * 
    * If the Subscription mode is COMMAND then the change is meant as 
    * relative to the same key.
-   * @param fieldPos The 1-based position of the field within the "Field List" or "Field Schema".
+   * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
    * @return Unless the Subscription mode is COMMAND, the return value is true in the following cases:
    * <ul>
@@ -217,7 +217,7 @@ interface class ItemUpdate {
    * @throws IllegalArgumentException if the specified field is not
    * part of the Subscription.
    * 
-   * @param fieldName The field name as specified within the "Field List".
+   * - [fieldName] The field name as specified within the "Field List".
    * 
    * @return A JSON Patch structure representing the difference between
    * the new value and the previous one, or null if the difference in JSON Patch format
@@ -255,7 +255,7 @@ interface class ItemUpdate {
    * @throws IllegalArgumentException if the specified field is not
    * part of the Subscription.
    * 
-   * @param fieldPos The 1-based position of the field within the "Field List" or "Field Schema".
+   * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
    * 
    * @return A JSON Patch structure representing the difference between
    * the new value and the previous one, or null if the difference in JSON Patch format

@@ -39,7 +39,7 @@ class FirebaseMpnBuilder {
    * 
    * Use getter methods to obtain the value of push notification fields.
    * 
-   * @param notificationFormat A JSON structure representing a push notification format.
+   * - [notificationFormat] A JSON structure representing a push notification format.
    * 
    * @throws IllegalArgumentException if the notification is not a valid JSON structure.
    */
@@ -75,7 +75,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.collapse_key</code> field.
    * 
-   * @param collapseKey A string to be used for the <code>android.collapse_key</code> field value, or null to clear it.
+   * - [collapseKey] A string to be used for the <code>android.collapse_key</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setCollapseKey(String? collapseKey) {
@@ -95,7 +95,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.priority</code> field.
    * 
-   * @param priority A string to be used for the <code>android.priority</code> field value, or null to clear it.
+   * - [priority] A string to be used for the <code>android.priority</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setPriority(String? priority) {
@@ -115,7 +115,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.ttl</code> field with a string value.
    * 
-   * @param timeToLive A string to be used for the <code>android.ttl</code> field value, or null to clear it.
+   * - [timeToLive] A string to be used for the <code>android.ttl</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setTimeToLive(String? timeToLive) {
@@ -135,7 +135,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.ttl</code> field with an integer value.
    * 
-   * @param timeToLive An integer to be used for the <code>android.ttl</code> field value, or null to clear it.
+   * - [timeToLive] An integer to be used for the <code>android.ttl</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setTimeToLiveAsInteger(int? timeToLive) {
@@ -156,7 +156,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.title</code> field.
    * 
-   * @param title A string to be used for the <code>android.notification.title</code> field value, or null to clear it.
+   * - [title] A string to be used for the <code>android.notification.title</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setTitle(String? title) {
@@ -176,7 +176,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.title_loc_key</code> field.
    * 
-   * @param titleLocKey A string to be used for the <code>android.notification.title_loc_key</code> field value, or null to clear it.
+   * - [titleLocKey] A string to be used for the <code>android.notification.title_loc_key</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setTitleLocKey(String? titleLocKey) {
@@ -196,7 +196,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.title_loc_args</code> field.
    * 
-   * @param titleLocArguments A list of strings to be used for the <code>android.notification.title_loc_args</code> field value, or null to clear it.
+   * - [titleLocArguments] A list of strings to be used for the <code>android.notification.title_loc_args</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setTitleLocArguments(List<String>? titleLocArguments) {
@@ -216,7 +216,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.body</code> field.
    * 
-   * @param body A string to be used for the <code>android.notification.body</code> field value, or null to clear it.
+   * - [body] A string to be used for the <code>android.notification.body</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setBody(String? body) {
@@ -236,7 +236,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.body_loc_key</code> field.
    * 
-   * @param bodyLocKey A string to be used for the <code>android.notification.body_loc_key</code> field value, or null to clear it.
+   * - [bodyLocKey] A string to be used for the <code>android.notification.body_loc_key</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setBodyLocKey(String? bodyLocKey) {
@@ -256,7 +256,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.body_loc_args</code> field.
    * 
-   * @param bodyLocArguments A list of strings to be used for the <code>android.notification.body_loc_args</code> field value, or null to clear it.
+   * - [bodyLocArguments] A list of strings to be used for the <code>android.notification.body_loc_args</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setBodyLocArguments(List<String>? bodyLocArguments) {
@@ -276,7 +276,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.icon</code> field.
    * 
-   * @param icon A string to be used for the <code>android.notification.icon</code> field value, or null to clear it.
+   * - [icon] A string to be used for the <code>android.notification.icon</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setIcon(String? icon) {
@@ -296,7 +296,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.sound</code> field.
    * 
-   * @param sound A string to be used for the <code>android.notification.sound</code> field value, or null to clear it.
+   * - [sound] A string to be used for the <code>android.notification.sound</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setSound(String? sound) {
@@ -316,7 +316,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.tag</code> field.
    * 
-   * @param tag A string to be used for the <code>android.notification.tag</code> field value, or null to clear it.
+   * - [tag] A string to be used for the <code>android.notification.tag</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setTag(String? tag) {
@@ -336,7 +336,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.color</code> field.
    * 
-   * @param color A string to be used for the <code>android.notification.color</code> field value, or null to clear it.
+   * - [color] A string to be used for the <code>android.notification.color</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setColor(String? color) {
@@ -356,7 +356,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets the <code>android.notification.click_action</code> field.
    * 
-   * @param clickAction A string to be used for the <code>android.notification.click_action</code> field value, or null to clear it.
+   * - [clickAction] A string to be used for the <code>android.notification.click_action</code> field value, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setClickAction(String? clickAction) {
@@ -376,7 +376,7 @@ class FirebaseMpnBuilder {
   /**
    * Sets sub-fields of the <code>android.data</code> field.
    * 
-   * @param data A map to be used for sub-fields of the <code>android.data</code> field, or null to clear it.
+   * - [data] A map to be used for sub-fields of the <code>android.data</code> field, or null to clear it.
    * @return this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setData(Map<String, String>? data) {

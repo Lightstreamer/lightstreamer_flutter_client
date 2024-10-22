@@ -62,7 +62,7 @@ class ClientListener {
    * Note that [LightstreamerClient.connect] and [LightstreamerClient.disconnect], as any other method, can 
    * be issued directly from within a handler.
    * 
-   * @param status The new status. It can be one of the following values:
+   * - [status] The new status. It can be one of the following values:
    * <ul>
    *   <li>"CONNECTING" the client has started a connection attempt and is waiting for a Server answer.</li>
    *   <li>"CONNECTED:STREAM-SENSING" the client received a first response from the server and is now evaluating if 
@@ -96,7 +96,7 @@ class ClientListener {
    * Properties of these objects can be modified by direct calls to them or
    * by server sent events.
    * 
-   * @param property the name of the changed property.
+   * - [property] the name of the changed property.
    * <BR>Possible values are:
    * <ul>
    * <li>adapterSet</li>
@@ -140,7 +140,7 @@ class ClientListener {
    * with a "DISCONNECTED" status and no recovery attempt has been performed.
    * By setting a custom handler, however, it is possible to override this and perform custom recovery actions.
    * 
-   * @param errorCode The error code. It can be one of the following:
+   * - [errorCode] The error code. It can be one of the following:
    * <ul>
    *   <li>1 - user/password check failed</li>
    *   <li>2 - requested Adapter Set not available</li>
@@ -172,7 +172,7 @@ class ClientListener {
    *       Metadata Adapter implementation</li>
    * </ul>
    * 
-   * @param errorMessage The description of the error as sent by the Server.
+   * - [errorMessage] The description of the error as sent by the Server.
    * 
    * @see [onStatusChange]
    * @see [ConnectionDetails.setAdapterSet]
@@ -223,9 +223,9 @@ class SubscriptionListener {
    * This kind of notification is not possible for second-level items (which are in MERGE 
    * mode).
    * 
-   * @param itemName name of the involved item. If the Subscription was initialized using an "Item Group" then a 
+   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
    *        null value is supplied.
-   * @param itemPos 1-based position of the item within the "Item List" or "Item Group".
+   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
    */
   void onClearSnapshot(String itemName, int itemPos) {}
   /**
@@ -236,8 +236,8 @@ class SubscriptionListener {
    * always in "MERGE" mode and inherit the frequency configuration from the first-level Subscription). <BR> 
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * @param lostUpdates The number of consecutive updates dropped for the item.
-   * @param key The value of the key that identifies the second-level item.
+   * - [lostUpdates] The number of consecutive updates dropped for the item.
+   * - [key] The value of the key that identifies the second-level item.
    * 
    * @see [Subscription.setRequestedMaxFrequency]
    * @see [Subscription.setCommandSecondLevelFields]
@@ -249,7 +249,7 @@ class SubscriptionListener {
    * 
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * @param code The error code sent by the Server. It can be one of the following:
+   * - [errorCode] The error code sent by the Server. It can be one of the following:
    *        <ul>
    *          <li>14 - the key value is not a valid name for the Item to be subscribed; only in this case, the error 
    *              is detected directly by the library before issuing the actual request to the Server</li>
@@ -270,8 +270,8 @@ class SubscriptionListener {
    *              code value is dependent on the specific Metadata Adapter implementation</li>
    *        </ul>
    *
-   * @param message The description of the error sent by the Server; it can be null.
-   * @param key The value of the key that identifies the second-level item.
+   * - [errorMessage] The description of the error sent by the Server; it can be null.
+   * - [key] The value of the key that identifies the second-level item.
    * 
    * @see [ConnectionDetails.setAdapterSet]
    * @see [Subscription.setCommandSecondLevelFields]
@@ -291,9 +291,9 @@ class SubscriptionListener {
    * Snapshot-related updates for the second-level items 
    * (which are in MERGE mode) can be received both before and after this notification.
    * 
-   * @param itemName name of the involved item. If the Subscription was initialized using an "Item Group" then a 
+   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
    *        null value is supplied.
-   * @param itemPos 1-based position of the item within the "Item List" or "Item Group".
+   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
    * 
    * @see [Subscription.setRequestedSnapshot]
    * @see [ItemUpdate.isSnapshot]
@@ -314,10 +314,10 @@ class SubscriptionListener {
    * </ul>
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * @param itemName name of the involved item. If the Subscription was initialized using an "Item Group" then a 
+   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
    *        null value is supplied.
-   * @param itemPos 1-based position of the item within the "Item List" or "Item Group".
-   * @param lostUpdates The number of consecutive updates dropped for the item.
+   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
+   * - [lostUpdates] The number of consecutive updates dropped for the item.
    * 
    * @see [Subscription.setRequestedMaxFrequency]
    */
@@ -326,7 +326,7 @@ class SubscriptionListener {
    * Event handler that is called by Lightstreamer each time an update pertaining to an item in the Subscription
    * has been received from the Server.
    * 
-   * @param itemUpdate a value object containing the updated values for all the fields, together with meta-information 
+   * - [update] a value object containing the updated values for all the fields, together with meta-information 
    * about the update itself and some helper methods that can be used to iterate through all or new values.
    */
   void onItemUpdate(ItemUpdate update) {}
@@ -358,7 +358,7 @@ class SubscriptionListener {
    * Note that a maximum update frequency (that is, a non-unlimited one) may be applied by the Server
    * even when the subscription mode is RAW or the Subscription was done with unfiltered dispatching.
    * 
-   * @param frequency  A decimal number, representing the maximum frequency applied by the Server
+   * - [frequency]  A decimal number, representing the maximum frequency applied by the Server
    * (expressed in updates per second), or the string "unlimited". A null value is possible in rare cases,
    * when the frequency can no longer be determined.
    */
@@ -388,7 +388,7 @@ class SubscriptionListener {
    * and [LightstreamerClient.subscribe] should be issued again, even if no change to the Subscription 
    * attributes has been applied.
    *
-   * @param code The error code sent by the Server. It can be one of the following:
+   * - [errorCode] The error code sent by the Server. It can be one of the following:
    *        <ul>
    *          <li>15 - "key" field not specified in the schema for a COMMAND mode subscription</li>
    *          <li>16 - "command" field not specified in the schema for a COMMAND mode subscription</li>
@@ -413,7 +413,7 @@ class SubscriptionListener {
    *              code value is dependent on the specific Metadata Adapter implementation</li>
    *        </ul>
    *
-   * @param message The description of the error sent by the Server; it can be null.
+   * - [errorMessage] The description of the error sent by the Server; it can be null.
    * 
    * @see [ConnectionDetails.setAdapterSet]
    */
@@ -452,8 +452,8 @@ class ClientMessageListener {
    * 
    * Typically, this happens after the session 
    * has been closed. In this case, the client has no way of knowing the processing outcome and any outcome is possible.
-   * @param originalMessage the message to which this notification is related.
-   * @param sentOnNetwork true if the message was sent on the network, false otherwise. 
+   * - [originalMessage] the message to which this notification is related.
+   * - [sentOnNetwork] true if the message was sent on the network, false otherwise. 
    *        Even if the flag is true, it is not possible to infer whether the message actually reached the 
    *        Lightstreamer Server or not.
    */
@@ -462,11 +462,11 @@ class ClientMessageListener {
    * Event handler that is called by Lightstreamer when the related message has been processed by the Server but the 
    * expected processing outcome could not be achieved for any reason.
    * 
-   * @param originalMessage the message to which this notification is related.
-   * @param code the error code sent by the Server. It can be one of the following:
+   * - [originalMessage] the message to which this notification is related.
+   * - [errorCode] the error code sent by the Server. It can be one of the following:
    *        <ul><li>&lt;= 0 - the Metadata Adapter has refused the message; the code value is dependent on the 
    *        specific Metadata Adapter implementation.</li></ul>
-   * @param error the description of the error sent by the Server.
+   * - [errorMessage] the description of the error sent by the Server.
    */
   void onDeny(String originalMessage, int errorCode, String errorMessage) {}
   /**
@@ -474,7 +474,7 @@ class ClientMessageListener {
    * 
    * This means that the message has not reached the Metadata Adapter and the message next in the sequence is considered 
    * enabled for processing.
-   * @param originalMessage the message to which this notification is related.
+   * - [originalMessage] the message to which this notification is related.
    */
   void onDiscarded(String originalMessage) {}
   /**
@@ -483,14 +483,14 @@ class ClientMessageListener {
    * 
    * The level of completion of the processing by the Metadata Adapter cannot be 
    * determined.
-   * @param originalMessage the message to which this notification is related.
+   * - [originalMessage] the message to which this notification is related.
    */
   void onError(String originalMessage) {}
   /**
    * Event handler that is called by Lightstreamer when the related message has been processed by the Server with success.
    * 
-   * @param originalMessage the message to which this notification is related.
-   * @param response the response from the Metadata Adapter. If not supplied (i.e. supplied as null), an empty message is received here.
+   * - [originalMessage] the message to which this notification is related.
+   * - [response] the response from the Metadata Adapter. If not supplied (i.e. supplied as null), an empty message is received here.
    */
   void onProcessed(String originalMessage, String response) {}
 }
@@ -529,7 +529,7 @@ class MpnDeviceListener {
    * 
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * @param code The error code sent by the Server. It can be one of the following:<ul>
+   * - [errorCode] The error code sent by the Server. It can be one of the following:<ul>
    * <li>40 - the MPN Module is disabled, either by configuration or by license restrictions.</li>
    * <li>41 - the request failed because of some internal resource error (e.g. database connection, timeout, etc.).</li>
    * <li>43 - invalid or unknown application ID.</li>
@@ -539,7 +539,7 @@ class MpnDeviceListener {
    * <li>68 - the Server could not fulfill the request because of an internal error.</li>
    * <li>&lt;= 0 - the Metadata Adapter has refused the subscription request; the code value is dependent on the specific Metadata Adapter implementation.</li>
    * </ul>
-   * @param message The description of the error sent by the Server; it can be null.
+   * - [errorMessage] The description of the error sent by the Server; it can be null.
    */
   void onRegistrationFailed(int errorCode, String errorMessage) {}
   /**
@@ -554,12 +554,12 @@ class MpnDeviceListener {
    * 
    * Note that in some server clustering configurations the status change for the MPN device suspend event may not be called.
    * 
-   * @param status The new status of the MPN device. It can be one of the following:<ul>
+   * - [status] The new status of the MPN device. It can be one of the following:<ul>
    * <li><code>UNKNOWN</code></li>
    * <li><code>REGISTERED</code></li>
    * <li><code>SUSPENDED</code></li>
    * </ul>
-   * @param timestamp The server-side timestamp of the new device status.
+   * - [timestamp] The server-side timestamp of the new device status.
    * 
    * @see [MpnDevice.getStatus]
    * @see [MpnDevice.getStatusTimestamp]
@@ -611,9 +611,9 @@ class MpnSubscriptionListener {
    * 
    * Properties can be modified by direct calls to their setters. See [MpnSubscription.setNotificationFormat] and [MpnSubscription.setTriggerExpression].
    * 
-   * @param code The error code sent by the Server.
-   * @param message The description of the error sent by the Server.
-   * @param propertyName The name of the changed property. It can be one of the following:<ul>
+   * - [errorCode] The error code sent by the Server.
+   * - [errorMessage] The description of the error sent by the Server.
+   * - [propertyName] The name of the changed property. It can be one of the following:<ul>
    * <li><code>notification_format</code></li>
    * <li><code>trigger</code></li>
    * </ul>
@@ -625,7 +625,7 @@ class MpnSubscriptionListener {
    * Properties can be modified by direct calls to their setter or by server sent events. A property may be changed by a server sent event when the MPN subscription is
    * modified, or when two MPN subscriptions coalesce (see [LightstreamerClient.subscribeMpn]).
    * 
-   * @param propertyName The name of the changed property. It can be one of the following:<ul>
+   * - [propertyName] The name of the changed property. It can be one of the following:<ul>
    * <li><code>mode</code></li>
    * <li><code>group</code></li>
    * <li><code>schema</code></li>
@@ -644,13 +644,13 @@ class MpnSubscriptionListener {
    * Note that in some server clustering configurations the status change for the MPN subscription's trigger event may not be called. The corresponding push
    * notification is always sent, though.
    * 
-   * @param status The new status of the MPN subscription. It can be one of the following:<ul>
+   * - [status] The new status of the MPN subscription. It can be one of the following:<ul>
    * <li><code>UNKNOWN</code></li>
    * <li><code>ACTIVE</code></li>
    * <li><code>SUBSCRIBED</code></li>
    * <li><code>TRIGGERED</code></li>
    * </ul>
-   * @param timestamp The server-side timestamp of the new subscription status.
+   * - [timestamp] The server-side timestamp of the new subscription status.
    * 
    * @see [MpnSubscription.getStatus]
    * @see [MpnSubscription.getStatusTimestamp]
@@ -670,7 +670,7 @@ class MpnSubscriptionListener {
    * 
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * @param code The error code sent by the Server. It can be one of the following:<ul>
+   * - [errorCode] The error code sent by the Server. It can be one of the following:<ul>
    * <li>17 - bad Data Adapter name or default Data Adapter not defined for the current Adapter Set.</li>
    * <li>21 - bad Group name.</li>
    * <li>22 - bad Group name for this Schema.</li>
@@ -693,7 +693,7 @@ class MpnSubscriptionListener {
    * <li>68 - the Server could not fulfill the request because of an internal error.</li>
    * <li>&lt;= 0 - the Metadata Adapter has refused the subscription request; the code value is dependent on the specific Metadata Adapter implementation.</li>
    * </ul>
-   * @param message The description of the error sent by the Server; it can be null.
+   * - [errorMessage] The description of the error sent by the Server; it can be null.
    */
   void onSubscriptionError(int errorCode, String errorMessage) {}
   /**
@@ -723,7 +723,7 @@ class MpnSubscriptionListener {
    * 
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * @param code The error code sent by the Server. It can be one of the following:<ul>
+   * - [errorCode] The error code sent by the Server. It can be one of the following:<ul>
    * <li>30 - subscriptions are not allowed by the current license terms (for special licenses only).</li>
    * <li>40 - the MPN Module is disabled, either by configuration or by license restrictions.</li>
    * <li>41 - the request failed because of some internal resource error (e.g. database connection, timeout, etc.).</li>
@@ -735,7 +735,7 @@ class MpnSubscriptionListener {
    * <li>68 - the Server could not fulfill the request because of an internal error.</li>
    * <li>&lt;= 0 - the Metadata Adapter has refused the unsubscription request; the code value is dependent on the specific Metadata Adapter implementation.</li>
    * </ul>
-   * @param message The description of the error sent by the Server; it can be null.
+   * - [errorMessage] The description of the error sent by the Server; it can be null.
    */
   void onUnsubscriptionError(int errorCode, String errorMessage) {}
 }

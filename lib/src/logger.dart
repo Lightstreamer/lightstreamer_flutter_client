@@ -9,49 +9,49 @@ abstract interface class Logger {
   /** 
    * Receives log messages at Fatal level and a related exception.
    * 
-   * @param line The message to be logged.
+   * - [line] The message to be logged.
    * 
-   * @param exception An Exception instance related to the current log message.
+   * - [exception] An Exception instance related to the current log message.
    */
   void fatal(String line, [ Exception? exception ]);
   /** 
    * Receives log messages at Error level and a related exception.
    * 
-   * @param line The message to be logged.
+   * - [line] The message to be logged.
    * 
-   * @param exception An Exception instance related to the current log message.
+   * - [exception] An Exception instance related to the current log message.
    */
   void error(String line, [ Exception? exception ]);
   /** 
    * Receives log messages at Warn level and a related exception.
    * 
-   * @param line The message to be logged.
+   * - [line] The message to be logged.
    * 
-   * @param exception An Exception instance related to the current log message. 
+   * - [exception] An Exception instance related to the current log message. 
    */
   void warn(String  line, [ Exception? exception ]);
   /** 
    * Receives log messages at Info level and a related exception.
    * 
-   * @param line The message to be logged.
+   * - [line] The message to be logged.
    * 
-   * @param exception An Exception instance related to the current log message.
+   * - [exception] An Exception instance related to the current log message.
    */
   void info(String  line, [ Exception? exception ]);
   /** 
    * Receives log messages at Debug level and a related exception.
    * 
-   * @param line The message to be logged.
+   * - [line] The message to be logged.
    * 
-   * @param exception An Exception instance related to the current log message.
+   * - [exception] An Exception instance related to the current log message.
    */
   void debug(String line, [ Exception? exception ]);
   /** 
    * Receives log messages at Trace level and a related exception.
    * 
-   * @param line The message to be logged.
+   * - [line] The message to be logged.
    * 
-   * @param exception An Exception instance related to the current log message.
+   * - [exception] An Exception instance related to the current log message.
    */
   void trace(String line, [ Exception? exception ]);
   /** 
@@ -124,7 +124,7 @@ abstract interface class LoggerProvider {
    * It is suggested, but not mandatory, that subsequent calls to this method
    * related to the same category return the same Logger instance.
    * 
-   * @param category the log category all messages passed to the given Logger instance will pertain to.
+   * - [category] the log category all messages passed to the given Logger instance will pertain to.
    * 
    * @return A Logger instance that will receive log lines related to the given category.
    */
@@ -186,7 +186,7 @@ class ConsoleLoggerProvider implements LoggerProvider {
  /**
     Creates an instance of the concrete system console logger.
      
-    @param level The desired logging level. See [ConsoleLogLevel].
+    - [level] The desired logging level. See [ConsoleLogLevel].
   */
   ConsoleLoggerProvider(int level) : _level = level;
 
