@@ -51,7 +51,8 @@ interface class ItemUpdate {
    * Inquiry method that retrieves the name of the item to which this update pertains.
    *  
    * The name will be null if the related Subscription was initialized using an "Item Group".
-   * @return The name of the item to which this update pertains.
+   * 
+   * **Returns** The name of the item to which this update pertains.
    * - See [Subscription.setItemGroup]
    * - See [Subscription.setItems]
    */
@@ -62,7 +63,7 @@ interface class ItemUpdate {
   /**
    * Inquiry method that retrieves the position in the "Item List" or "Item Group" of the item to which this update pertains.
    * 
-   * @return The 1-based position of the item to which this update pertains.
+   * **Returns** The 1-based position of the item to which this update pertains.
    * - See [Subscription.setItemGroup]
    * - See [Subscription.setItems]
    */
@@ -91,7 +92,8 @@ interface class ItemUpdate {
    * Note that, in case of two-level behavior, snapshot-related updates for both the first-level item
    * (which is in COMMAND mode) and any second-level items (which are in MERGE mode) are qualified with 
    * this flag.
-   * @return true if the current update event belongs to the item snapshot; false otherwise.
+   * 
+   * **Returns** true if the current update event belongs to the item snapshot; false otherwise.
    */
   bool isSnapshot() {
     return _isSnapshot;
@@ -102,7 +104,8 @@ interface class ItemUpdate {
    * 
    * - [fieldName] The field name as specified within the "Field List".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
-   * @return The value of the specified field; it can be null in the following cases:<BR>
+   * 
+   * **Returns** The value of the specified field; it can be null in the following cases:<BR>
    * <ul>
    *  <li>a null value has been received from the Server, as null is a possible value for a field;</li>
    *  <li>no value has been received for the field yet;</li>
@@ -120,7 +123,8 @@ interface class ItemUpdate {
    * 
    * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
-   * @return The value of the specified field; it can be null in the following cases:<BR>
+   * 
+   * **Returns** The value of the specified field; it can be null in the following cases:<BR>
    * <ul>
    *  <li>a null value has been received from the Server, as null is a possible value for a field;</li>
    *  <li>no value has been received for the field yet;</li>
@@ -141,7 +145,8 @@ interface class ItemUpdate {
    * relative to the same key.
    * - [fieldName] The field name as specified within the "Field List".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
-   * @return Unless the Subscription mode is COMMAND, the return value is true in the following cases:
+   * 
+   * **Returns** Unless the Subscription mode is COMMAND, the return value is true in the following cases:
    * <ul>
    *  <li>It is the first update for the item;</li>
    *  <li>the new field value is different than the previous field 
@@ -169,7 +174,8 @@ interface class ItemUpdate {
    * relative to the same key.
    * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
    * @throws IllegalArgumentException if the specified field is not part of the Subscription.
-   * @return Unless the Subscription mode is COMMAND, the return value is true in the following cases:
+   * 
+   * **Returns** Unless the Subscription mode is COMMAND, the return value is true in the following cases:
    * <ul>
    *  <li>It is the first update for the item;</li>
    *  <li>the new field value is different than the previous field 
@@ -219,7 +225,7 @@ interface class ItemUpdate {
    * 
    * - [fieldName] The field name as specified within the "Field List".
    * 
-   * @return A JSON Patch structure representing the difference between
+   * **Returns** A JSON Patch structure representing the difference between
    * the new value and the previous one, or null if the difference in JSON Patch format
    * is not available for any reason.
    * 
@@ -257,7 +263,7 @@ interface class ItemUpdate {
    * 
    * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
    * 
-   * @return A JSON Patch structure representing the difference between
+   * **Returns** A JSON Patch structure representing the difference between
    * the new value and the previous one, or null if the difference in JSON Patch format
    * is not available for any reason.
    * 
@@ -279,7 +285,7 @@ interface class ItemUpdate {
    * 
    * @throws IllegalStateException if the Subscription was initialized using a field schema.
    * 
-   * @return An immutable Map containing the values for each field changed with the last server update.
+   * **Returns** An immutable Map containing the values for each field changed with the last server update.
    * 
    * - See [Subscription.setFieldSchema]
    * - See [Subscription.setFields]
@@ -298,7 +304,7 @@ interface class ItemUpdate {
    * All of this is also true on tables that have the two-level behavior enabled, but in case of 
    * DELETE commands second-level fields will not be iterated.
    * 
-   * @return An immutable Map containing the values for each field changed with the last server update.
+   * **Returns** An immutable Map containing the values for each field changed with the last server update.
    * 
    * - See [Subscription.setFieldSchema]
    * - See [Subscription.setFields]
@@ -314,7 +320,7 @@ interface class ItemUpdate {
    * 
    * @throws IllegalStateException if the Subscription was initialized using a field schema.
    * 
-   * @return An immutable Map containing the values for each field in the Subscription.
+   * **Returns** An immutable Map containing the values for each field in the Subscription.
    * 
    * - See [Subscription.setFieldSchema]
    * - See [Subscription.setFields]
@@ -328,7 +334,7 @@ interface class ItemUpdate {
    * 
    * The 1-based field position within the field schema or field list is used as key for the values in the map. 
    * 
-   * @return An immutable Map containing the values for each field in the Subscription.
+   * **Returns** An immutable Map containing the values for each field in the Subscription.
    * 
    * - See [Subscription.setFieldSchema]
    * - See [Subscription.setFields]

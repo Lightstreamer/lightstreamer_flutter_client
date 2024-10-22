@@ -195,7 +195,7 @@ class LightstreamerClient {
    *
    * - [uri] the URI to which the cookies should be sent.
    * 
-   * @return an immutable list with the various cookies that can
+   * **Returns** an immutable list with the various cookies that can
    * be sent in a HTTP request for the specified URI.
    */
   static Future<List<Cookie>> getCookies(String uri) async {
@@ -258,7 +258,7 @@ class LightstreamerClient {
   /**
    * Inquiry method that gets the current client status and transport (when applicable).
    * 
-   * @return The current client status. It can be one of the following values:
+   * **Returns** The current client status. It can be one of the following values:
    * <ul>
    *  <li>"CONNECTING" the client is waiting for a Server's response in order to establish a connection;</li>
    *  <li>"CONNECTED:STREAM-SENSING" the client has received a preliminary response from the server and 
@@ -345,7 +345,7 @@ class LightstreamerClient {
    * 
    * Internal second-level Subscription are not included.
    *
-   * @return A list, containing all the Subscription currently "active" on this LightstreamerClient. <BR>
+   * **Returns** A list, containing all the Subscription currently "active" on this LightstreamerClient. <BR>
    * The list can be empty.
    * - See [subscribe]
    */
@@ -472,7 +472,7 @@ class LightstreamerClient {
   /**
    * Returns a list containing the [ClientListener] instances that were added to this client.
    *
-   * @return a list containing the listeners that were added to this client. 
+   * **Returns** a list containing the listeners that were added to this client. 
    * - See [addListener]
    */
   List<ClientListener> getListeners() {
@@ -633,7 +633,8 @@ class LightstreamerClient {
    * <li><code>TRIGGERED</code></li>
    * <li><code>SUBSCRIBED</code></li>
    * </ul>
-   * @return the collection of [MpnSubscription] with the specified status.
+   * 
+   * **Returns** the collection of [MpnSubscription] with the specified status.
    * @throws IllegalArgumentException if the given filter is not valid.
    * @throws IllegalStateException if there is no MPN device registered.
    * 
@@ -660,7 +661,8 @@ class LightstreamerClient {
    * available at /dashboard).
    * 
    * - [subscriptionId] The subscription ID to search for.
-   * @return the MpnSubscription with the specified ID, or null if not found.
+   * 
+   * **Returns** the MpnSubscription with the specified ID, or null if not found.
    * @throws IllegalArgumentException if the given subscription ID is null.
    * @throws IllegalStateException if there is no MPN device registered.
    * 
@@ -717,7 +719,7 @@ class ConnectionDetails {
    * Inquiry method that gets the name of the Adapter Set (which defines the Metadata Adapter and one or several 
    * Data Adapters) mounted on Lightstreamer Server that supply all the items used in this application.
    * 
-   * @return the adapterSet the name of the Adapter Set; returns null if no name has been configured, that 
+   * **Returns** the adapterSet the name of the Adapter Set; returns null if no name has been configured, that 
    * means that the "DEFAULT" Adapter Set is used.
    * 
    * - See [setAdapterSet]
@@ -754,7 +756,7 @@ class ConnectionDetails {
   /**
    * Inquiry method that gets the configured address of Lightstreamer Server.
    *
-   * @return the serverAddress the configured address of Lightstreamer Server.
+   * **Returns** the serverAddress the configured address of Lightstreamer Server.
    */
   String? getServerAddress() {
     return _serverAddress;
@@ -803,7 +805,7 @@ class ConnectionDetails {
   /**
    * Inquiry method that gets the username to be used for the authentication on Lightstreamer Server when initiating the session.
    * 
-   * @return the username to be used for the authentication on Lightstreamer Server; returns null if no 
+   * **Returns** the username to be used for the authentication on Lightstreamer Server; returns null if no 
    * user name has been configured.
    */
   String? getUser() {
@@ -857,7 +859,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "serverInstanceAddress" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @return address used to issue all requests related to the current session, or null.
+   * **Returns** address used to issue all requests related to the current session, or null.
    */
   String? getServerInstanceAddress() {
     return _serverInstanceAddress;
@@ -885,7 +887,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "serverSocketName" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @return name configured for the Server instance which is managing the current session, or null.
+   * **Returns** name configured for the Server instance which is managing the current session, or null.
    */
   String? getServerSocketName() {
     return _serverSocketName;
@@ -909,7 +911,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "clientIp" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @return  A canonical representation of an IP address (it can be either IPv4 or IPv6), or null.
+   * **Returns**  A canonical representation of an IP address (it can be either IPv4 or IPv6), or null.
    */
   String? getClientIp() {
     return _clientIp;
@@ -925,7 +927,7 @@ class ConnectionDetails {
    * [ClientListener.onPropertyChange] with argument "sessionId" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @return ID assigned by the Server to this client session, or null.
+   * **Returns** ID assigned by the Server to this client session, or null.
    */
   String? getSessionId() {
     return _sessionId;
@@ -1025,7 +1027,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that gets the length expressed in bytes to be used by the Server for the response body on a HTTP stream connection.
    *
-   * @return The length to be used by the Server for the response body on a HTTP stream connection
+   * **Returns** The length to be used by the Server for the response body on a HTTP stream connection
    * - See [setContentLength]
    */
   int getContentLength() {
@@ -1061,7 +1063,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that gets the maximum time to wait before trying a new connection to the Server in case the previous one is unexpectedly closed while correctly working.
    *
-   * @return The max time (in milliseconds) to wait before trying a new connection.
+   * **Returns** The max time (in milliseconds) to wait before trying a new connection.
    * - See [setFirstRetryMaxDelay]
    */
   int getFirstRetryMaxDelay() {
@@ -1097,7 +1099,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that gets the value of the forced transport (if any).
    *
-   * @return The forced transport or null
+   * **Returns** The forced transport or null
    * - See [setForcedTransport]
    */
   String? getForcedTransport() {
@@ -1159,7 +1161,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that gets the Map object containing the extra headers to be sent to the server.
    *
-   * @return The Map object containing the extra headers to be sent
+   * **Returns** The Map object containing the extra headers to be sent
    * - See [setHttpExtraHeaders]
    * - See [setHttpExtraHeadersOnSessionCreationOnly]
    */
@@ -1199,7 +1201,7 @@ class ConnectionOptions {
    * 
    * The wait time used by the Server, however, may be different, because of server side restrictions.
    *
-   * @return The time (in milliseconds) the Server is allowed to wait for data to send upon 
+   * **Returns** The time (in milliseconds) the Server is allowed to wait for data to send upon 
    * polling requests.
    * - See [setIdleTimeout]
    */
@@ -1246,7 +1248,7 @@ class ConnectionOptions {
    * Afterwards, the returned value is the time used by the Server, that may be different, because
    * of Server side constraints.
    * 
-   * @return The time, expressed in milliseconds, between two keepalive packets sent by the Server, or 0.
+   * **Returns** The time, expressed in milliseconds, between two keepalive packets sent by the Server, or 0.
    * 
    * - See [setKeepaliveInterval]
    */
@@ -1292,7 +1294,7 @@ class ConnectionOptions {
    * the returned value is the the time between subsequent polling requests that is really allowed by the 
    * Server, that may be different, because of Server side constraints.
    *
-   * @return The time (in milliseconds) between subsequent polling requests.
+   * **Returns** The time (in milliseconds) between subsequent polling requests.
    * - See [setPollingInterval]
    */
   int getPollingInterval() {
@@ -1352,7 +1354,7 @@ class ConnectionOptions {
    * [ClientListener.onPropertyChange] with argument "realMaxBandwidth" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
-   * @return  A decimal number, which represents the maximum bandwidth applied by the Server for the
+   * **Returns**  A decimal number, which represents the maximum bandwidth applied by the Server for the
    * streaming or polling connection expressed in kbps (kilobits/sec), or the string "unlimited", or null.
    * - See [setRequestedMaxBandwidth]
    */
@@ -1365,7 +1367,7 @@ class ConnectionOptions {
    * is allowed to keep waiting for a keepalive packet or any data on a stream connection,
    * before disconnecting and trying to reconnect to the Server.
    *
-   * @return The idle time (in milliseconds) admitted in "STALLED" status before trying to 
+   * **Returns** The idle time (in milliseconds) admitted in "STALLED" status before trying to 
    * reconnect to the Server.
    * - See [setReconnectTimeout]
    */
@@ -1407,7 +1409,7 @@ class ConnectionOptions {
    * The maximum bandwidth limit really applied by the Server on the session is provided by
    * [getRealMaxBandwidth]
    * 
-   * @return  A decimal number, which represents the maximum bandwidth requested for the streaming
+   * **Returns**  A decimal number, which represents the maximum bandwidth requested for the streaming
    * or polling connection expressed in kbps (kilobits/sec), or the string "unlimited".
    * - See [setRequestedMaxBandwidth]
    */
@@ -1461,7 +1463,7 @@ class ConnectionOptions {
    * Note that the delay is calculated from the moment the effort to create a connection
    * is made, not from the moment the failure is detected or the connection timeout expires.
    *
-   * @return The time (in milliseconds) to wait before trying a new connection.
+   * **Returns** The time (in milliseconds) to wait before trying a new connection.
    * - See [setRetryDelay]
    */
   int getRetryDelay() {
@@ -1524,7 +1526,7 @@ class ConnectionOptions {
    * 
    * A 0 value is possible, meaning that the mechanism is disabled.
    *
-   * @return The reverse-heartbeat interval, or 0.
+   * **Returns** The reverse-heartbeat interval, or 0.
    * - See [setReverseHeartbeatInterval]
    */
   int getReverseHeartbeatInterval() {
@@ -1590,7 +1592,7 @@ class ConnectionOptions {
    * A 0 value also means that any attempt to recover the current session is prevented
    * in the first place.
    * 
-   * @return The maximum time allowed for recovery attempts, possibly 0.
+   * **Returns** The maximum time allowed for recovery attempts, possibly 0.
    * - See [setSessionRecoveryTimeout]
    */
   int getSessionRecoveryTimeout() {
@@ -1633,7 +1635,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that gets the extra time the client can wait when an expected keepalive packet has not been received on a stream connection (and no actual data has arrived), before entering the "STALLED" status.
    *
-   * @return The idle time (in milliseconds) admitted before entering the "STALLED" status.
+   * **Returns** The idle time (in milliseconds) admitted before entering the "STALLED" status.
    * - See [setStalledTimeout]
    */
   int getStalledTimeout() {
@@ -1665,7 +1667,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that checks if the restriction on the forwarding of the configured extra http headers applies or not. 
    *
-   * @return the httpExtraHeadersOnSessionCreationOnly
+   * **Returns** the httpExtraHeadersOnSessionCreationOnly
    * - See [setHttpExtraHeadersOnSessionCreationOnly]
    * - See [setHttpExtraHeaders]
    */
@@ -1699,7 +1701,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that checks if the client is going to ignore the server instance address that will possibly be sent by the server.
    *
-   * @return Whether or not to ignore the server instance address sent by the server.
+   * **Returns** Whether or not to ignore the server instance address sent by the server.
    * - See [setServerInstanceAddressIgnored]
    */
   bool isServerInstanceAddressIgnored() {
@@ -1741,7 +1743,7 @@ class ConnectionOptions {
   /**
    * Inquiry method that checks if the slowing algorithm is enabled or not.
    *
-   * @return Whether the slowing algorithm is enabled or not.
+   * **Returns** Whether the slowing algorithm is enabled or not.
    * - See [setSlowingEnabled]
    */
   bool isSlowingEnabled() {
@@ -1960,8 +1962,8 @@ class Subscription {
  /**
   * Returns a list containing the [SubscriptionListener] instances that were 
   * added to this client.
-
-  * @return a list containing the listeners that were added to this client. 
+  *
+  * **Returns** a list containing the listeners that were added to this client. 
   * - See [addListener]
   */
   List<SubscriptionListener> getListeners() {
@@ -1980,7 +1982,8 @@ class Subscription {
    * [SubscriptionListener.onSubscription] event for this Subscription was not 
    * yet fired.
    * @throws IllegalStateException if a "Field List" was specified.
-   * @return the 1-based position of the "command" field within the "Field Schema".
+   * 
+   * **Returns** the 1-based position of the "command" field within the "Field Schema".
    */
   int? getCommandPosition() {
     return _commandPosition;
@@ -1997,7 +2000,7 @@ class Subscription {
    * COMMAND or if the [SubscriptionListener.onSubscription] event for this Subscription
    * was not yet fired.
    * 
-   * @return the 1-based position of the "key" field within the "Field Schema".
+   * **Returns** the 1-based position of the "key" field within the "Field Schema".
    */
   int? getKeyPosition() {
     return _keyPosition;
@@ -2008,7 +2011,8 @@ class Subscription {
    *
    * @lifecycle This method can be called at any time.
    * @throws IllegalStateException if the Subscription mode is not COMMAND
-   * @return the name of the second-level Data Adapter.
+   * 
+   * **Returns** the name of the second-level Data Adapter.
    * - See [setCommandSecondLevelDataAdapter]
    */
   String? getCommandSecondLevelDataAdapter() {
@@ -2052,7 +2056,8 @@ class Subscription {
    * @lifecycle This method can only be called if the second-level of this Subscription 
    * has been initialized using a "Field List"
    * @throws IllegalStateException if the Subscription mode is not COMMAND
-   * @return the list of fields to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
+   * 
+   * **Returns** the list of fields to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
    * - See [Subscription.setCommandSecondLevelFields]
    */
   List<String>? getCommandSecondLevelFields() {
@@ -2106,7 +2111,8 @@ class Subscription {
    * @lifecycle This method can only be called if the second-level of this Subscription has 
    * been initialized using a "Field Schema".
    * @throws IllegalStateException if the Subscription mode is not COMMAND
-   * @return the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
+   * 
+   * **Returns** the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
    * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   String? getCommandSecondLevelFieldSchema() {
@@ -2153,7 +2159,8 @@ class Subscription {
    * Subscription through [setDataAdapter].
    
    * @lifecycle This method can be called at any time.
-   * @return the name of the Data Adapter; returns null if no name has been configured, 
+   * 
+   * **Returns** the name of the Data Adapter; returns null if no name has been configured, 
    * so that the "DEFAULT" Adapter Set is used.
    */
   String? getDataAdapter() {
@@ -2195,7 +2202,8 @@ class Subscription {
    *
    * @lifecycle  This method can only be called if the Subscription has been initialized 
    * using a "Field List".
-   * @return the "Field List" to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
+   * 
+   * **Returns** the "Field List" to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
    */
   List<String>? getFields() {
     return _fields?.toList();
@@ -2225,7 +2233,8 @@ class Subscription {
    *
    * @lifecycle This method can only be called if the Subscription has been initialized 
    * using a "Field Schema"
-   * @return the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
+   * 
+   * **Returns** the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
    */
   String? getFieldSchema() {
     return _schema;
@@ -2254,7 +2263,8 @@ class Subscription {
    *
    * @lifecycle This method can only be called if the Subscription has been initialized
    * using an "Item Group"
-   * @return the "Item Group" to be subscribed to through the server, or null if the Subscription was initialized with an "Item List" or was not initialized at all.
+   * 
+   * **Returns** the "Item Group" to be subscribed to through the server, or null if the Subscription was initialized with an "Item List" or was not initialized at all.
    */
   String? getItemGroup() {
     return _group;
@@ -2286,7 +2296,8 @@ class Subscription {
    *
    * @lifecycle This method can only be called if the Subscription has been initialized 
    * with an "Item List".
-   * @return the "Item List" to be subscribed to through the server, or null if the Subscription was initialized with an "Item Group" or was not initialized at all.
+   * 
+   * **Returns** the "Item List" to be subscribed to through the server, or null if the Subscription was initialized with an "Item Group" or was not initialized at all.
    */
   List<String>? getItems() {
     return _items?.toList();
@@ -2317,7 +2328,7 @@ class Subscription {
     * 
     * @lifecycle This method can be called at any time.
     * 
-    * @return the Subscription mode specified in the constructor.
+    * **Returns** the Subscription mode specified in the constructor.
     */
   String getMode() {
     return _mode;
@@ -2329,7 +2340,7 @@ class Subscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return  An integer number, representing the buffer size to be requested to the server,
+   * **Returns**  An integer number, representing the buffer size to be requested to the server,
    * or the string "unlimited", or null.
    */
   String? getRequestedBufferSize() {
@@ -2377,7 +2388,7 @@ class Subscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return  A decimal number, representing the max frequency to be requested to the server
+   * **Returns**  A decimal number, representing the max frequency to be requested to the server
    * (expressed in updates per second), or the strings "unlimited" or "unfiltered", or null.
    */
   String? getRequestedMaxFrequency() {
@@ -2458,7 +2469,7 @@ class Subscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return  "yes", "no", null, or an integer number.
+   * **Returns**  "yes", "no", null, or an integer number.
    */
   String? getRequestedSnapshot() {
     return _snapshot;
@@ -2510,7 +2521,7 @@ class Subscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the name of the selector.
+   * **Returns** the name of the selector.
    */
   String? getSelector() {
     return _selector;
@@ -2546,7 +2557,7 @@ class Subscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return true/false if the Subscription is "active" or not.
+   * **Returns** true/false if the Subscription is "active" or not.
    * 
    * - See [LightstreamerClient.subscribe]
    * - See [LightstreamerClient.unsubscribe]
@@ -2565,7 +2576,7 @@ class Subscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return true/false if the Subscription is subscribed to
+   * **Returns** true/false if the Subscription is subscribed to
    * through the server or not.
    */
   bool isSubscribed() {
@@ -2589,7 +2600,8 @@ class Subscription {
    * @throws IllegalArgumentException if an invalid item name or field name is specified.
    * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
    * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
-   * @return the current value for the specified field of the specified item
+   * 
+   * **Returns** the current value for the specified field of the specified item
    * (possibly null), or null if no value has been received yet.
    */
   Future<String?> getValue(String itemNameOrPosition, String fieldNameOrPosition) async {
@@ -2647,7 +2659,8 @@ class Subscription {
    * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
    * @throws IllegalArgumentException if an invalid item name or field name is specified.
    * @throws IllegalStateException if the Subscription mode is not COMMAND.
-   * @return the current value for the specified field of the specified key within the 
+   * 
+   * **Returns** the current value for the specified field of the specified key within the 
    * specified item (possibly null), or null if the specified key has not been added yet 
    * (note that it might have been added and then deleted).
    */
@@ -2772,7 +2785,7 @@ class MpnDevice {
   /**
    * List containing the [MpnDeviceListener] instances that were added to this MPN device object.
    * 
-   * @return a list containing the listeners that were added to this device.
+   * **Returns** a list containing the listeners that were added to this device.
    * 
    * - See [addListener]
    */
@@ -2786,7 +2799,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the MPN device application ID.
+   * **Returns** the MPN device application ID.
    */
   String? getApplicationId() {
     return _applicationId;
@@ -2802,7 +2815,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the MPN device ID.
+   * **Returns** the MPN device ID.
    */
   String? getDeviceId() {
     return _deviceId;
@@ -2816,7 +2829,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the MPN device token.
+   * **Returns** the MPN device token.
    */
   String? getDeviceToken() {
     return _deviceToken;
@@ -2830,7 +2843,7 @@ class MpnDevice {
    *  
    * @lifecycle This method can be called at any time.
    * 
-   * @return the MPN device platform.
+   * **Returns** the MPN device platform.
    */
   String? getPlatform() {
     return _platform;
@@ -2845,7 +2858,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the previous MPN device token, or null if no MPN device has been registered yet.
+   * **Returns** the previous MPN device token, or null if no MPN device has been registered yet.
    */
   String? getPreviousDeviceToken() {
     return _previousDeviceToken;
@@ -2864,7 +2877,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the status of the device.
+   * **Returns** the status of the device.
    * 
    * - See [isRegistered]
    * - See [isSuspended]
@@ -2878,7 +2891,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return The server-side timestamp of the device status.
+   * **Returns** The server-side timestamp of the device status.
    * 
    * - See [getStatus]
    */
@@ -2893,7 +2906,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return true if the MPN device object is currently registered on the server.
+   * **Returns** true if the MPN device object is currently registered on the server.
    * 
    * - See [getStatus]
    */
@@ -2909,7 +2922,7 @@ class MpnDevice {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return true if the MPN device object is currently suspended on the server.
+   * **Returns** true if the MPN device object is currently suspended on the server.
    * 
    * - See [getStatus]
    */
@@ -3116,7 +3129,7 @@ class MpnSubscription {
   /**
    * Returns the list containing the [MpnSubscriptionListener] instances that were added to this MpnSubscription.
    * 
-   * @return a list containing the listeners that were added to this subscription.
+   * **Returns** a list containing the listeners that were added to this subscription.
    *
    * - See [addListener]
    */
@@ -3130,7 +3143,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the name of the Data Adapter; returns null if no name has been configured, 
+   * **Returns** the name of the Data Adapter; returns null if no name has been configured, 
    * so that the "DEFAULT" Adapter Set is used.
    */
   String? getDataAdapter() {
@@ -3178,7 +3191,7 @@ class MpnSubscription {
    * @lifecycle  This method can only be called if the MpnSubscription has been initialized 
    * using a "Field List".
    * 
-   * @return the "Field List" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field Schema" or was not initialized at all.
+   * **Returns** the "Field List" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field Schema" or was not initialized at all.
    */
   List<String>? getFields() {
     return _fields?.toList();
@@ -3214,7 +3227,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called if the MpnSubscription has been initialized 
    * using a "Field Schema"
    * 
-   * @return the "Field Schema" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field List" or was not initialized at all.
+   * **Returns** the "Field Schema" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field List" or was not initialized at all.
    */
   String? getFieldSchema() {
     return _schema;
@@ -3250,7 +3263,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called if the MpnSubscription has been initialized
    * using an "Item Group"
    * 
-   * @return the "Item Group" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item List" or was not initialized at all.
+   * **Returns** the "Item Group" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item List" or was not initialized at all.
    */
   String? getItemGroup() {
     return _group;
@@ -3286,9 +3299,9 @@ class MpnSubscription {
    *
    * @lifecycle This method can only be called if the MpnSubscription has been initialized 
    * with an "Item List".
-
-    * @return the "Item List" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item Group" or was not initialized at all.
-    */
+   * 
+   * **Returns** the "Item List" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item Group" or was not initialized at all.
+   */
   List<String>? getItems() {
     return _items?.toList();
   }
@@ -3320,7 +3333,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the MpnSubscription mode specified in the constructor.
+   * **Returns** the MpnSubscription mode specified in the constructor.
    */
   String getMode() {
     return _mode;
@@ -3332,7 +3345,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return  An integer number, representing the buffer size to be requested to the server,
+   * **Returns**  An integer number, representing the buffer size to be requested to the server,
    * or the string "unlimited", or null.
    */
   String? getRequestedBufferSize() {
@@ -3380,7 +3393,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return  A decimal number, representing the max frequency to be requested to the server
+   * **Returns**  A decimal number, representing the max frequency to be requested to the server
    * (expressed in updates per second), or the string "unlimited", or null.
    */
   String? getRequestedMaxFrequency() {
@@ -3428,7 +3441,7 @@ class MpnSubscription {
   /**
    * Inquiry method that gets the trigger expression requested by the user.
    * 
-   * @return returns the trigger requested by the user or null if the value is not available.
+   * **Returns** returns the trigger requested by the user or null if the value is not available.
    * 
    * - See [setTriggerExpression]
    * - See [getActualTriggerExpression]
@@ -3478,7 +3491,7 @@ class MpnSubscription {
   /**
    * Inquiry method that gets the JSON structure requested by the user to be used as the format of push notifications.
    * 
-   * @return the JSON structure requested by the user to be used as the format of push notifications.
+   * **Returns** the JSON structure requested by the user to be used as the format of push notifications.
    * 
    * - See [setNotificationFormat]
    * - See [getActualNotificationFormat]
@@ -3535,7 +3548,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return true if the MpnSubscription is currently "active", false otherwise.
+   * **Returns** true if the MpnSubscription is currently "active", false otherwise.
    * 
    * - See [getStatus]
    * - See [LightstreamerClient.subscribe]
@@ -3554,7 +3567,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return true if the MpnSubscription has been successfully subscribed on the server, false otherwise.
+   * **Returns** true if the MpnSubscription has been successfully subscribed on the server, false otherwise.
    * 
    * - See [getStatus]
    * - See [LightstreamerClient.unsubscribe]
@@ -3573,7 +3586,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return true if the MpnSubscription's trigger expression has been evaluated to true at least once, false otherwise.
+   * **Returns** true if the MpnSubscription's trigger expression has been evaluated to true at least once, false otherwise.
    * 
    * - See [getStatus]
    * - See [LightstreamerClient.subscribe]
@@ -3586,7 +3599,7 @@ class MpnSubscription {
   /**
    * Inquiry method that gets the JSON structure used by the Sever to send notifications.
    *
-   * @return the JSON structure used by the Server to send notifications or null if the value is not available.
+   * **Returns** the JSON structure used by the Server to send notifications or null if the value is not available.
    *
    * - See [getNotificationFormat]
    */
@@ -3596,7 +3609,7 @@ class MpnSubscription {
   /**
    * Inquiry method that gets the trigger expression evaluated by the Sever.
    *
-   * @return returns the trigger sent by the Server or null if the value is not available.
+   * **Returns** returns the trigger sent by the Server or null if the value is not available.
    *
    * - See [getTriggerExpression]
    */
@@ -3619,7 +3632,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the status of the subscription.
+   * **Returns** the status of the subscription.
    * 
    * - See [isActive]
    * - See [isSubscribed]
@@ -3636,7 +3649,7 @@ class MpnSubscription {
    * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>status_timestamp</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
-   * @return The server-side timestamp of the subscription status.
+   * **Returns** The server-side timestamp of the subscription status.
    * 
    * - See [getStatus]
    */
@@ -3657,7 +3670,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @return the MPN subscription ID.
+   * **Returns** the MPN subscription ID.
    */
   String? getSubscriptionId() {
     return _subscriptionId;

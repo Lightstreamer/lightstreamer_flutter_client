@@ -60,7 +60,8 @@ abstract interface class Logger {
    * The property should be true if this logger is enabled for Fatal events, false otherwise. <BR> 
    * This property is intended to lessen the computational cost of disabled log Fatal statements. Note 
    * that even if the property is false, Fatal log lines may be received anyway by the Fatal methods.
-   * @return true if the Fatal logger is enabled
+   * 
+   * **Returns** true if the Fatal logger is enabled
    */
   bool isFatalEnabled();
   /** 
@@ -69,7 +70,8 @@ abstract interface class Logger {
    * The property should be true if this logger is enabled for Error events, false otherwise. <BR> 
    * This property is intended to lessen the computational cost of disabled log Error statements. Note 
    * that even if the property is false, Error log lines may be received anyway by the Error methods.
-   * @return true if the Error logger is enabled
+   * 
+   * **Returns** true if the Error logger is enabled
    */
   bool isErrorEnabled();
   /** 
@@ -78,7 +80,8 @@ abstract interface class Logger {
    * The property should be true if this logger is enabled for Warn events, false otherwise. <BR> 
    * This property is intended to lessen the computational cost of disabled log Warn statements. Note 
    * that even if the property is false, Warn log lines may be received anyway by the Warn methods.
-   * @return true if the Warn logger is enabled
+   * 
+   * **Returns** true if the Warn logger is enabled
    */
   bool isWarnEnabled();
   /** 
@@ -87,7 +90,8 @@ abstract interface class Logger {
    * The property should be true if this logger is enabled for Info events, false otherwise. <BR> 
    * This property is intended to lessen the computational cost of disabled log Info statements. Note 
    * that even if the property is false, Info log lines may be received anyway by the Info methods.
-   * @return true if the Info logger is enabled
+   * 
+   * **Returns** true if the Info logger is enabled
    */
   bool isInfoEnabled();
   /** 
@@ -96,7 +100,8 @@ abstract interface class Logger {
    * The property should be true if this logger is enabled for Debug events, false otherwise. <BR> 
    * This property is intended to lessen the computational cost of disabled log Debug statements. Note 
    * that even if the property is false, Debug log lines may be received anyway by the Debug methods.
-   * @return true if the Debug logger is enabled
+   * 
+   * **Returns** true if the Debug logger is enabled
    */
   bool isDebugEnabled();
   /** 
@@ -105,7 +110,8 @@ abstract interface class Logger {
    * The property should be true if this logger is enabled for Trace events, false otherwise. <BR> 
    * This property is intended to lessen the computational cost of disabled log Trace statements. Note 
    * that even if the property is false, Trace log lines may be received anyway by the Trace methods.
-   * @return true if the Trace logger is enabled
+   * 
+   * **Returns** true if the Trace logger is enabled
    */
   bool isTraceEnabled();
 }
@@ -126,7 +132,7 @@ abstract interface class LoggerProvider {
    * 
    * - [category] the log category all messages passed to the given Logger instance will pertain to.
    * 
-   * @return A Logger instance that will receive log lines related to the given category.
+   * **Returns** A Logger instance that will receive log lines related to the given category.
    */
   Logger getLogger(String category);
 }
