@@ -2,6 +2,7 @@
 
 part of 'client.dart';
 
+/// @nodoc
 /// A bridge manages the communication between this Flutter component (the Flutter app targeting Android/iOS using the Lightstreamer Flutter Client SDK)
 /// and the native Android/iOS component (the process running the Lightstreamer Android/iOS Client SDK 
 /// that performs the operations requested by the Flutter component).

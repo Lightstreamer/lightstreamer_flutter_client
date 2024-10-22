@@ -7,3 +7,5 @@
 build/
 example/web/lightstreamer-*.js
 .vscode/
+
+doc/
