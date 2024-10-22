@@ -103,7 +103,8 @@ interface class ItemUpdate {
    * Returns the current value for the specified field.
    * 
    * - [fieldName] The field name as specified within the "Field List".
-   * @throws IllegalArgumentException if the specified field is not part of the Subscription.
+   * 
+   * **Throws** IllegalArgumentException if the specified field is not part of the Subscription.
    * 
    * **Returns** The value of the specified field; it can be null in the following cases:<BR>
    * <ul>
@@ -122,7 +123,8 @@ interface class ItemUpdate {
    * Returns the current value for the specified field.
    * 
    * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
-   * @throws IllegalArgumentException if the specified field is not part of the Subscription.
+   * 
+   * **Throws** IllegalArgumentException if the specified field is not part of the Subscription.
    * 
    * **Returns** The value of the specified field; it can be null in the following cases:<BR>
    * <ul>
@@ -144,7 +146,8 @@ interface class ItemUpdate {
    * If the Subscription mode is COMMAND then the change is meant as 
    * relative to the same key.
    * - [fieldName] The field name as specified within the "Field List".
-   * @throws IllegalArgumentException if the specified field is not part of the Subscription.
+   * 
+   * **Throws** IllegalArgumentException if the specified field is not part of the Subscription.
    * 
    * **Returns** Unless the Subscription mode is COMMAND, the return value is true in the following cases:
    * <ul>
@@ -173,7 +176,8 @@ interface class ItemUpdate {
    * If the Subscription mode is COMMAND then the change is meant as 
    * relative to the same key.
    * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
-   * @throws IllegalArgumentException if the specified field is not part of the Subscription.
+   * 
+   * **Throws** IllegalArgumentException if the specified field is not part of the Subscription.
    * 
    * **Returns** Unless the Subscription mode is COMMAND, the return value is true in the following cases:
    * <ul>
@@ -220,7 +224,7 @@ interface class ItemUpdate {
    * case, the new value can only be determined through [ItemUpdate.getValue]. For instance,
    * this will always be needed to get the first value received.
    * 
-   * @throws IllegalArgumentException if the specified field is not
+   * **Throws** IllegalArgumentException if the specified field is not
    * part of the Subscription.
    * 
    * - [fieldName] The field name as specified within the "Field List".
@@ -258,7 +262,7 @@ interface class ItemUpdate {
    * case, the new value can only be determined through [ItemUpdate.getValue]. For instance,
    * this will always be needed to get the first value received.
    * 
-   * @throws IllegalArgumentException if the specified field is not
+   * **Throws** IllegalArgumentException if the specified field is not
    * part of the Subscription.
    * 
    * - [fieldPosition] The 1-based position of the field within the "Field List" or "Field Schema".
@@ -283,7 +287,7 @@ interface class ItemUpdate {
    * All of this is also true on tables that have the two-level behavior enabled, but in case of 
    * DELETE commands second-level fields will not be iterated.
    * 
-   * @throws IllegalStateException if the Subscription was initialized using a field schema.
+   * **Throws** IllegalStateException if the Subscription was initialized using a field schema.
    * 
    * **Returns** An immutable Map containing the values for each field changed with the last server update.
    * 
@@ -318,7 +322,7 @@ interface class ItemUpdate {
    * 
    * The related field name is used as key for the values in the map. 
    * 
-   * @throws IllegalStateException if the Subscription was initialized using a field schema.
+   * **Throws** IllegalStateException if the Subscription was initialized using a field schema.
    * 
    * **Returns** An immutable Map containing the values for each field in the Subscription.
    * 

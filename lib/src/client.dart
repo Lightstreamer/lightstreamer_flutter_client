@@ -79,7 +79,7 @@ class LightstreamerClient {
    * it later by using null here. See [ConnectionDetails.setAdapterSet] 
    * for details.
    *
-   * @throws IllegalArgumentException if a not valid address is passed. See
+   * **Throws** IllegalArgumentException if a not valid address is passed. See
    * [ConnectionDetails.setServerAddress] for details.
    */
   LightstreamerClient(String? serverAddress, String? adapterSet) : _id = '${_idGenerator++}' {
@@ -222,7 +222,7 @@ class LightstreamerClient {
    * When the request to connect is finally being executed, if the current status
    * of the client is not DISCONNECTED, then nothing will be done.
    * 
-   * @throws IllegalStateException if no server address was configured.
+   * **Throws** IllegalStateException if no server address was configured.
    * 
    * - See [getStatus]
    * - See [disconnect]
@@ -492,7 +492,8 @@ class LightstreamerClient {
    * Note that forwarding of the registration to the server is made in a separate thread.
    * 
    * - [device] An [MpnDevice] instance, carrying all the information about the MPN device.
-   * @throws IllegalArgumentException if the specified device is null.
+   * 
+   * **Throws** IllegalArgumentException if the specified device is null.
    * 
    * - See [subscribe]
    */
@@ -531,10 +532,14 @@ class LightstreamerClient {
    * - [sub] An MpnSubscription object, carrying all the information to route real-time data via push notifications.
    * - [coalescing] A flag that specifies if the MPN subscription must coalesce with any pre-existing MPN subscription with the same Adapter Set, Data Adapter,
    * Group, Schema and trigger expression.
-   * @throws IllegalStateException if the given MPN subscription does not contain a field list/field schema.
-   * @throws IllegalStateException if the given MPN subscription does not contain a item list/item group.
-   * @throws IllegalStateException if there is no MPN device registered.
-   * @throws IllegalStateException if the given MPN subscription is already active.
+   * 
+   * **Throws** IllegalStateException if the given MPN subscription does not contain a field list/field schema.
+   * 
+   * **Throws** IllegalStateException if the given MPN subscription does not contain a item list/item group.
+   * 
+   * **Throws** IllegalStateException if there is no MPN device registered.
+   * 
+   * **Throws** IllegalStateException if the given MPN subscription is already active.
    * 
    * - See [unsubscribe]
    * - See [unsubscribeMpnSubscriptions]
@@ -566,8 +571,10 @@ class LightstreamerClient {
    * The unsubscription will be notified through an [MpnSubscriptionListener.onUnsubscription] event.
    * 
    * - [sub] An "active" MpnSubscription object.
-   * @throws IllegalStateException if the given MPN subscription is not active.
-   * @throws IllegalStateException if there is no MPN device registered.
+   * 
+   * **Throws** IllegalStateException if the given MPN subscription is not active.
+   * 
+   * **Throws** IllegalStateException if there is no MPN device registered.
    * 
    * - See [subscribe]
    * - See [unsubscribeMpnSubscriptions]
@@ -599,8 +606,10 @@ class LightstreamerClient {
    * <li><code>TRIGGERED</code></li>
    * <li><code>SUBSCRIBED</code></li>
    * </ul>
-   * @throws IllegalArgumentException if the given filter is not valid.
-   * @throws IllegalStateException if there is no MPN device registered.
+   * 
+   * **Throws** IllegalArgumentException if the given filter is not valid.
+   * 
+   * **Throws** IllegalStateException if there is no MPN device registered.
    * 
    * - See [subscribe]
    * - See [unsubscribe]
@@ -635,8 +644,10 @@ class LightstreamerClient {
    * </ul>
    * 
    * **Returns** the collection of [MpnSubscription] with the specified status.
-   * @throws IllegalArgumentException if the given filter is not valid.
-   * @throws IllegalStateException if there is no MPN device registered.
+   * 
+   * **Throws** IllegalArgumentException if the given filter is not valid.
+   * 
+   * **Throws** IllegalStateException if there is no MPN device registered.
    * 
    * - See [findMpnSubscription]
    */
@@ -663,8 +674,10 @@ class LightstreamerClient {
    * - [subscriptionId] The subscription ID to search for.
    * 
    * **Returns** the MpnSubscription with the specified ID, or null if not found.
-   * @throws IllegalArgumentException if the given subscription ID is null.
-   * @throws IllegalStateException if there is no MPN device registered.
+   * 
+   * **Throws** IllegalArgumentException if the given subscription ID is null.
+   * 
+   * **Throws** IllegalStateException if there is no MPN device registered.
    * 
    * - See [getMpnSubscriptions]
    */
@@ -792,7 +805,7 @@ class ConnectionDetails {
    * - `http://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]`
    * - `http://[2001:0db8:85a3::8a2e:0370:7334]:8080`
    * 
-   * @throws IllegalArgumentException if the given address is not valid.
+   * **Throws** IllegalArgumentException if the given address is not valid.
    */
   Future<void> setServerAddress(String? newVal) async {
     _serverAddress = newVal;
@@ -1054,7 +1067,7 @@ class ConnectionOptions {
    * 
    * - [newVal] The length to be used by the Server for the response body on a HTTP stream connection.
    * 
-   * @throws IllegalArgumentException if a negative or zero value is configured 
+   * **Throws** IllegalArgumentException if a negative or zero value is configured 
    */
   void setContentLength(int newVal) {
     _contentLength = newVal;
@@ -1090,7 +1103,7 @@ class ConnectionOptions {
    * 
    * - [newVal] The max time (in milliseconds) to wait before trying a new connection.
    * 
-   * @throws IllegalArgumentException if a negative or zero value is configured 
+   * **Throws** IllegalArgumentException if a negative or zero value is configured 
    */
   void setFirstRetryMaxDelay(int newVal) {
     _firstRetryMaxDelay = newVal;
@@ -1148,7 +1161,7 @@ class ConnectionOptions {
    *  If Polling over HTTP is not possible because of the environment the client will not connect at all.</li>
    * </ul>
    * 
-   * @throws IllegalArgumentException if the given value is not in the list of the admitted ones.
+   * **Throws** IllegalArgumentException if the given value is not in the list of the admitted ones.
    */
   Future<void> setForcedTransport(String? newVal) async {
     _forcedTransport = newVal;
@@ -1232,7 +1245,7 @@ class ConnectionOptions {
    * 
    * - [newVal] The time (in milliseconds) the Server is allowed to wait for data to send upon polling requests.
    * 
-   * @throws IllegalArgumentException if a negative value is configured 
+   * **Throws** IllegalArgumentException if a negative value is configured 
    */
   void setIdleTimeout(int newVal) {
     _idleTimeout = newVal;
@@ -1277,7 +1290,7 @@ class ConnectionOptions {
    *
    * - [newVal] the keepalive interval time (in milliseconds) to set, or 0.
    * 
-   * @throws IllegalArgumentException if a negative value is configured 
+   * **Throws** IllegalArgumentException if a negative value is configured 
    * 
    * - See [setStalledTimeout]
    * - See [setReconnectTimeout]
@@ -1332,7 +1345,7 @@ class ConnectionOptions {
    * - [newVal] The time (in milliseconds) between subsequent polling requests. Zero is a legal value too, 
    * meaning that the client will issue a new polling request as soon as a previous one has returned.
    * 
-   * @throws IllegalArgumentException if a negative value is configured 
+   * **Throws** IllegalArgumentException if a negative value is configured 
    */
   void setPollingInterval(int newVal) {
     _pollingInterval = newVal;
@@ -1394,7 +1407,7 @@ class ConnectionOptions {
    * - [newVal] The idle time (in milliseconds) allowed in "STALLED" status before trying
    * to reconnect to the Server.
    * 
-   * @throws IllegalArgumentException if a negative or zero value is configured 
+   * **Throws** IllegalArgumentException if a negative or zero value is configured 
    * 
    * - See [setStalledTimeout]
    * - See [setKeepaliveInterval]
@@ -1444,7 +1457,7 @@ class ConnectionOptions {
    * or polling connection expressed in kbps (kilobits/sec). The string "unlimited" is also allowed, to mean that
    * the maximum bandwidth can be entirely decided on the Server side (the check is case insensitive).
    * 
-   * @throws IllegalArgumentException if a negative, zero, or a not-number value (excluding special values) is passed.
+   * **Throws** IllegalArgumentException if a negative, zero, or a not-number value (excluding special values) is passed.
    * 
    * - See [getRealMaxBandwidth]
    */
@@ -1513,7 +1526,7 @@ class ConnectionOptions {
    * 
    * - [newVal] The time (in milliseconds) to wait before trying a new connection.
    * 
-   * @throws IllegalArgumentException if a negative or zero value is configured 
+   * **Throws** IllegalArgumentException if a negative or zero value is configured 
    * 
    * - See [setFirstRetryMaxDelay]
    */
@@ -1575,7 +1588,7 @@ class ConnectionOptions {
    * 
    * - [newVal] the interval, expressed in milliseconds, between subsequent reverse-heartbeats, or 0.
    * 
-   * @throws IllegalArgumentException if a negative value is configured
+   * **Throws** IllegalArgumentException if a negative value is configured
    */
   Future<void> setReverseHeartbeatInterval(int newVal) async {
     _reverseHeartbeatInterval = newVal;
@@ -1626,7 +1639,7 @@ class ConnectionOptions {
    * - [newVal] The maximum time allowed
    * for recovery attempts, expressed in milliseconds, including 0.
    *
-   * @throws IllegalArgumentException if a negative value is passed.
+   * **Throws** IllegalArgumentException if a negative value is passed.
    */
   void setSessionRecoveryTimeout(int newVal) {
     _sessionRecoveryTimeout = newVal;
@@ -1655,7 +1668,7 @@ class ConnectionOptions {
    * 
    * - [newVal] The idle time (in milliseconds) allowed before entering the "STALLED" status.
    * 
-   * @throws IllegalArgumentException if a negative or zero value is configured 
+   * **Throws** IllegalArgumentException if a negative or zero value is configured 
    * 
    * - See [setReconnectTimeout]
    * - See [setKeepaliveInterval]
@@ -1907,9 +1920,12 @@ class Subscription {
    * - [fields] an array of fields for the items to be subscribed to through Lightstreamer Server. <BR>
    * It is also possible to specify the "Field List" or "Field Schema" later through 
    * [setFields] and [setFieldSchema].
-   * @throws IllegalArgumentException If no or invalid subscription mode is passed.
-   * @throws IllegalArgumentException If either the items or the fields array is left null.
-   * @throws IllegalArgumentException If the specified "Item List" or "Field List" is not valid; 
+   * 
+   * **Throws** IllegalArgumentException If no or invalid subscription mode is passed.
+   * 
+   * **Throws** IllegalArgumentException If either the items or the fields array is left null.
+   * 
+   * **Throws** IllegalArgumentException If the specified "Item List" or "Field List" is not valid; 
    * see [setItems] and [setFields] for details.
    */
   Subscription(String mode, [ List<String>? items, List<String>? fields ]) : 
@@ -1978,10 +1994,12 @@ class Subscription {
    *
    * **Lifecycle** This method can be called at any time after the first 
    * [SubscriptionListener.onSubscription] event.
-   * @throws IllegalStateException if the Subscription mode is not COMMAND or if the 
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not COMMAND or if the 
    * [SubscriptionListener.onSubscription] event for this Subscription was not 
    * yet fired.
-   * @throws IllegalStateException if a "Field List" was specified.
+   * 
+   * **Throws** IllegalStateException if a "Field List" was specified.
    * 
    * **Returns** the 1-based position of the "command" field within the "Field Schema".
    */
@@ -1996,7 +2014,7 @@ class Subscription {
    *  
    * **Lifecycle** This method can be called at any time.
    * 
-   * @throws IllegalStateException if the Subscription mode is not 
+   * **Throws** IllegalStateException if the Subscription mode is not 
    * COMMAND or if the [SubscriptionListener.onSubscription] event for this Subscription
    * was not yet fired.
    * 
@@ -2010,7 +2028,8 @@ class Subscription {
    * through [setCommandSecondLevelDataAdapter].
    *
    * **Lifecycle** This method can be called at any time.
-   * @throws IllegalStateException if the Subscription mode is not COMMAND
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not COMMAND
    * 
    * **Returns** the name of the second-level Data Adapter.
    * - See [setCommandSecondLevelDataAdapter]
@@ -2036,9 +2055,10 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    *
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
-   * @throws IllegalStateException if the Subscription mode is not "COMMAND".
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not "COMMAND".
    *
    * - [dataAdapter] the name of the Data Adapter. A null value 
    * is equivalent to the "DEFAULT" name.
@@ -2055,7 +2075,8 @@ class Subscription {
    *
    * **Lifecycle** This method can only be called if the second-level of this Subscription 
    * has been initialized using a "Field List"
-   * @throws IllegalStateException if the Subscription mode is not COMMAND
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not COMMAND
    * 
    * **Returns** the list of fields to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
    * - See [Subscription.setCommandSecondLevelFields]
@@ -2087,11 +2108,13 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalArgumentException if any of the field names in the "Field List"
+   * **Throws** IllegalArgumentException if any of the field names in the "Field List"
    * contains a space or is empty/null.
-   * @throws IllegalStateException if the Subscription is currently 
+   * 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
-   * @throws IllegalStateException if the Subscription mode is not "COMMAND".
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not "COMMAND".
    * 
    * - [fields] An array of Strings containing a list of fields to
    * be subscribed to through the server. <BR>
@@ -2110,7 +2133,8 @@ class Subscription {
    *
    * **Lifecycle** This method can only be called if the second-level of this Subscription has 
    * been initialized using a "Field Schema".
-   * @throws IllegalStateException if the Subscription mode is not COMMAND
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not COMMAND
    * 
    * **Returns** the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
    * - See [Subscription.setCommandSecondLevelFieldSchema]
@@ -2142,9 +2166,10 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
-   * @throws IllegalStateException if the Subscription mode is not "COMMAND".
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not "COMMAND".
    * 
    * - [schemaName] A String to be expanded into a field list by the
    * Metadata Adapter. 
@@ -2186,7 +2211,7 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    *
    * - [dataAdapter] the name of the Data Adapter. A null value 
@@ -2218,9 +2243,10 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalArgumentException if any of the field names in the list
+   * **Throws** IllegalArgumentException if any of the field names in the list
    * contains a space or is empty/null.
-   * @throws IllegalStateException if the Subscription is currently 
+   * 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    * 
    * - [fields] an array of fields to be subscribed to through the server. 
@@ -2249,7 +2275,7 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    * 
    * - [schemaName] A String to be expanded into a field list by the
@@ -2279,7 +2305,7 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    * 
    * - [groupName] A String to be expanded into an item list by the
@@ -2312,9 +2338,10 @@ class Subscription {
     * **Lifecycle** This method can only be called while the Subscription
     * instance is in its "inactive" state.
     * 
-    * @throws IllegalArgumentException if any of the item names in the "Item List"
+    * **Throws** IllegalArgumentException if any of the item names in the "Item List"
     * contains a space or is a number or is empty/null.
-    * @throws IllegalStateException if the Subscription is currently 
+    *
+    * **Throws** IllegalStateException if the Subscription is currently 
     * "active".
     * 
     * - [items] an array of items to be subscribed to through the server. 
@@ -2365,9 +2392,10 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
-   * @throws IllegalArgumentException if the specified value is not
+   * 
+   * **Throws** IllegalArgumentException if the specified value is not
    * null nor "unlimited" nor a valid positive integer number.
    *
    * - [size]  An integer number, representing the length of the internal queuing buffers
@@ -2435,11 +2463,13 @@ class Subscription {
    * to change the frequency of the Subscription on the fly is sent to the server.</li>
    * </ul>
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active" and the current value of this property is "unfiltered".
-   * @throws IllegalStateException if the Subscription is currently 
+   * 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active" and the given parameter is null or "unfiltered".
-   * @throws IllegalArgumentException if the specified value is not
+   * 
+   * **Throws** IllegalArgumentException if the specified value is not
    * null nor one of the special "unlimited" and "unfiltered" values nor
    * a valid positive number.
    *
@@ -2487,11 +2517,13 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
-   * @throws IllegalArgumentException if the specified value is not
+   * 
+   * **Throws** IllegalArgumentException if the specified value is not
    * "yes" nor "no" nor null nor a valid integer positive number.
-   * @throws IllegalArgumentException if the specified value is not
+   * 
+   * **Throws** IllegalArgumentException if the specified value is not
    * compatible with the mode of the Subscription: 
    * <ul>
    *  <li>In case of a RAW Subscription only null is a valid value;</li>
@@ -2537,7 +2569,7 @@ class Subscription {
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * @throws IllegalStateException if the Subscription is currently 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    *
    * - [selector] name of a selector, to be recognized by the
@@ -2597,7 +2629,8 @@ class Subscription {
    *
    * **Lifecycle** This method can be called at any time; if called 
    * to retrieve a value that has not been received yet, then it will return null. 
-   * @throws IllegalArgumentException if an invalid item name or field name is specified.
+   * 
+   * **Throws** IllegalArgumentException if an invalid item name or field name is specified.
    * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
    * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
    * 
@@ -2657,8 +2690,10 @@ class Subscription {
    * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
    * - [keyValue] the value of a key received on the COMMAND subscription.
    * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
-   * @throws IllegalArgumentException if an invalid item name or field name is specified.
-   * @throws IllegalStateException if the Subscription mode is not COMMAND.
+   * 
+   * **Throws** IllegalArgumentException if an invalid item name or field name is specified.
+   * 
+   * **Throws** IllegalStateException if the Subscription mode is not COMMAND.
    * 
    * **Returns** the current value for the specified field of the specified key within the 
    * specified item (possibly null), or null if the specified key has not been added yet 
@@ -3013,9 +3048,12 @@ class MpnSubscription {
    * "Item Group" later through [setItems] and [setItemGroup].
    * - [fields] An array of fields for the items to be subscribed to through Lightstreamer Server. It is also possible to specify the "Field List" or
    * "Field Schema" later through [setFields] and [setFieldSchema].
-   * @throws IllegalArgumentException If no or invalid subscription mode is passed.
-   * @throws IllegalArgumentException If either the items or the fields array is left null.
-   * @throws IllegalArgumentException If the specified "Item List" or "Field List" is not valid; see [setItems] and [setFields] for details.
+   * 
+   * **Throws** IllegalArgumentException If no or invalid subscription mode is passed.
+   * 
+   * **Throws** IllegalArgumentException If either the items or the fields array is left null.
+   * 
+   * **Throws** IllegalArgumentException If the specified "Item List" or "Field List" is not valid; see [setItems] and [setFields] for details.
    */
   MpnSubscription(String mode, [ List<String>? items, List<String>? fields ]) : 
     _id = _nextMpnSubId(),
@@ -3174,7 +3212,8 @@ class MpnSubscription {
    * 
    * - [dataAdapter] the name of the Data Adapter. A null value 
    * is equivalent to the "DEFAULT" name.
-   * @throws IllegalStateException if the Subscription is currently 
+   * 
+   * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    *
    * - See [ConnectionDetails.setAdapterSet]
@@ -3210,9 +3249,11 @@ class MpnSubscription {
    * with argument <code>schema</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [fields] an array of fields to be subscribed to through the server. 
-   * @throws IllegalArgumentException if any of the field names in the list
+   * 
+   * **Throws** IllegalArgumentException if any of the field names in the list
    * contains a space or is empty/null.
-   * @throws IllegalStateException if the MpnSubscription is currently 
+   * 
+   * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
    */
   void setFields(List<String>? fields) {
@@ -3248,7 +3289,7 @@ class MpnSubscription {
    * - [schemaName] A String to be expanded into a field list by the
    * Metadata Adapter. 
    * 
-   * @throws IllegalStateException if the MpnSubscription is currently 
+   * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
    */
   void setFieldSchema(String? schemaName) {
@@ -3283,7 +3324,8 @@ class MpnSubscription {
    * 
    * - [groupName] A String to be expanded into an item list by the
    * Metadata Adapter. 
-   * @throws IllegalStateException if the MpnSubscription is currently 
+   * 
+   * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
    */
   void setItemGroup(String? groupName) {
@@ -3319,9 +3361,11 @@ class MpnSubscription {
    * with argument <code>group</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [items] an array of items to be subscribed to through the server. 
-   * @throws IllegalArgumentException if any of the item names in the "Item List"
+   * 
+   * **Throws** IllegalArgumentException if any of the item names in the "Item List"
    * contains a space or is a number or is empty/null.
-   * @throws IllegalStateException if the MpnSubscription is currently 
+   * 
+   * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
    */
   void setItems(List<String>? items) {
@@ -3376,9 +3420,11 @@ class MpnSubscription {
    * size limit is requested (the check is case insensitive). It is also possible
    * to supply a null value to stick to the Server default (which currently
    * depends on the subscription mode).
-   * @throws IllegalStateException if the MpnSubscription is currently 
+   * 
+   * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
-   * @throws IllegalArgumentException if the specified value is not
+   * 
+   * **Throws** IllegalArgumentException if the specified value is not
    * null nor "unlimited" nor a valid positive integer number.
    *
    * - See [setRequestedMaxFrequency]
@@ -3430,9 +3476,11 @@ class MpnSubscription {
    * limit is requested. It is also possible to supply the null value to stick 
    * to the Server default (which currently corresponds to "unlimited").
    * The check for the string constants is case insensitive.
-   * @throws IllegalStateException if the MpnSubscription is currently 
+   * 
+   * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
-   * @throws IllegalArgumentException if the specified value is not
+   * 
+   * **Throws** IllegalArgumentException if the specified value is not
    * null nor the special "unlimited" value nor a valid positive number.
    */
   void setRequestedMaxFrequency(String? freq) {

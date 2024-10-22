@@ -41,7 +41,7 @@ class FirebaseMpnBuilder {
    * 
    * - [notificationFormat] A JSON structure representing a push notification format.
    * 
-   * @throws IllegalArgumentException if the notification is not a valid JSON structure.
+   * **Throws** IllegalArgumentException if the notification is not a valid JSON structure.
    */
   FirebaseMpnBuilder.from(String notificationFormat) : _notificationFormat = notificationFormat;
 
