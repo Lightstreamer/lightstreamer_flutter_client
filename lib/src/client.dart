@@ -743,7 +743,7 @@ class ConnectionDetails {
    * the supplied value will be used for the next time a new session is requested to the server. <BR>
    * This setting can also be specified in the [LightstreamerClient] constructor.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "adapterSet" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -779,7 +779,7 @@ class ConnectionDetails {
    * session creation request is issued. This setting can also be specified in the [LightstreamerClient]
    * constructor.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "serverAddress" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -824,7 +824,7 @@ class ConnectionDetails {
    * calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: the 
    * supplied value will be used for the next time a new session is requested to the server.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "user" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -855,7 +855,7 @@ class ConnectionDetails {
    * @lifecycle If a session is not currently active, null is returned;
    * soon after a session is established, the value may become available.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "serverInstanceAddress" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -883,7 +883,7 @@ class ConnectionDetails {
    * @lifecycle If a session is not currently active, null is returned;
    * soon after a session is established, the value will become available.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "serverSocketName" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -907,7 +907,7 @@ class ConnectionDetails {
    * @lifecycle If a session is not currently active, null is returned;
    * soon after a session is established, the value may become available.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "clientIp" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -923,7 +923,7 @@ class ConnectionDetails {
    * @lifecycle If a session is not currently active, null is returned;
    * soon after a session is established, the value will become available.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "sessionId" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -949,7 +949,7 @@ class ConnectionDetails {
    * password to authenticate on Lightstreamer Server; rather use a session-id originated by your web/application 
    * server, that can be checked by your Metadata Adapter.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "password" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1048,7 +1048,7 @@ class ConnectionOptions {
    * the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value will 
    * be used for the next streaming connection (either a bind or a brand new session).
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "contentLength" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1084,7 +1084,7 @@ class ConnectionOptions {
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "firstRetryMaxDelay" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1123,7 +1123,7 @@ class ConnectionOptions {
    * @lifecycle This method can be called at any time. If called while the client is connecting or connected it will instruct 
    * to switch connection type to match the given configuration.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "forcedTransport" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1185,7 +1185,7 @@ class ConnectionOptions {
    * [LightstreamerClient.connect] method. However, the value can be changed
    * at any time: the supplied value will be used for the next HTTP request or WebSocket establishment.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "httpExtraHeaders" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1226,7 +1226,7 @@ class ConnectionOptions {
    * [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value 
    * will be used for the next polling request.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "idleTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1271,7 +1271,7 @@ class ConnectionOptions {
    * value will be used for the next streaming connection (either a bind or a brand new session). <BR>
    * Note that, after a connection, the value may be changed to the one imposed by the Server.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "keepaliveInterval" on any 
    * ClientListener listening to the related LightstreamerClient.
    *
@@ -1325,7 +1325,7 @@ class ConnectionOptions {
    * be used for the next polling request. <BR>
    * Note that, after each polling request, the value may be changed to the one imposed by the Server.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "pollingInterval" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1350,7 +1350,7 @@ class ConnectionOptions {
    * @lifecycle If a connection to Lightstreamer Server is not currently active, null is returned;
    * soon after the connection is established, the value will become available.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "realMaxBandwidth" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1387,7 +1387,7 @@ class ConnectionOptions {
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "reconnectTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1432,7 +1432,7 @@ class ConnectionOptions {
    * @lifecycle The bandwidth limit can be set and changed at any time. If a connection is currently active, the bandwidth 
    * limit for the connection is changed on the fly. Remember that the Server may apply a different limit.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "requestedMaxBandwidth" on any 
    * ClientListener listening to the related LightstreamerClient. <BR>
    * Moreover, upon any change or attempt to change the limit, the Server will notify the client
@@ -1507,7 +1507,7 @@ class ConnectionOptions {
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "retryDelay" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1569,7 +1569,7 @@ class ConnectionOptions {
    * frequency was notified to the Server for the current connection. The setting
    * will always be obeyed upon the next connection (either a bind or a brand new session).
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "reverseHeartbeatInterval" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1619,7 +1619,7 @@ class ConnectionOptions {
    * 
    * @lifecycle This value can be set and changed at any time.
    * 
-   * @notification A change to this setting will be notified through a
+   * **Notification** A change to this setting will be notified through a
    * call to [ClientListener.onPropertyChange] with argument "sessionRecoveryTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1649,7 +1649,7 @@ class ConnectionOptions {
    * 
    * @lifecycle  This value can be set and changed at any time.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "stalledTimeout" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1688,7 +1688,7 @@ class ConnectionOptions {
    * [LightstreamerClient.connect] method. However, the value can be changed
    * at any time: the supplied value will be used for the next HTTP request or WebSocket establishment.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "httpExtraHeadersOnSessionCreationOnly" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1728,7 +1728,7 @@ class ConnectionOptions {
    * @lifecycle This method can be called at any time. If called while connected, it will be applied when the 
    * next session creation request is issued.
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "serverInstanceAddressIgnored" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -1768,7 +1768,7 @@ class ConnectionOptions {
    * calling the [LightstreamerClient.connect] method. However, the value can be changed at any time: the supplied value will 
    * be used for the next streaming connection (either a bind or a brand new session).
    * 
-   * @notification A change to this setting will be notified through a call to 
+   * **Notification** A change to this setting will be notified through a call to 
    * [ClientListener.onPropertyChange] with argument "slowingEnabled" on any 
    * ClientListener listening to the related LightstreamerClient.
    * 
@@ -3169,7 +3169,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>adapter</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [dataAdapter] the name of the Data Adapter. A null value 
@@ -3206,7 +3206,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>schema</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [fields] an array of fields to be subscribed to through the server. 
@@ -3242,7 +3242,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>schema</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [schemaName] A String to be expanded into a field list by the
@@ -3278,7 +3278,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>group</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [groupName] A String to be expanded into an item list by the
@@ -3315,7 +3315,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>group</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [items] an array of items to be subscribed to through the server. 
@@ -3368,7 +3368,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>requested_buffer_size</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [size]  An integer number, representing the length of the internal queuing buffers
@@ -3420,7 +3420,7 @@ class MpnSubscription {
    * @lifecycle This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>requested_max_frequency</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [freq]  A decimal number, representing the maximum update frequency (expressed in updates
@@ -3472,7 +3472,7 @@ class MpnSubscription {
    * 
    * @lifecycle This property can be changed at any time.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>trigger</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [trigger] the boolean expression that acts as a trigger to deliver the push notification. If the value is null, no trigger is set on the subscription.
@@ -3522,7 +3522,7 @@ class MpnSubscription {
    * 
    * @lifecycle This property can be changed at any time.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>notification_format</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * - [format] the JSON structure to be used as the format of push notifications.
@@ -3646,7 +3646,7 @@ class MpnSubscription {
    * 
    * @lifecycle This method can be called at any time.
    * 
-   * @notification A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
+   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
    * with argument <code>status_timestamp</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
    * 
    * **Returns** The server-side timestamp of the subscription status.
