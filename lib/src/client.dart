@@ -173,7 +173,7 @@ class LightstreamerClient {
    * 
    * - [cookies] a list of cookies.
    * 
-   * @see [getCookies]
+   * - See [getCookies]
    */
   static Future<void> addCookies(String uri, List<Cookie> cookies) async {
     var arguments = <String, dynamic>{
@@ -224,10 +224,10 @@ class LightstreamerClient {
    * 
    * @throws IllegalStateException if no server address was configured.
    * 
-   * @see [getStatus]
-   * @see [disconnect]
-   * @see [ClientListener.onStatusChange]
-   * @see [ConnectionDetails.setServerAddress]
+   * - See [getStatus]
+   * - See [disconnect]
+   * - See [ClientListener.onStatusChange]
+   * - See [ConnectionDetails.setServerAddress]
    */
   Future<void> connect() async {
     var arguments = <String, dynamic>{
@@ -249,7 +249,7 @@ class LightstreamerClient {
    * When the request to disconnect is finally being executed, if the status of the client is "DISCONNECTED", 
    * then nothing will be done.
    * 
-   * @see [connect]
+   * - See [connect]
    */
   Future<void> disconnect() async {
     return await _invokeMethod('disconnect');
@@ -276,7 +276,7 @@ class LightstreamerClient {
    *  <li>"DISCONNECTED" no connection is currently active.</li>
    * </ul>
    * 
-   * @see [ClientListener.onStatusChange]
+   * - See [ClientListener.onStatusChange]
    */
   Future<String> getStatus() async {
     return await _invokeMethod('getStatus');
@@ -299,7 +299,7 @@ class LightstreamerClient {
    * 
    * - [sub] A Subscription object, carrying all the information needed to process real-time values.
    * 
-   * @see [unsubscribe]
+   * - See [unsubscribe]
    */
   Future<void> subscribe(Subscription sub) async {
     var arguments = <String, dynamic>{
@@ -347,7 +347,7 @@ class LightstreamerClient {
    *
    * @return A list, containing all the Subscription currently "active" on this LightstreamerClient. <BR>
    * The list can be empty.
-   * @see [subscribe]
+   * - See [subscribe]
    */
   Future<List<Subscription>> getSubscriptions() async {
     return await NativeBridge.instance.client_getSubscriptions(_id);
@@ -440,7 +440,7 @@ class LightstreamerClient {
    * - [listener] An object that will receive the events as documented in the 
    * ClientListener interface.
    * 
-   * @see [removeListener]
+   * - See [removeListener]
    */
   void addListener(ClientListener listener) {
     if (!_listeners.contains(listener)) {
@@ -458,7 +458,7 @@ class LightstreamerClient {
    * 
    * - [listener] The listener to be removed.
    * 
-   * @see [addListener]
+   * - See [addListener]
    */
   void removeListener(ClientListener listener) {
     var found = _listeners.remove(listener);
@@ -473,7 +473,7 @@ class LightstreamerClient {
    * Returns a list containing the [ClientListener] instances that were added to this client.
    *
    * @return a list containing the listeners that were added to this client. 
-   * @see [addListener]
+   * - See [addListener]
    */
   List<ClientListener> getListeners() {
     return _listeners.toList();
@@ -494,7 +494,7 @@ class LightstreamerClient {
    * - [device] An [MpnDevice] instance, carrying all the information about the MPN device.
    * @throws IllegalArgumentException if the specified device is null.
    * 
-   * @see [subscribe]
+   * - See [subscribe]
    */
   Future<void> registerForMpn(MpnDevice device) async {
     var arguments = <String, dynamic>{
@@ -536,8 +536,8 @@ class LightstreamerClient {
    * @throws IllegalStateException if there is no MPN device registered.
    * @throws IllegalStateException if the given MPN subscription is already active.
    * 
-   * @see [unsubscribe]
-   * @see [unsubscribeMpnSubscriptions]
+   * - See [unsubscribe]
+   * - See [unsubscribeMpnSubscriptions]
    */
   Future<void> subscribeMpn(MpnSubscription sub, bool coalescing) async {
     var arguments = <String, dynamic>{
@@ -569,8 +569,8 @@ class LightstreamerClient {
    * @throws IllegalStateException if the given MPN subscription is not active.
    * @throws IllegalStateException if there is no MPN device registered.
    * 
-   * @see [subscribe]
-   * @see [unsubscribeMpnSubscriptions]
+   * - See [subscribe]
+   * - See [unsubscribeMpnSubscriptions]
    */
   Future<void> unsubscribeMpn(MpnSubscription sub) async {
     var arguments = <String, dynamic>{
@@ -602,8 +602,8 @@ class LightstreamerClient {
    * @throws IllegalArgumentException if the given filter is not valid.
    * @throws IllegalStateException if there is no MPN device registered.
    * 
-   * @see [subscribe]
-   * @see [unsubscribe]
+   * - See [subscribe]
+   * - See [unsubscribe]
    */
   Future<void> unsubscribeMpnSubscriptions([ String? filter ]) async {
     var arguments = <String, dynamic>{
@@ -637,7 +637,7 @@ class LightstreamerClient {
    * @throws IllegalArgumentException if the given filter is not valid.
    * @throws IllegalStateException if there is no MPN device registered.
    * 
-   * @see [findMpnSubscription]
+   * - See [findMpnSubscription]
    */
   Future<List<MpnSubscription>> getMpnSubscriptions([ String? filter ]) async {
     var arguments = <String, dynamic>{
@@ -664,7 +664,7 @@ class LightstreamerClient {
    * @throws IllegalArgumentException if the given subscription ID is null.
    * @throws IllegalStateException if there is no MPN device registered.
    * 
-   * @see [getMpnSubscriptions]
+   * - See [getMpnSubscriptions]
    */
   Future<MpnSubscription?> findMpnSubscription(String subscriptionId) async {
     var arguments = <String, dynamic>{
@@ -688,7 +688,7 @@ class LightstreamerClient {
  * An instance of this class is attached to every [LightstreamerClient]
  * as [LightstreamerClient.connectionDetails]<BR>
  * 
- * @see LightstreamerClient
+ * - See LightstreamerClient
  */
 class ConnectionDetails {
   final String _id;
@@ -720,7 +720,7 @@ class ConnectionDetails {
    * @return the adapterSet the name of the Adapter Set; returns null if no name has been configured, that 
    * means that the "DEFAULT" Adapter Set is used.
    * 
-   * @see [setAdapterSet]
+   * - See [setAdapterSet]
    */
   String? getAdapterSet() {
     return _adapterSet;
@@ -828,7 +828,7 @@ class ConnectionDetails {
    * 
    * - [newVal] The username to be used for the authentication on Lightstreamer Server. The username can be null.
    * 
-   * @see [setPassword]
+   * - See [setPassword]
    */
   void setUser(String? newVal) {
     _user = newVal;
@@ -954,7 +954,7 @@ class ConnectionDetails {
    * - [newVal] The password to be used for the authentication on Lightstreamer Server. 
    *        The password can be null.
    *        
-   * @see [setUser]
+   * - See [setUser]
    */
   void setPassword(String? newVal) {
     _password = newVal;
@@ -975,7 +975,7 @@ class ConnectionDetails {
  * An instance of this class is attached to every [LightstreamerClient]
  * as [LightstreamerClient.connectionOptions]<BR>
  * 
- * @see LightstreamerClient
+ * - See LightstreamerClient
  */
 class ConnectionOptions {
   // WARNING: The field default values must be kept in sync with the defaults of the other Lightstreamer Client SDKs
@@ -1026,7 +1026,7 @@ class ConnectionOptions {
    * Inquiry method that gets the length expressed in bytes to be used by the Server for the response body on a HTTP stream connection.
    *
    * @return The length to be used by the Server for the response body on a HTTP stream connection
-   * @see [setContentLength]
+   * - See [setContentLength]
    */
   int getContentLength() {
     return _contentLength;
@@ -1062,7 +1062,7 @@ class ConnectionOptions {
    * Inquiry method that gets the maximum time to wait before trying a new connection to the Server in case the previous one is unexpectedly closed while correctly working.
    *
    * @return The max time (in milliseconds) to wait before trying a new connection.
-   * @see [setFirstRetryMaxDelay]
+   * - See [setFirstRetryMaxDelay]
    */
   int getFirstRetryMaxDelay() {
     return _firstRetryMaxDelay;
@@ -1098,7 +1098,7 @@ class ConnectionOptions {
    * Inquiry method that gets the value of the forced transport (if any).
    *
    * @return The forced transport or null
-   * @see [setForcedTransport]
+   * - See [setForcedTransport]
    */
   String? getForcedTransport() {
     return _forcedTransport;
@@ -1160,8 +1160,8 @@ class ConnectionOptions {
    * Inquiry method that gets the Map object containing the extra headers to be sent to the server.
    *
    * @return The Map object containing the extra headers to be sent
-   * @see [setHttpExtraHeaders]
-   * @see [setHttpExtraHeadersOnSessionCreationOnly]
+   * - See [setHttpExtraHeaders]
+   * - See [setHttpExtraHeadersOnSessionCreationOnly]
    */
   Map<String, String>? getHttpExtraHeaders() {
     return _httpExtraHeaders;
@@ -1201,7 +1201,7 @@ class ConnectionOptions {
    *
    * @return The time (in milliseconds) the Server is allowed to wait for data to send upon 
    * polling requests.
-   * @see [setIdleTimeout]
+   * - See [setIdleTimeout]
    */
   int getIdleTimeout() {
     return _idleTimeout;
@@ -1248,7 +1248,7 @@ class ConnectionOptions {
    * 
    * @return The time, expressed in milliseconds, between two keepalive packets sent by the Server, or 0.
    * 
-   * @see [setKeepaliveInterval]
+   * - See [setKeepaliveInterval]
    */
   int getKeepaliveInterval() {
     return _keepaliveInterval;
@@ -1277,8 +1277,8 @@ class ConnectionOptions {
    * 
    * @throws IllegalArgumentException if a negative value is configured 
    * 
-   * @see [setStalledTimeout]
-   * @see [setReconnectTimeout]
+   * - See [setStalledTimeout]
+   * - See [setReconnectTimeout]
    */
   void setKeepaliveInterval(int newVal) {
     _keepaliveInterval = newVal;
@@ -1293,7 +1293,7 @@ class ConnectionOptions {
    * Server, that may be different, because of Server side constraints.
    *
    * @return The time (in milliseconds) between subsequent polling requests.
-   * @see [setPollingInterval]
+   * - See [setPollingInterval]
    */
   int getPollingInterval() {
     return _pollingInterval;
@@ -1354,7 +1354,7 @@ class ConnectionOptions {
    * 
    * @return  A decimal number, which represents the maximum bandwidth applied by the Server for the
    * streaming or polling connection expressed in kbps (kilobits/sec), or the string "unlimited", or null.
-   * @see [setRequestedMaxBandwidth]
+   * - See [setRequestedMaxBandwidth]
    */
   String? getRealMaxBandwidth() {
     return _realMaxBandwidth;
@@ -1367,7 +1367,7 @@ class ConnectionOptions {
    *
    * @return The idle time (in milliseconds) admitted in "STALLED" status before trying to 
    * reconnect to the Server.
-   * @see [setReconnectTimeout]
+   * - See [setReconnectTimeout]
    */
   int getReconnectTimeout() {
     return _reconnectTimeout;
@@ -1394,8 +1394,8 @@ class ConnectionOptions {
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
    * 
-   * @see [setStalledTimeout]
-   * @see [setKeepaliveInterval]
+   * - See [setStalledTimeout]
+   * - See [setKeepaliveInterval]
    */
   void setReconnectTimeout(int newVal) {
     _reconnectTimeout = newVal;
@@ -1409,7 +1409,7 @@ class ConnectionOptions {
    * 
    * @return  A decimal number, which represents the maximum bandwidth requested for the streaming
    * or polling connection expressed in kbps (kilobits/sec), or the string "unlimited".
-   * @see [setRequestedMaxBandwidth]
+   * - See [setRequestedMaxBandwidth]
    */
   String getRequestedMaxBandwidth() {
     return _requestedMaxBandwidth;
@@ -1444,7 +1444,7 @@ class ConnectionOptions {
    * 
    * @throws IllegalArgumentException if a negative, zero, or a not-number value (excluding special values) is passed.
    * 
-   * @see [getRealMaxBandwidth]
+   * - See [getRealMaxBandwidth]
    */
   Future<void> setRequestedMaxBandwidth(String newVal) async {
     _requestedMaxBandwidth = newVal;
@@ -1462,7 +1462,7 @@ class ConnectionOptions {
    * is made, not from the moment the failure is detected or the connection timeout expires.
    *
    * @return The time (in milliseconds) to wait before trying a new connection.
-   * @see [setRetryDelay]
+   * - See [setRetryDelay]
    */
   int getRetryDelay() {
     return _retryDelay;
@@ -1513,7 +1513,7 @@ class ConnectionOptions {
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
    * 
-   * @see [setFirstRetryMaxDelay]
+   * - See [setFirstRetryMaxDelay]
    */
   void setRetryDelay(int newVal) {
     _retryDelay = newVal;
@@ -1525,7 +1525,7 @@ class ConnectionOptions {
    * A 0 value is possible, meaning that the mechanism is disabled.
    *
    * @return The reverse-heartbeat interval, or 0.
-   * @see [setReverseHeartbeatInterval]
+   * - See [setReverseHeartbeatInterval]
    */
   int getReverseHeartbeatInterval() {
     return _reverseHeartbeatInterval;
@@ -1591,7 +1591,7 @@ class ConnectionOptions {
    * in the first place.
    * 
    * @return The maximum time allowed for recovery attempts, possibly 0.
-   * @see [setSessionRecoveryTimeout]
+   * - See [setSessionRecoveryTimeout]
    */
   int getSessionRecoveryTimeout() {
     return _sessionRecoveryTimeout;
@@ -1634,7 +1634,7 @@ class ConnectionOptions {
    * Inquiry method that gets the extra time the client can wait when an expected keepalive packet has not been received on a stream connection (and no actual data has arrived), before entering the "STALLED" status.
    *
    * @return The idle time (in milliseconds) admitted before entering the "STALLED" status.
-   * @see [setStalledTimeout]
+   * - See [setStalledTimeout]
    */
   int getStalledTimeout() {
     return _stalledTimeout;
@@ -1655,8 +1655,8 @@ class ConnectionOptions {
    * 
    * @throws IllegalArgumentException if a negative or zero value is configured 
    * 
-   * @see [setReconnectTimeout]
-   * @see [setKeepaliveInterval]
+   * - See [setReconnectTimeout]
+   * - See [setKeepaliveInterval]
    */
   void setStalledTimeout(int newVal) {
     _stalledTimeout = newVal;
@@ -1666,8 +1666,8 @@ class ConnectionOptions {
    * Inquiry method that checks if the restriction on the forwarding of the configured extra http headers applies or not. 
    *
    * @return the httpExtraHeadersOnSessionCreationOnly
-   * @see [setHttpExtraHeadersOnSessionCreationOnly]
-   * @see [setHttpExtraHeaders]
+   * - See [setHttpExtraHeadersOnSessionCreationOnly]
+   * - See [setHttpExtraHeaders]
    */
   bool isHttpExtraHeadersOnSessionCreationOnly() {
     return _httpExtraHeadersOnSessionCreationOnly;
@@ -1700,7 +1700,7 @@ class ConnectionOptions {
    * Inquiry method that checks if the client is going to ignore the server instance address that will possibly be sent by the server.
    *
    * @return Whether or not to ignore the server instance address sent by the server.
-   * @see [setServerInstanceAddressIgnored]
+   * - See [setServerInstanceAddressIgnored]
    */
   bool isServerInstanceAddressIgnored() {
     return _serverInstanceAddressIgnored;
@@ -1732,7 +1732,7 @@ class ConnectionOptions {
    * 
    * - [newVal] true or false, to ignore or not the server instance address sent by the server.
    * 
-   * @see [ConnectionDetails.setServerAddress]
+   * - See [ConnectionDetails.setServerAddress]
    */
   void setServerInstanceAddressIgnored(bool newVal) {
     _serverInstanceAddressIgnored = newVal;
@@ -1742,7 +1742,7 @@ class ConnectionOptions {
    * Inquiry method that checks if the slowing algorithm is enabled or not.
    *
    * @return Whether the slowing algorithm is enabled or not.
-   * @see [setSlowingEnabled]
+   * - See [setSlowingEnabled]
    */
   bool isSlowingEnabled() {
     return _slowingEnabled;
@@ -1927,7 +1927,7 @@ class Subscription {
    * - [listener] An object that will receive the events as documented in the 
    * SubscriptionListener interface.
    * 
-   * @see [removeListener]
+   * - See [removeListener]
    */
   void addListener(SubscriptionListener listener) {
     if (!_listeners.contains(listener)) {
@@ -1946,7 +1946,7 @@ class Subscription {
    * 
    * - [listener] The listener to be removed.
    * 
-   * @see [addListener]
+   * - See [addListener]
    */
   void removeListener(SubscriptionListener listener) {
     var found = _listeners.remove(listener);
@@ -1962,7 +1962,7 @@ class Subscription {
   * added to this client.
 
   * @return a list containing the listeners that were added to this client. 
-  * @see [addListener]
+  * - See [addListener]
   */
   List<SubscriptionListener> getListeners() {
     return _listeners.toList();
@@ -2009,7 +2009,7 @@ class Subscription {
    * @lifecycle This method can be called at any time.
    * @throws IllegalStateException if the Subscription mode is not COMMAND
    * @return the name of the second-level Data Adapter.
-   * @see [setCommandSecondLevelDataAdapter]
+   * - See [setCommandSecondLevelDataAdapter]
    */
   String? getCommandSecondLevelDataAdapter() {
     return _dataAdapter2;
@@ -2039,8 +2039,8 @@ class Subscription {
    * - [dataAdapter] the name of the Data Adapter. A null value 
    * is equivalent to the "DEFAULT" name.
    *  
-   * @see [Subscription.setCommandSecondLevelFields]
-   * @see [Subscription.setCommandSecondLevelFieldSchema]
+   * - See [Subscription.setCommandSecondLevelFields]
+   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   void setCommandSecondLevelDataAdapter(String? dataAdapter) {
     _dataAdapter2 = dataAdapter;
@@ -2053,7 +2053,7 @@ class Subscription {
    * has been initialized using a "Field List"
    * @throws IllegalStateException if the Subscription mode is not COMMAND
    * @return the list of fields to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
-   * @see [Subscription.setCommandSecondLevelFields]
+   * - See [Subscription.setCommandSecondLevelFields]
    */
   List<String>? getCommandSecondLevelFields() {
     return _fields2?.toList();
@@ -2094,7 +2094,7 @@ class Subscription {
    * fields. In case of conflict, the second-level field will not be accessible
    * by name, but only by position.
    * 
-   * @see [Subscription.setCommandSecondLevelFieldSchema]
+   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   void setCommandSecondLevelFields(List<String>? fields) {
     _fields2 = fields?.toList();
@@ -2107,7 +2107,7 @@ class Subscription {
    * been initialized using a "Field Schema".
    * @throws IllegalStateException if the Subscription mode is not COMMAND
    * @return the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
-   * @see [Subscription.setCommandSecondLevelFieldSchema]
+   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   String? getCommandSecondLevelFieldSchema() {
     return _schema2;
@@ -2143,7 +2143,7 @@ class Subscription {
    * - [schemaName] A String to be expanded into a field list by the
    * Metadata Adapter. 
    * 
-   * @see [Subscription.setCommandSecondLevelFields]
+   * - See [Subscription.setCommandSecondLevelFields]
    */
   void setCommandSecondLevelFieldSchema(String? schemaName) {
     _schema2 = schemaName;
@@ -2185,7 +2185,7 @@ class Subscription {
    * - [dataAdapter] the name of the Data Adapter. A null value 
    * is equivalent to the "DEFAULT" name.
    *  
-   * @see [ConnectionDetails.setAdapterSet]
+   * - See [ConnectionDetails.setAdapterSet]
    */
   void setDataAdapter(String? dataAdapter) {
     _dataAdapter = dataAdapter;
@@ -2365,7 +2365,7 @@ class Subscription {
    * to supply a null value to stick to the Server default (which currently
    * depends on the subscription mode).
    *
-   * @see [Subscription.setRequestedMaxFrequency]
+   * - See [Subscription.setRequestedMaxFrequency]
    */
   void setRequestedBufferSize(String? size) {
     _bufferSize = size;
@@ -2499,7 +2499,7 @@ class Subscription {
    * preference will be sent to the server that will decide itself whether
    * or not to send any snapshot. 
    * 
-   * @see [ItemUpdate.isSnapshot]
+   * - See [ItemUpdate.isSnapshot]
    */
   void setRequestedSnapshot(String? isRequired) {
     _snapshot = isRequired;
@@ -2548,8 +2548,8 @@ class Subscription {
    * 
    * @return true/false if the Subscription is "active" or not.
    * 
-   * @see [LightstreamerClient.subscribe]
-   * @see [LightstreamerClient.unsubscribe]
+   * - See [LightstreamerClient.subscribe]
+   * - See [LightstreamerClient.unsubscribe]
    */
   bool isActive() {
     return _active;
@@ -2740,7 +2740,7 @@ class MpnDevice {
    * 
    * - [listener] An object that will receive the events as documented in the [MpnDeviceListener] interface.
    * 
-   * @see [removeListener]
+   * - See [removeListener]
    */
   void addListener(MpnDeviceListener listener) {
     if (!_listeners.contains(listener)) {
@@ -2758,7 +2758,7 @@ class MpnDevice {
    * 
    * - [listener] The listener to be removed.
    * 
-   * @see [addListener]
+   * - See [addListener]
    */
   void removeListener(MpnDeviceListener listener) {
     var found = _listeners.remove(listener);
@@ -2774,7 +2774,7 @@ class MpnDevice {
    * 
    * @return a list containing the listeners that were added to this device.
    * 
-   * @see [addListener]
+   * - See [addListener]
    */
   List<MpnDeviceListener> getListeners() {
     return _listeners.toList();
@@ -2866,8 +2866,8 @@ class MpnDevice {
    * 
    * @return the status of the device.
    * 
-   * @see [isRegistered]
-   * @see [isSuspended]
+   * - See [isRegistered]
+   * - See [isSuspended]
    */
   String getStatus() {
     return _status;
@@ -2880,7 +2880,7 @@ class MpnDevice {
    * 
    * @return The server-side timestamp of the device status.
    * 
-   * @see [getStatus]
+   * - See [getStatus]
    */
   int getStatusTimestamp() {
     return _statusTs;
@@ -2895,7 +2895,7 @@ class MpnDevice {
    * 
    * @return true if the MPN device object is currently registered on the server.
    * 
-   * @see [getStatus]
+   * - See [getStatus]
    */
   bool isRegistered() {
     return _status != 'UNKNOWN';
@@ -2911,7 +2911,7 @@ class MpnDevice {
    * 
    * @return true if the MPN device object is currently suspended on the server.
    * 
-   * @see [getStatus]
+   * - See [getStatus]
    */
   bool isSuspended() {
     return _status == 'SUSPENDED';
@@ -3084,7 +3084,7 @@ class MpnSubscription {
    * 
    * - [listener] An object that will receive the events as documented in the [MpnSubscriptionListener]  interface.
    * 
-   * @see [removeListener]
+   * - See [removeListener]
    */
   void addListener(MpnSubscriptionListener listener) {
     if (!_listeners.contains(listener)) {
@@ -3102,7 +3102,7 @@ class MpnSubscription {
    * 
    * - [listener] The listener to be removed.
    * 
-   * @see [addListener]
+   * - See [addListener]
    */
   void removeListener(MpnSubscriptionListener listener) {
     var found = _listeners.remove(listener);
@@ -3118,7 +3118,7 @@ class MpnSubscription {
    * 
    * @return a list containing the listeners that were added to this subscription.
    *
-   * @see [addListener]
+   * - See [addListener]
    */
   List<MpnSubscriptionListener> getListeners() {
     return _listeners.toList();
@@ -3164,7 +3164,7 @@ class MpnSubscription {
    * @throws IllegalStateException if the Subscription is currently 
    * "active".
    *
-   * @see [ConnectionDetails.setAdapterSet]
+   * - See [ConnectionDetails.setAdapterSet]
    */
   void setDataAdapter(String? dataAdapter) {
     _dataAdapter = dataAdapter;
@@ -3368,7 +3368,7 @@ class MpnSubscription {
    * @throws IllegalArgumentException if the specified value is not
    * null nor "unlimited" nor a valid positive integer number.
    *
-   * @see [setRequestedMaxFrequency]
+   * - See [setRequestedMaxFrequency]
    */
   void setRequestedBufferSize(String? size) {
     _bufferSize = size;
@@ -3430,8 +3430,8 @@ class MpnSubscription {
    * 
    * @return returns the trigger requested by the user or null if the value is not available.
    * 
-   * @see [setTriggerExpression]
-   * @see [getActualTriggerExpression]
+   * - See [setTriggerExpression]
+   * - See [getActualTriggerExpression]
    */
   String? getTriggerExpression() {
     return _trigger;
@@ -3464,7 +3464,7 @@ class MpnSubscription {
    * 
    * - [trigger] the boolean expression that acts as a trigger to deliver the push notification. If the value is null, no trigger is set on the subscription.
    * 
-   * @see [isTriggered]
+   * - See [isTriggered]
    */
   Future<void> setTriggerExpression(String? trigger) async {
     _trigger = trigger;
@@ -3480,8 +3480,8 @@ class MpnSubscription {
    * 
    * @return the JSON structure requested by the user to be used as the format of push notifications.
    * 
-   * @see [setNotificationFormat]
-   * @see [getActualNotificationFormat]
+   * - See [setNotificationFormat]
+   * - See [getActualNotificationFormat]
    */
   String? getNotificationFormat() {
     return _notificationFormat;
@@ -3514,8 +3514,8 @@ class MpnSubscription {
    * 
    * - [format] the JSON structure to be used as the format of push notifications.
    * 
-   * @see [FirebaseMpnBuilder]
-   * @see [ApnsMpnBuilder]
+   * - See [FirebaseMpnBuilder]
+   * - See [ApnsMpnBuilder]
    */
   Future<void> setNotificationFormat(String format) async {
     _notificationFormat = format;
@@ -3537,10 +3537,10 @@ class MpnSubscription {
    * 
    * @return true if the MpnSubscription is currently "active", false otherwise.
    * 
-   * @see [getStatus]
-   * @see [LightstreamerClient.subscribe]
-   * @see [LightstreamerClient.unsubscribe]
-   * @see [LightstreamerClient.unsubscribeMpnSubscriptions]
+   * - See [getStatus]
+   * - See [LightstreamerClient.subscribe]
+   * - See [LightstreamerClient.unsubscribe]
+   * - See [LightstreamerClient.unsubscribeMpnSubscriptions]
    */
   bool isActive() {
     return _status != 'UNKNOWN';
@@ -3556,9 +3556,9 @@ class MpnSubscription {
    * 
    * @return true if the MpnSubscription has been successfully subscribed on the server, false otherwise.
    * 
-   * @see [getStatus]
-   * @see [LightstreamerClient.unsubscribe]
-   * @see [LightstreamerClient.unsubscribeMpnSubscriptions]
+   * - See [getStatus]
+   * - See [LightstreamerClient.unsubscribe]
+   * - See [LightstreamerClient.unsubscribeMpnSubscriptions]
    */
   bool isSubscribed() {
     return _status == 'SUBSCRIBED' || _status == 'TRIGGERED';
@@ -3575,10 +3575,10 @@ class MpnSubscription {
    * 
    * @return true if the MpnSubscription's trigger expression has been evaluated to true at least once, false otherwise.
    * 
-   * @see [getStatus]
-   * @see [LightstreamerClient.subscribe]
-   * @see [LightstreamerClient.unsubscribe]
-   * @see [LightstreamerClient.unsubscribeMpnSubscriptions]
+   * - See [getStatus]
+   * - See [LightstreamerClient.subscribe]
+   * - See [LightstreamerClient.unsubscribe]
+   * - See [LightstreamerClient.unsubscribeMpnSubscriptions]
    */
   bool isTriggered() {
     return _status == 'TRIGGERED';
@@ -3588,7 +3588,7 @@ class MpnSubscription {
    *
    * @return the JSON structure used by the Server to send notifications or null if the value is not available.
    *
-   * @see [getNotificationFormat]
+   * - See [getNotificationFormat]
    */
   String? getActualNotificationFormat() {
     return _actualNotificationFormat;
@@ -3598,7 +3598,7 @@ class MpnSubscription {
    *
    * @return returns the trigger sent by the Server or null if the value is not available.
    *
-   * @see [getTriggerExpression]
+   * - See [getTriggerExpression]
    */
   String? getActualTriggerExpression() {
     return _actualTrigger;
@@ -3621,9 +3621,9 @@ class MpnSubscription {
    * 
    * @return the status of the subscription.
    * 
-   * @see [isActive]
-   * @see [isSubscribed]
-   * @see [isTriggered]
+   * - See [isActive]
+   * - See [isSubscribed]
+   * - See [isTriggered]
    */
   String getStatus() {
     return _status;
@@ -3638,7 +3638,7 @@ class MpnSubscription {
    * 
    * @return The server-side timestamp of the subscription status.
    * 
-   * @see [getStatus]
+   * - See [getStatus]
    */
   int getStatusTimestamp() {
     return _statusTs;

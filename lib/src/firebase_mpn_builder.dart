@@ -7,7 +7,7 @@ import 'package:lightstreamer_flutter_client/src/client.dart';
  * following the format specified by <a href="https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages">FCM REST API</a>.
  * This format is compatible with [MpnSubscription.setNotificationFormat].
  * 
- * @see [MpnSubscription.setNotificationFormat]
+ * - See [MpnSubscription.setNotificationFormat]
  */
 class FirebaseMpnBuilder {
   String? _collapseKey;

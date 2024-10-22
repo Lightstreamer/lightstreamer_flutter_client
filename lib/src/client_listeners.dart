@@ -83,9 +83,9 @@ class ClientListener {
    *   a new [LightstreamerClient.connect] call is issued.</li>
    * </ul>
    *   
-   * @see [LightstreamerClient.connect]
-   * @see [LightstreamerClient.disconnect]
-   * @see [LightstreamerClient.getStatus]
+   * - See [LightstreamerClient.connect]
+   * - See [LightstreamerClient.disconnect]
+   * - See [LightstreamerClient.getStatus]
    */
   void onStatusChange(String status) {}
   /**
@@ -128,8 +128,8 @@ class ClientListener {
    * <li>pollingInterval</li>
    * </ul>
    * 
-   * @see [LightstreamerClient.connectionDetails]
-   * @see [LightstreamerClient.connectionOptions]
+   * - See [LightstreamerClient.connectionDetails]
+   * - See [LightstreamerClient.connectionOptions]
    */
   void onPropertyChange(String property) {}
   /**
@@ -174,8 +174,8 @@ class ClientListener {
    * 
    * - [errorMessage] The description of the error as sent by the Server.
    * 
-   * @see [onStatusChange]
-   * @see [ConnectionDetails.setAdapterSet]
+   * - See [onStatusChange]
+   * - See [ConnectionDetails.setAdapterSet]
    */
   void onServerError(int errorCode, String errorMessage) {}
   /**
@@ -239,9 +239,9 @@ class SubscriptionListener {
    * - [lostUpdates] The number of consecutive updates dropped for the item.
    * - [key] The value of the key that identifies the second-level item.
    * 
-   * @see [Subscription.setRequestedMaxFrequency]
-   * @see [Subscription.setCommandSecondLevelFields]
-   * @see [Subscription.setCommandSecondLevelFieldSchema]
+   * - See [Subscription.setRequestedMaxFrequency]
+   * - See [Subscription.setCommandSecondLevelFields]
+   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   void onCommandSecondLevelItemLostUpdates(int lostUpdates, String key) {}
   /**
@@ -273,9 +273,9 @@ class SubscriptionListener {
    * - [errorMessage] The description of the error sent by the Server; it can be null.
    * - [key] The value of the key that identifies the second-level item.
    * 
-   * @see [ConnectionDetails.setAdapterSet]
-   * @see [Subscription.setCommandSecondLevelFields]
-   * @see [Subscription.setCommandSecondLevelFieldSchema]
+   * - See [ConnectionDetails.setAdapterSet]
+   * - See [Subscription.setCommandSecondLevelFields]
+   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   void onCommandSecondLevelSubscriptionError(int errorCode, String errorMessage, String key) {}
   /**
@@ -295,8 +295,8 @@ class SubscriptionListener {
    *        null value is supplied.
    * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
    * 
-   * @see [Subscription.setRequestedSnapshot]
-   * @see [ItemUpdate.isSnapshot]
+   * - See [Subscription.setRequestedSnapshot]
+   * - See [ItemUpdate.isSnapshot]
    */
   void onEndOfSnapshot(String itemName, int itemPos) {}
   /**
@@ -319,7 +319,7 @@ class SubscriptionListener {
    * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
    * - [lostUpdates] The number of consecutive updates dropped for the item.
    * 
-   * @see [Subscription.setRequestedMaxFrequency]
+   * - See [Subscription.setRequestedMaxFrequency]
    */
   void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) {}
   /**
@@ -415,7 +415,7 @@ class SubscriptionListener {
    *
    * - [errorMessage] The description of the error sent by the Server; it can be null.
    * 
-   * @see [ConnectionDetails.setAdapterSet]
+   * - See [ConnectionDetails.setAdapterSet]
    */
   void onSubscriptionError(int errorCode, String errorMessage) {}
   /**
@@ -561,8 +561,8 @@ class MpnDeviceListener {
    * </ul>
    * - [timestamp] The server-side timestamp of the new device status.
    * 
-   * @see [MpnDevice.getStatus]
-   * @see [MpnDevice.getStatusTimestamp]
+   * - See [MpnDevice.getStatus]
+   * - See [MpnDevice.getStatusTimestamp]
    */
   void onStatusChanged(String status, int timestamp) {}
   /**
@@ -571,7 +571,7 @@ class MpnDeviceListener {
    * After registration, the list of pre-existing MPN subscriptions for the MPN device is updated and made available through the
    * [LightstreamerClient.getMpnSubscriptions] method.
    * 
-   * @see [LightstreamerClient.getMpnSubscriptions]
+   * - See [LightstreamerClient.getMpnSubscriptions]
    */
   void onSubscriptionsUpdated() {}
   /**
@@ -652,8 +652,8 @@ class MpnSubscriptionListener {
    * </ul>
    * - [timestamp] The server-side timestamp of the new subscription status.
    * 
-   * @see [MpnSubscription.getStatus]
-   * @see [MpnSubscription.getStatusTimestamp]
+   * - See [MpnSubscription.getStatus]
+   * - See [MpnSubscription.getStatusTimestamp]
    */
   void onStatusChanged(String status, int timestamp) {}
   /**
@@ -706,7 +706,7 @@ class MpnSubscriptionListener {
    * to this method are not possible.<BR>
    * Note also that in some server clustering configurations this event may not be called. The corresponding push notification is always sent, though.
    * 
-   * @see [MpnSubscription.setTriggerExpression]
+   * - See [MpnSubscription.setTriggerExpression]
    */
   void onTriggered() {}
   /**

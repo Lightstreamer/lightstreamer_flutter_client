@@ -52,8 +52,8 @@ interface class ItemUpdate {
    *  
    * The name will be null if the related Subscription was initialized using an "Item Group".
    * @return The name of the item to which this update pertains.
-   * @see [Subscription.setItemGroup]
-   * @see [Subscription.setItems]
+   * - See [Subscription.setItemGroup]
+   * - See [Subscription.setItems]
    */
   String? getItemName() {
     return _itemName;
@@ -63,8 +63,8 @@ interface class ItemUpdate {
    * Inquiry method that retrieves the position in the "Item List" or "Item Group" of the item to which this update pertains.
    * 
    * @return The 1-based position of the item to which this update pertains.
-   * @see [Subscription.setItemGroup]
-   * @see [Subscription.setItems]
+   * - See [Subscription.setItemGroup]
+   * - See [Subscription.setItems]
    */
   int getItemPos() {
     return _itemPos;
@@ -109,7 +109,7 @@ interface class ItemUpdate {
    *  <li>the item is subscribed to with the COMMAND mode and a DELETE command is received 
    *  (only the fields used to carry key and command information are valued).</li>
    * </ul>
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFields]
    */
   String? getValue(String fieldName) {
     return _fields[fieldName];
@@ -127,8 +127,8 @@ interface class ItemUpdate {
    *  <li>the item is subscribed to with the COMMAND mode and a DELETE command is received 
    *  (only the fields used to carry key and command information are valued).</li>
    * </ul>
-   * @see [Subscription.setFieldSchema]
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFieldSchema]
+   * - See [Subscription.setFields]
    */
   String? getValueByPosition(int fieldPosition) {
     return _fieldsByPosition[fieldPosition];
@@ -156,7 +156,7 @@ interface class ItemUpdate {
    *  used to carry key information).</li>
    * </ul>
    * In all other cases, the return value is false.
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFields]
    */
   bool isValueChanged(String fieldName) {
     return _changedFields.containsKey(fieldName);
@@ -184,8 +184,8 @@ interface class ItemUpdate {
    *  used to carry key information).</li>
    * </ul>
    * In all other cases, the return value is false.
-   * @see [Subscription.setFieldSchema]
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFieldSchema]
+   * - See [Subscription.setFields]
    */
   bool isValueChangedByPosition(int fieldPosition) {
     return _changedFieldsByPosition.containsKey(fieldPosition);
@@ -223,7 +223,7 @@ interface class ItemUpdate {
    * the new value and the previous one, or null if the difference in JSON Patch format
    * is not available for any reason.
    * 
-   * @see [ItemUpdate.getValue]
+   * - See [ItemUpdate.getValue]
    */
   String? getValueAsJSONPatchIfAvailable(String fieldName) {
     return _jsonFields[fieldName];
@@ -261,7 +261,7 @@ interface class ItemUpdate {
    * the new value and the previous one, or null if the difference in JSON Patch format
    * is not available for any reason.
    * 
-   * @see [ItemUpdate.getValue]
+   * - See [ItemUpdate.getValue]
    */
   String? getValueAsJSONPatchIfAvailableByPosition(int fieldPosition) {
     return _jsonFieldsByPosition[fieldPosition];
@@ -281,8 +281,8 @@ interface class ItemUpdate {
    * 
    * @return An immutable Map containing the values for each field changed with the last server update.
    * 
-   * @see [Subscription.setFieldSchema]
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFieldSchema]
+   * - See [Subscription.setFields]
    */
   Map<String,String?> getChangedFields() {
     return {..._changedFields};
@@ -300,8 +300,8 @@ interface class ItemUpdate {
    * 
    * @return An immutable Map containing the values for each field changed with the last server update.
    * 
-   * @see [Subscription.setFieldSchema]
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFieldSchema]
+   * - See [Subscription.setFields]
    */
   Map<int,String?> getChangedFieldsByPosition() {
     return {..._changedFieldsByPosition};
@@ -316,8 +316,8 @@ interface class ItemUpdate {
    * 
    * @return An immutable Map containing the values for each field in the Subscription.
    * 
-   * @see [Subscription.setFieldSchema]
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFieldSchema]
+   * - See [Subscription.setFields]
    */
   Map<String,String?> getFields() {
     return {..._fields};
@@ -330,8 +330,8 @@ interface class ItemUpdate {
    * 
    * @return An immutable Map containing the values for each field in the Subscription.
    * 
-   * @see [Subscription.setFieldSchema]
-   * @see [Subscription.setFields]
+   * - See [Subscription.setFieldSchema]
+   * - See [Subscription.setFields]
    */
   Map<int,String?> getFieldsByPosition() {
     return {..._fieldsByPosition};
