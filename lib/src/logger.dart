@@ -171,7 +171,7 @@ class ConsoleLogLevel {
     This level enables logging for errors and fatal errors.
    */
   static const ERROR = 40;
-    /**
+  /**
     Fatal logging level.
      
     This level enables logging for fatal errors only.

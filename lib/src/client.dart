@@ -1799,53 +1799,53 @@ class ConnectionOptions {
 }
 
 /**
-  * Class representing a Subscription to be submitted to a Lightstreamer Server. 
-  *
-  * It contains subscription details and the listeners needed to process the real-time data. <BR>
-  * After the creation, a Subscription object is in the "inactive" state. When a Subscription 
-  * object is subscribed to on a LightstreamerClient object, through the 
-  * [LightstreamerClient.subscribe] method, its state becomes "active". 
-  * This means that the client activates a subscription to the required items through 
-  * Lightstreamer Server and the Subscription object begins to receive real-time events. <BR>
-  * A Subscription can be configured to use either an Item Group or an Item List to specify the 
-  * items to be subscribed to and using either a Field Schema or Field List to specify the fields. <BR>
-  * "Item Group" and "Item List" are defined as follows:
-  * <ul>
-  *  <li>"Item Group": an Item Group is a String identifier representing a list of items. 
-  *  Such Item Group has to be expanded into a list of items by the getItems method of the 
-  *  MetadataProvider of the associated Adapter Set. When using an Item Group, items in the 
-  *  subscription are identified by their 1-based index within the group.<BR>
-  *  It is possible to configure the Subscription to use an "Item Group" using the 
-  *  [setItemGroup] method.</li> 
-  *  <li>"Item List": an Item List is an array of Strings each one representing an item. 
-  *  For the Item List to be correctly interpreted a LiteralBasedProvider or a MetadataProvider 
-  *  with a compatible implementation of getItems has to be configured in the associated 
-  *  Adapter Set.<BR>
-  *  Note that no item in the list can be empty, can contain spaces or can be a number.<BR>
-  *  When using an Item List, items in the subscription are identified by their name or 
-  *  by their 1-based index within the list.<BR>
-  *  It is possible to configure the Subscription to use an "Item List" using the 
-  *  [setItems] method or by specifying it in the constructor.</li>
-  * </ul>
-  * "Field Schema" and "Field List" are defined as follows:
-  * <ul>
-  *  <li>"Field Schema": a Field Schema is a String identifier representing a list of fields. 
-  *  Such Field Schema has to be expanded into a list of fields by the getFields method of 
-  *  the MetadataProvider of the associated Adapter Set. When using a Field Schema, fields 
-  *  in the subscription are identified by their 1-based index within the schema.<BR>
-  *  It is possible to configure the Subscription to use a "Field Schema" using the 
-  *  [setFieldSchema] method.</li>
-  *  <li>"Field List": a Field List is an array of Strings each one representing a field. 
-  *  For the Field List to be correctly interpreted a LiteralBasedProvider or a MetadataProvider 
-  *  with a compatible implementation of getFields has to be configured in the associated 
-  *  Adapter Set.<BR>
-  *  Note that no field in the list can be empty or can contain spaces.<BR>
-  *  When using a Field List, fields in the subscription are identified by their name or 
-  *  by their 1-based index within the list.<BR>
-  *  It is possible to configure the Subscription to use a "Field List" using the 
-  *  [setFields] method or by specifying it in the constructor.</li>
-  * </ul>
-  */
+ * Class representing a Subscription to be submitted to a Lightstreamer Server. 
+ *
+ * It contains subscription details and the listeners needed to process the real-time data. <BR>
+ * After the creation, a Subscription object is in the "inactive" state. When a Subscription 
+ * object is subscribed to on a LightstreamerClient object, through the 
+ * [LightstreamerClient.subscribe] method, its state becomes "active". 
+ * This means that the client activates a subscription to the required items through 
+ * Lightstreamer Server and the Subscription object begins to receive real-time events. <BR>
+ * A Subscription can be configured to use either an Item Group or an Item List to specify the 
+ * items to be subscribed to and using either a Field Schema or Field List to specify the fields. <BR>
+ * "Item Group" and "Item List" are defined as follows:
+ * <ul>
+ *  <li>"Item Group": an Item Group is a String identifier representing a list of items. 
+ *  Such Item Group has to be expanded into a list of items by the getItems method of the 
+ *  MetadataProvider of the associated Adapter Set. When using an Item Group, items in the 
+ *  subscription are identified by their 1-based index within the group.<BR>
+ *  It is possible to configure the Subscription to use an "Item Group" using the 
+ *  [setItemGroup] method.</li> 
+ *  <li>"Item List": an Item List is an array of Strings each one representing an item. 
+ *  For the Item List to be correctly interpreted a LiteralBasedProvider or a MetadataProvider 
+ *  with a compatible implementation of getItems has to be configured in the associated 
+ *  Adapter Set.<BR>
+ *  Note that no item in the list can be empty, can contain spaces or can be a number.<BR>
+ *  When using an Item List, items in the subscription are identified by their name or 
+ *  by their 1-based index within the list.<BR>
+ *  It is possible to configure the Subscription to use an "Item List" using the 
+ *  [setItems] method or by specifying it in the constructor.</li>
+ * </ul>
+ * "Field Schema" and "Field List" are defined as follows:
+ * <ul>
+ *  <li>"Field Schema": a Field Schema is a String identifier representing a list of fields. 
+ *  Such Field Schema has to be expanded into a list of fields by the getFields method of 
+ *  the MetadataProvider of the associated Adapter Set. When using a Field Schema, fields 
+ *  in the subscription are identified by their 1-based index within the schema.<BR>
+ *  It is possible to configure the Subscription to use a "Field Schema" using the 
+ *  [setFieldSchema] method.</li>
+ *  <li>"Field List": a Field List is an array of Strings each one representing a field. 
+ *  For the Field List to be correctly interpreted a LiteralBasedProvider or a MetadataProvider 
+ *  with a compatible implementation of getFields has to be configured in the associated 
+ *  Adapter Set.<BR>
+ *  Note that no field in the list can be empty or can contain spaces.<BR>
+ *  When using a Field List, fields in the subscription are identified by their name or 
+ *  by their 1-based index within the list.<BR>
+ *  It is possible to configure the Subscription to use a "Field List" using the 
+ *  [setFields] method or by specifying it in the constructor.</li>
+ * </ul>
+ */
 class Subscription {
   static int _idGenerator = 0;
   final String _id;
@@ -2328,35 +2328,35 @@ class Subscription {
   List<String>? getItems() {
     return _items?.toList();
   }
-   /**
-    * Setter method that sets the "Item List" to be subscribed to through 
-    * Lightstreamer Server.
-    *
-    * Any call to this method will override any "Item List" or "Item Group"
-    * previously specified.
-    * 
-    * **Lifecycle** This method can only be called while the Subscription
-    * instance is in its "inactive" state.
-    * 
-    * **Throws** IllegalArgumentException if any of the item names in the "Item List"
-    * contains a space or is a number or is empty/null.
-    *
-    * **Throws** IllegalStateException if the Subscription is currently 
-    * "active".
-    * 
-    * - [items] an array of items to be subscribed to through the server. 
-    */
+  /**
+   * Setter method that sets the "Item List" to be subscribed to through 
+   * Lightstreamer Server.
+   *
+   * Any call to this method will override any "Item List" or "Item Group"
+   * previously specified.
+   * 
+   * **Lifecycle** This method can only be called while the Subscription
+   * instance is in its "inactive" state.
+   * 
+   * **Throws** IllegalArgumentException if any of the item names in the "Item List"
+   * contains a space or is a number or is empty/null.
+   *
+   * **Throws** IllegalStateException if the Subscription is currently 
+   * "active".
+   * 
+   * - [items] an array of items to be subscribed to through the server. 
+   */
   void setItems(List<String>? items) {
     _items = items?.toList();
   }
-   /**
-    * Inquiry method that can be used to read the mode specified for this
-    * Subscription.
-    * 
-    * **Lifecycle** This method can be called at any time.
-    * 
-    * **Returns** the Subscription mode specified in the constructor.
-    */
+  /**
+   * Inquiry method that can be used to read the mode specified for this
+   * Subscription.
+   * 
+   * **Lifecycle** This method can be called at any time.
+   * 
+   * **Returns** the Subscription mode specified in the constructor.
+   */
   String getMode() {
     return _mode;
   }
