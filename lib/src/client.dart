@@ -108,7 +108,7 @@ class LightstreamerClient {
    * 
    * The logging system must respect the [LoggerProvider] 
    * interface. A custom class can be used to wrap any third-party 
-   * Java logging system. <BR>
+   * logging system. <BR>
    * If no logging system is specified, all the generated log is discarded. <BR>
    * The following categories are available to be consumed:
    * <ul>
@@ -1154,7 +1154,7 @@ class ConnectionOptions {
    *  WebSocket. If Streaming over WebSocket is not possible because of the environment the client will not 
    *  connect at all.</li>
    *  <li>"HTTP-STREAMING": the Stream-Sense algorithm is disabled and the client will only connect on Streaming over HTTP. 
-   *  If Streaming over HTTP is not possible because of the browser/environment the client will not connect at all.</li>
+   *  If Streaming over HTTP is not possible because of the environment the client will not connect at all.</li>
    *  <li>"WS-POLLING": the Stream-Sense algorithm is disabled and the client will only connect on Polling over WebSocket. 
    *  If Polling over WebSocket is not possible because of the environment the client will not connect at all.</li>
    *  <li>"HTTP-POLLING": the Stream-Sense algorithm is disabled and the client will only connect on Polling over HTTP.
