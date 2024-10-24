@@ -1,137 +1,252 @@
 # Lightstreamer Flutter Plugin
 
-A [Flutter](https://flutter.dev/) plugin for [Lightstreamer](https://lightstreamer.com/) addressing Android, iOS and Web platforms.
+The Lightstreamer Flutter Plugin enables any mobile (Android or iOS) or Web application to communicate bidirectionally with the Lightstreamer Server. The fully asynchronous API allows to subscribe to real-time data delivered directly by the server or routed via mobile push notifications, and to send any message to the server.
 
-## Android and iOS platforms
+The library offers automatic recovery from connection failures, automatic selection of the best available transport, and full decoupling of subscription and connection operations.
 
-The mobile plugin is basically a bridge linking Dart code and the Lightstreamer [Android](https://github.com/Lightstreamer/Lightstreamer-lib-client-haxe) and [Swift](https://github.com/Lightstreamer/Lightstreamer-lib-client-swift) Client SDKs.
-Messages are passed between the Dart application (UI) and host (platform) using platform channels; in particular one MethodChannel and three BasicMessageChannel. The MethodChannel is used to request actions prompted by the UI iteration such as opening and closing the connection with the Lightstreamer server and subscribing and unsubscribing particular Items.
+The library also offers support for mobile push notifications (MPN). While real-time subscriptions deliver their updates via the client connection, MPN subscriptions deliver their updates via push notifications, even when the application is offline. They are handled by a special module of the Server, the MPN Module, that keeps them active at all times and continues pushing with no need for a client connection. However, push notifications are not real-time, they may be delayed by the service provider (Google Firebase or Apple APNs) and their delivery is not guaranteed.
 
- - The `com.lightstreamer.lightstreamer_flutter_client.status` BasicMessageChannel is used to send real-time updates to the application about the status of the connection with the Lightstreamer server.
- - The `com.lightstreamer.lightstreamer_flutter_client.realtime` BasicMessageChannel is used to send real-time updates about the Items the application is subscribed to.
- - The `com.lightstreamer.lightstreamer_flutter_client.messages` BasicMessageChannel is used to send feedback on the status of send message operation requested by the application.
+## Installation
 
- ## Web platform
+In the `dependencies:` section of your `pubspec.yaml`, add the following line:
 
- The web plugin is a wrapper that forwards its calls to the [Lightstreamer Web Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-haxe).
-
-## Getting Started (mobile platforms)
-
-#### Import the package
-
-```dart
-import 'package:lightstreamer_flutter_client/lightstreamer_flutter_client.dart';
+```yaml
+dependencies:
+  lightstreamer_flutter_client: <latest_version>
 ```
 
-#### Configure and Start a Lightstreamer Client Session
+## ⚠ Differences Between Mobile and Web Plugins ⚠
 
-To connect to a Lightstreamer Server a LightstreamerClient object has to be created, configured, and instructed to connect to a specified endpoint. The platform-specific implementation will take care of this when it receives a 'connect' command on the specific MethodChannel. A minimal version of the code which through the 'connect' command connect to the public Lightstreamer Demo Server (on https://push.lightstreamer.com) will look like this:
+The `lightstreamer_flutter_client` package comprises two library: `lightstreamer_client.dart` for Android and iOS targets and `lightstreamer_client_web.dart` for Web target.
+
+These libraries are very similar, as they expose the same classes and methods. This means an application using the mobile library is almost source-code compatible with the same application using the web library.
+
+The main difference is that in the mobile library, most methods of the `LightstreamerClient` class (e.g. `connect`, `subscribe`, etc.) return a `Future`, whereas the corresponding methods of the web library return `void` or simple values.
+
+For example, in the web library, a client establishes a session as follows:
 
 ```dart
-    String currentStatus;
-
-    try {
-      Map<String, String> params = {"user": "prova1", 
-             "password": "qwerty!"};
-
-      currentStatus = await LightstreamerFlutterClient.connect(
-              "https://push.lightstreamer.com/", "WELCOME", params) ??
-          'Unknown client session status';
-    } on PlatformException catch (e) {
-      currentStatus =
-          "Problems in starting a session with Lightstreamer: '${e.message}' .";
-    }
-
-    setState(() {
-      _status = currentStatus;
-    });
+var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+client.connect();
 ```
-The below code allow the application to listen for any real-time connection state change events:
+
+The equivalent code for the mobile library is:
 
 ```dart
-    LightstreamerFlutterClient.setClientListener(_clientStatus);
+var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+await client.connect();
+```
 
-    void _clientStatus(String msg) {
-    setState(() {
-      _status = msg;
-    });
+While the `await` command before the connection is optional in this case, it is recommended to include it to catch exceptions.
+
+Another difference to keep in mind is that the web library throws exceptions such as  `IllegalArgumentException` or `IllegalStateException`, while the mobile library only throws `PlatformException`.
+
+A third difference is the timing of the exceptions. The web library methods throw exceptions as soon as they detect an invalid condition, whereas the mobile library checks these conditions only during a few fundamental methods such as `connect`, `subscribe`, etc.
+
+## Getting Started (Android/iOS)
+
+### Import the package
+
+```dart
+import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
+```
+
+### Configure and start a session
+
+To connect to a Lightstreamer Server, a `LightstreamerClient` object has to be created, configured, and instructed to connect to a specified endpoint. 
+
+A minimal version of the code that creates a LightstreamerClient and connects to the Lightstreamer Server at `https://push.lightstreamer.com` will look like this:
+
+```dart
+var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+await client.connect();
+```
+
+For each subscription to be subscribed to a Lightstreamer Server a `Subscription` instance is needed.
+
+A simple Subscription containing three items and two fields to be subscribed in *MERGE* mode is easily created (see [Lightstreamer General Concepts](https://www.lightstreamer.com/docs/ls-server/latest/General%20Concepts.pdf)):
+```dart
+var items  = [ "item1","item2","item3" ];
+var fields = [ "stock_name","last_price" ];
+var sub = Subscription("MERGE", items, fields);
+sub.setDataAdapter("QUOTE_ADAPTER");
+sub.setRequestedSnapshot("yes");
+await client.subscribe(sub);
+```
+
+Before sending the subscription to the server, usually at least one `SubscriptionListener` is attached to the Subscription instance in order to consume the real-time updates. 
+
+The following code shows the values of the fields *stock_name* and *last_price* each time a new update is received for the subscription:
+
+```dart
+sub.addListener(MySubscriptionListener());
+
+class MySubscriptionListener extends SubscriptionListener {
+  void onItemUpdate(ItemUpdate update) {
+    print("UPDATE " + update.getValue("stock_name") + " " + update.getValue("last_price"));
   }
+}
 ```
 
-#### Receive Real-Time Updates
-
-In order to receive real-time updates from the Lightstreamer server the client needs to subscribe to specific Items handled by a Data Adapter deployed at the server-side. This can be accomplished by instantiating an object of type Subscription. For more details about Subscription in Lightstreamer see the section 3.2 of the [Lightstreamer General Concepts](https://lightstreamer.com/docs/ls-server/latest/General%20Concepts.pdf) documentation. A sample of code that subscribes three Items of the classic Stock-List example is:
+Below is the complete Dart code:
 
 ```dart
-    String static_sub_id = "";
+import 'package:lightstreamer_flutter_client/lightstreamer_client.dart';
 
-    String? subId = "";
-    try {
-      Map<String, String> params = {
-        "dataAdapter": "STOCKS",
-        "requestedMaxFrequency": "7",
-        "requestedSnapshot": "yes"
-      };
-      subId = await LightstreamerFlutterClient.subscribe(
-          "MERGE",
-          itemList: "item2,item7,item8".split(","),
-          fieldList: "last_price,time,stock_name".split(","),
-          parameters: params);
+void main() async {
+  var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+  await client.connect();
 
-      static_sub_id = subId as String;
+  var items  = [ "item1","item2","item3" ];
+  var fields = [ "stock_name","last_price" ];
+  var sub = Subscription("MERGE", items, fields);
+  sub.setDataAdapter("QUOTE_ADAPTER");
+  sub.setRequestedSnapshot("yes");
+  sub.addListener(MySubscriptionListener());
+  await client.subscribe(sub);
 
-      LightstreamerFlutterClient.setSubscriptionListener(subId, _values);
-    } on PlatformException catch (e) {
-      // ...
-    }
-```
+  await Future.delayed(const Duration(seconds: 5));
+}
 
-The below code shows an example of implementation of the callback to listen for any real-time updates from your subscriptions:
-
-```dart
-  void _values(String item, String fieldName, String fieldValue) {
-    setState(() {
-      _lastUpdate = item + "," + fieldName + "," + fieldValue;
-      highlightcolorLast = Colors.yellow;
-    });
+class MySubscriptionListener extends SubscriptionListener {
+  void onItemUpdate(ItemUpdate update) {
+    print("UPDATE ${update.getValue("stock_name")} ${update.getValue("last_price")}");
   }
+}
 ```
 
-This code allow to unsubscribing from receiving messages for the previous subscription:
+### Sending messages
+
+The client can also send messages to the Server:
 
 ```dart
-    try {
-      await LightstreamerFlutterClient.unsubscribe(static_sub_id);
-    } on PlatformException catch (e) {
+await client.sendMessage("Hello world");
+```
+
+The code below shows an implementation for a message listener:
+
+```dart
+await client.sendMessage("Hello world again", "sequence1", 5000, MyMessageListener(), true);
+
+class MyMessageListener extends ClientMessageListener {
+  void onProcessed(String originalMessage, String response) {
+    print("PROCESSED $originalMessage");
+  }
+}
+```
+
+A full running example app is included in the project under the `example` folder.
+
+### Logging
+
+To enable the internal client logger, create a `LoggerProvider` and set it as the default provider of `LightstreamerClient`.
+
+```dart
+var provider = ConsoleLoggerProvider(ConsoleLogLevel.DEBUG);
+await LightstreamerClient.setLoggerProvider(provider);
+```
+
+### Mobile Push Notifications
+
+The library offers support for Push Notifications on Apple platforms through **Apple Push Notification Service (APNs)** and Google platforms through **Firebase Cloud Messaging (FCM)**. With Push Notifications, subscriptions deliver their updates through push notifications even when the application is offline.
+
+#### Firebase configuration
+
+1. Before you can add Firebase to your Android app, you need to create a [Firebase project](https://firebase.google.com/docs/projects/learn-more) to connect to your Android app.
+
+2. From the [Firebase console](https://console.firebase.google.com/), download the `google-services.json` configuration file and move it into the **module (app-level)** root directory of your app.
+
+3. In your **root-level (project-level)** Gradle file (`<project>/build.gradle`), add the Google services plugin as a dependency:
+
+    ```gradle
+    plugins {
+      id 'com.android.application' version '7.3.0' apply false
+      // ...
+
+      // Add the dependency for the Google services Gradle plugin
+      id 'com.google.gms.google-services' version '4.4.2' apply false
+    }
+    ```
+
+4. In your **module (app-level)** Gradle file (`<project>/<app-module>/build.gradle`), add the Google services plugin:
+
+    ```gradle
+    plugins {
+      id 'com.android.application'
+
+      // Add the Google services Gradle plugin
+      id 'com.google.gms.google-services'
       // ...
     }
-```
+    ```
 
-#### Send Client Messages to the Server
+5. In your **module (app-level)** Gradle file (`<project>/<app-module>/build.gradle`), add the dependencies for the Firebase messaging.
 
-The client can also send messages to the server:
-
-```dart
-    try {
-      await LightstreamerFlutterClient.sendMessageExt(
-           "Hello World", "Sequence1", 5000, _clientmessages, true);
-    } on PlatformException catch (e) {
+    ```gradle
+    dependencies {
       // ...
-    }
-```
 
-The below code shows an example of implementation of the callback to listen for send message feedback:
+      // Import the Firebase BoM
+      implementation(platform("com.google.firebase:firebase-bom:33.5.0"))
+
+      // When using the BoM, you don't specify versions in Firebase library dependencies
+
+      implementation 'com.google.firebase:firebase-messaging'
+    }
+    ```
+
+6. Make sure that the `applicationId` field in the **module (app-level)** Gradle file (`<project>/<app-module>/build.gradle`) has the same value as the `package_name` field in the `google-services.json` file.
+
+For further information, see the [Firebase documentation](https://firebase.google.com/docs/android/setup).
+
+#### APNs configuration
+
+1. In your [Developer Account](https://developer.apple.com/account/), enable the push notification service for the App ID assigned to your project.
+
+2. In xcode, open the `xcworkspace` file from your Flutter project.
+
+3. In the Project navigator, click the `Runner` project and then select the `Runner` target.
+
+4. Click *Signing & Capabilities* and add the *Push Notification* and *Background Modes > Remote Notifications* capabilities. 
+
+For further information, see the [APNs documentation](https://developer.apple.com/documentation/usernotifications).
+
+#### Subscribe to Push Notifications
+
+Before you can use MPN services, you need to configure the Lightstreamer MPN module (read carefully the section  `Mobile and Web Push Notifications` in the [General Concepts guide](https://lightstreamer.com/distros/ls-server/7.4.5/docs/General%20Concepts.pdf)).
+
+Then you can create a `MpnDevice`, which represents a specific app running on a specific mobile device.
 
 ```dart
-    void _clientmessages(String msg) {
-        setState(() {
-            _status = msg;
-        });
-    }
+var device = MpnDevice();
+await client.registerForMpn(device);
 ```
-A full running example app is included in the project under `example` folder.
 
-## Getting Started (Web platform)
+To receive notifications, you need to subscribe to a `MpnSubscription`: it contains subscription details and the listener needed to monitor its status.
+
+```dart
+var items = [ "item1","item2","item3" ];
+var fields = [ "stock_name","last_price","time" ];
+var sub = MpnSubscription("MERGE", items, fields);
+var data = {
+  "stock_name": "\${stock_name}",
+  "last_price": "\${last_price}",
+  "time": "\${time}",
+  "item": "item1" };
+var format = FirebaseMpnBuilder().setData(data).build();
+sub.setNotificationFormat(format);
+sub.setTriggerExpression("Double.parseDouble(\$[2])>45.0");
+await client.subscribe(sub, true);
+```
+
+The notification format lets you specify how to format the notification message. It can contain a special syntax that lets you compose the message with the content of the subscription updates 
+(see the `FirebaseMpnBuilder` and `ApnsMpnBuilder` classes).
+
+The optional  trigger expression  lets you specify  when to send  the notification message: it is a boolean expression, in Java language, that when evaluates to true triggers the sending of the notification. If not specified, a notification is sent each time the Data Adapter produces an update.
+
+For more information, see the `Mobile and Web Push Notifications` chapter in the [General Concepts Guide](https://lightstreamer.com/distros/ls-server/7.4.5/docs/General%20Concepts.pdf).
+
+## Getting Started (Web)
 
 ### Import the package
 
@@ -141,99 +256,158 @@ A full running example app is included in the project under `example` folder.
 
 - Put the following line in the `<head>` section of the file `index.html` just before every other `<script>` element:
 
-```html
-<script src="lightstreamer-core.min.js" data-lightstreamer-ns="lightstreamer"></script>
-```
+    ```html
+    <script src="lightstreamer-core.min.js" data-lightstreamer-ns="lightstreamer"></script>
+    ```
 
-or the following line if you need the Web Push Notifications
+    (or the following line if you need the Web Push Notifications)
 
-```html
-<script src="lightstreamer-mpn.min.js" data-lightstreamer-ns="lightstreamer"></script>
-```
+    ```html
+    <script src="lightstreamer-mpn.min.js" data-lightstreamer-ns="lightstreamer"></script>
+    ```
 
 - Add the following import to your app:
 
+    ```dart
+    import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
+    ```
+
+### Configure and start a session
+
+To connect to a Lightstreamer Server, a `LightstreamerClient` object has to be created, configured, and instructed to connect to a specified endpoint. 
+
+A minimal version of the code that creates a LightstreamerClient and connects to the Lightstreamer Server at `https://push.lightstreamer.com` will look like this:
+
 ```dart
-import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
-```
-
-### Configure and Start a Lightstreamer Client Session
-
-To connect to a Lightstreamer Server, a `LightstreamerClient` object has to be created, configured, and instructed to connect to the Lightstreamer Server. 
-A minimal version of the code that creates a LightstreamerClient and connects to the Lightstreamer Server on *https://push.lightstreamer.com* will look like this:
-
-```dart
-var client = new LightstreamerClient("https://push.lightstreamer.com/","DEMO");
+var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
 client.connect();
 ```
 
 For each subscription to be subscribed to a Lightstreamer Server a `Subscription` instance is needed.
-A simple Subscription containing three items and two fields to be subscribed in *MERGE* mode is easily created:
 
+A simple Subscription containing three items and two fields to be subscribed in *MERGE* mode is easily created (see [Lightstreamer General Concepts](https://www.lightstreamer.com/docs/ls-server/latest/General%20Concepts.pdf)):
 ```dart
-var sub = new Subscription("MERGE",["item1","item2","item3"],["stock_name","last_price"]);
+var items  = [ "item1","item2","item3" ];
+var fields = [ "stock_name","last_price" ];
+var sub = Subscription("MERGE", items, fields);
 sub.setDataAdapter("QUOTE_ADAPTER");
 sub.setRequestedSnapshot("yes");
 client.subscribe(sub);
 ```
 
-Before sending the subscription to the server, usually at least one `SubscriptionListener` is attached to the Subscription instance in order to consume the real-time updates. The following code shows the values of the fields *stock_name* and *last_price* each time a new update is received for the subscription:
+Before sending the subscription to the server, usually at least one `SubscriptionListener` is attached to the Subscription instance in order to consume the real-time updates. 
+
+The following code shows the values of the fields *stock_name* and *last_price* each time a new update is received for the subscription:
 
 ```dart
+sub.addListener(MySubscriptionListener());
+
 class MySubscriptionListener extends SubscriptionListener {
-  void onItemUpdate(ItemUpdate obj) {
-    print('${obj.getValue("stock_name")}: ${obj.getValue("last_price")}');
+  void onItemUpdate(ItemUpdate update) {
+    print("UPDATE " + update.getValue("stock_name") + " " + update.getValue("last_price"));
   }
 }
-sub.addListener(new MySubscriptionListener());
 ```
+
+Below is the complete Dart code:
+
+```dart
+import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
+
+void main() async {
+  var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+  client.connect();
+
+  var items  = [ "item1","item2","item3" ];
+  var fields = [ "stock_name","last_price" ];
+  var sub = Subscription("MERGE", items, fields);
+  sub.setDataAdapter("QUOTE_ADAPTER");
+  sub.setRequestedSnapshot("yes");
+  sub.addListener(MySubscriptionListener());
+  client.subscribe(sub);
+
+  await Future.delayed(const Duration(seconds: 5));
+}
+
+class MySubscriptionListener extends SubscriptionListener {
+  void onItemUpdate(ItemUpdate update) {
+    print("UPDATE ${update.getValue("stock_name")} ${update.getValue("last_price")}");
+  }
+}
+```
+
+### Sending messages
+
+The client can also send messages to the Server:
+
+```dart
+client.sendMessage("Hello world");
+```
+
+The code below shows an implementation for a message listener:
+
+```dart
+client.sendMessage("Hello world again", "sequence1", 5000, MyMessageListener(), true);
+
+class MyMessageListener extends ClientMessageListener {
+  void onProcessed(String originalMessage, String response) {
+    print("PROCESSED $originalMessage");
+  }
+}
+```
+
+A full running example app is included in the project under the `example` folder.
 
 ### Logging
 
 To enable the internal client logger, create a `LoggerProvider` and set it as the default provider of `LightstreamerClient`.
 
 ```dart
-var loggerProvider = new ConsoleLoggerProvider(ConsoleLogLevel.DEBUG);
-LightstreamerClient.setLoggerProvider(loggerProvider);
+var provider = ConsoleLoggerProvider(ConsoleLogLevel.DEBUG);
+LightstreamerClient.setLoggerProvider(provider);
 ```
 
 ### Web Push Notifications
 
-The library offers support for Web Push Notifications on Apple platforms via **Apple Push Notification Service (APNs)** and Google platforms via  **Firebase Cloud Messaging (FCM)**. With Web Push, subscriptions deliver their updates via push notifications even when the application is offline.
+The library offers support for Web Push Notifications on Apple platforms through **Apple Push Notification Service (APNs)** and Google platforms through **Firebase Cloud Messaging (FCM)**. With Web Push, subscriptions deliver their updates through push notifications even when the application is offline.
 
-To receive notifications, you need to subscribe to a `MpnSubscription`: it contains subscription details and the listener needed to monitor its status. Real-time data is routed via native push notifications.
+Before you can use MPN services, you need to configure the Lightstreamer MPN module (read carefully the section  `Mobile and Web Push Notifications` in the [General Concepts guide](https://lightstreamer.com/distros/ls-server/7.4.5/docs/General%20Concepts.pdf)).
+
+To receive notifications, you need to subscribe to a `MpnSubscription`: it contains subscription details and the listener needed to monitor its status.
 
 ```dart
 var items = [ "item1","item2","item3" ];
 var fields = [ "stock_name","last_price","time" ];
-var sub = new MpnSubscription("MERGE",items,fields);
+var sub = MpnSubscription("MERGE", items, fields);
 var data = {
   "stock_name": "\${stock_name}",
   "last_price": "\${last_price}",
   "time": "\${time}",
   "item": "item1" };
-String format = new MpnBuilder().data(data).build();
+var format = FirebaseMpnBuilder().setData(data).build();
 sub.setNotificationFormat(format);
 sub.setTriggerExpression("Double.parseDouble(\$[2])>45.0");
 client.subscribe(sub, true);
 ```
 
-The notification format lets you specify how to format the notification message. It can contain a special syntax that lets you compose the message with the content of the subscription updates (see §5.4.1 of the [General Concepts guide](https://lightstreamer.com/docs/ls-server/7.1.1/General%20Concepts.pdf)).
+The notification format lets you specify how to format the notification message. It can contain a special syntax that lets you compose the message with the content of the subscription updates 
+(see the `FirebaseMpnBuilder` and `SafariMpnBuilder` classes).
 
-The optional  trigger expression  lets you specify  when to send  the notification message: it is a boolean expression, in Java language, that when evaluates to true triggers the sending of the notification (see §5.4.2 of the [General Concepts guide](https://lightstreamer.com/docs/ls-server/7.1.1/General%20Concepts.pdf)). If not specified, a notification is sent each time the Data Adapter produces an update.
+The optional  trigger expression  lets you specify  when to send  the notification message: it is a boolean expression, in Java language, that when evaluates to true triggers the sending of the notification. If not specified, a notification is sent each time the Data Adapter produces an update.
 
-For more information see the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messaging/flutter/client).
+For more information, see the `Mobile and Web Push Notifications` chapter in the [General Concepts Guide](https://lightstreamer.com/distros/ls-server/7.4.5/docs/General%20Concepts.pdf) and the
+the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messaging/flutter/client).
 
 ## See Also
 
- - [Package home](https://pub.dev/packages/lightstreamer_flutter_client)
- - [Stock-List Demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter)
- - [Android API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/)
- - [Swift API Client Reference](https://www.lightstreamer.com/api/ls-swift-client/latest/)
- - [Web API Client Reference](https://www.lightstreamer.com/api/ls-web-client/latest/)
- - [Lightstreamer Docs](https://lightstreamer.com/doc)
+ - [Lightstreamer Flutter Plugin](https://pub.dev/packages/lightstreamer_flutter_client)
+ - [Lightstreamer Flutter Stock-List Demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter)
+ - TODO [Flutter Mobile API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/)
+ - TODO [Flutter Web API Client Reference](https://www.lightstreamer.com/api/ls-web-client/latest/)
+ - [Lightstreamer Documentation](https://lightstreamer.com/docs)
 
 ## Compatibility
 
 * The Plugin requires Lightstreamer Server 7.4.0 or later
-* Please be advised that the minimum supported Android API level is 26. Ensure that your device is running Android 8.0 (Oreo) or a higher version to guarantee optimal performance and compatibility.
+* On Android devices, Android 8 (API 26) or later is required.
+* On iOS devices, iOS 12.0 or later is required.
