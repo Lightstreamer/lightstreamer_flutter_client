@@ -59,7 +59,8 @@ void main() {
       });
 
       test('online server', () async {
-        client = new LightstreamerClient("https://push.lightstreamer.com", "DEMO");
+        client.connectionDetails.setServerAddress("https://push.lightstreamer.com");
+        client.connectionDetails.setAdapterSet("DEMO");
         listener = new BaseClientListener();
         client.addListener(listener);
 
@@ -72,7 +73,7 @@ void main() {
         client.connect();
         await exps.value();
         assertEqual(expected, client.getStatus());
-      }, skip: transport == "WS-STREAMING" ? false : 'why does $transport not work?');
+      });
 
       test('error', () async {
         client = new LightstreamerClient("http://localhost:8080", "XXX");

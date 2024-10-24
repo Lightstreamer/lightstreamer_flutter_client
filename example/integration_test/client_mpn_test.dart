@@ -53,7 +53,8 @@ void main() {
     client = LightstreamerClient(host, "TEST");
     var sub = new MpnSubscription("MERGE", ["count"], ["count"]);
     sub.setNotificationFormat('{}');
-    await client.registerForMpn(MpnDevice());
+    device = MpnDevice();
+    await client.registerForMpn(device);
     client.subscribeMpn(sub, false);
     try {
       await client.subscribeMpn(sub, false);
@@ -592,22 +593,6 @@ void main() {
       });
 
       /**
-       * Verifies that the client doesn't send a subscription request if an unsubscription request follows immediately.
-       */
-      test('fast unsubscription', () async {
-        var exps = new Expectations();
-        subListener.fSubscription = () => exps.signal("onSubscription");
-        subListener.fUnsubscription = () => exps.signal("onUnsubscription");
-        client.connect();
-        await client.registerForMpn(device);
-        client.subscribeMpn(sub, false);
-        client.unsubscribeMpn(sub);
-        // await exps.value("onSubscription");
-        // await exps.value("onUnsubscription");
-        // must not fire any listeners
-      }, skip: "Can't simulate this kind of scenario: subscription operations are not fast enough to trigger the desired behavior");
-
-      /**
        * Verifies that the client unsubscribes from all the subscribed items.
        */
       test('unsubscribe filter subscribed', () async {
@@ -1028,7 +1013,7 @@ void main() {
         await exps.value("onSubscriptionsUpdated 0");
       });
 
-    test('unsubscribe error', () async {
+      test('unsubscribe error', () async {
         var exps = new Expectations();
         subListener.fSubscriptionError =
             (code, msg) => exps.signal('onSubscriptionError $code $msg');
@@ -1036,9 +1021,10 @@ void main() {
         await client.registerForMpn(device);
         client.subscribeMpn(sub, false);
         client.unsubscribeMpn(sub);
-        await exps.value(
-            "onSubscriptionError 55 The request was discarded because the operation could not be completed");
-      }, skip: "Can't simulate this kind of scenario: subscription operations are not fast enough to trigger the desired behavior");
+        await exps.value("onSubscriptionError 55 The request was discarded because the operation could not be completed");
+
+        client.disconnect();
+      });
 
       test('set trigger error', () async {
         var exps = new Expectations();
