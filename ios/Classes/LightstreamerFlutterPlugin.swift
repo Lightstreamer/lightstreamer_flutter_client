@@ -1285,7 +1285,7 @@ class MySubscriptionListener : SubscriptionDelegate {
     arguments.put("itemPos", update.itemPos);
     arguments.put("isSnapshot", update.isSnapshot);
     if (_sub.fields != nil || _sub.commandSecondLevelFields != nil) {
-      // TODO despite the above check, could the methods `changedFields` and `fields` throw exceptions if the subscription lacks field names?
+      // TODO could the methods `changedFields` and `fields` throw exceptions if the subscription lacks field names?
       let changedFields = update.changedFields;
       let fields = update.fields;
       var jsonFields = [String:String?]();
