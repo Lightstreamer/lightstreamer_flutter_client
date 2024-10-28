@@ -1,6 +1,6 @@
-# lightstreamer_flutter_client_example
+# Lightstreamer Flutter Plugin Example
 
-Demonstrates how to use the lightstreamer_flutter_client plugin.
+This example demonstrates how to use the `lightstreamer_flutter_client` plugin.
 
 ## Getting Started
 

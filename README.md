@@ -15,33 +15,60 @@ dependencies:
   lightstreamer_flutter_client: <latest_version>
 ```
 
-## ⚠ Differences Between Mobile and Web Plugins ⚠
+## ⚠ Differences Between Mobile and Web Libraries ⚠
 
-The `lightstreamer_flutter_client` package comprises two library: `lightstreamer_client.dart` for Android and iOS targets and `lightstreamer_client_web.dart` for Web target.
+The `lightstreamer_flutter_client` package comprises two libraries: `lightstreamer_client.dart` for Android and iOS targets and `lightstreamer_client_web.dart` for Web target.
 
-These libraries are very similar, as they expose the same classes and methods. This means an application using the mobile library is almost source-code compatible with the same application using the web library.
+These libraries are very similar, as they expose the same classes and methods. This means an application using the mobile library is almost source-code compatible with the same application using the web library. However, there are a few differences to keep in mind when writing apps that should work both on mobile and web devices.
 
-The main difference is that in the mobile library, most methods of the `LightstreamerClient` class (e.g. `connect`, `subscribe`, etc.) return a `Future`, whereas the corresponding methods of the web library return `void` or simple values.
+1. **Object lifespan** When using the mobile library, references to the `LightstreamerClient`, `Subscription`, `MpnDevice` and `MpnSubscription` instances _**must be maintained by the Flutter app for as long as these objects are in use**_. Failing to do so may result in the loss of events directed to these objects (e.g. listener notifications).
 
-For example, in the web library, a client establishes a session as follows:
+    ```dart
+    // DO
+    class MyClient {
+      final client = LightstreamerClient("host", "adapter");
+      void connect() async {
+        client.addListener(MyClientListener());
+        await client.connect();
+      }
+    }
 
-```dart
-var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
-client.connect();
-```
+    // DO NOT
+    class MyClient {
+      void connect() async {
+        var client = LightstreamerClient("host", "adapter");
+        client.addListener(MyClientListener());
+        await client.connect();
+      }
+    }
+    ```
 
-The equivalent code for the mobile library is:
+    The web library does not require such precautions.
 
-```dart
-var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
-await client.connect();
-```
+2. **Async Methods** In the mobile library, most methods of the `LightstreamerClient` class (e.g. `connect`, `subscribe`, etc.) return a `Future`, whereas the corresponding methods of the web library return `void` or simple values.
 
-While the `await` command before the connection is optional in this case, it is recommended to include it to catch exceptions.
+    For example, in the web library, a client establishes a session as follows:
 
-Another difference to keep in mind is that the web library throws exceptions such as  `IllegalArgumentException` or `IllegalStateException`, while the mobile library only throws `PlatformException`.
+    ```dart
+    var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+    client.connect();
+    ```
 
-A third difference is the timing of the exceptions. The web library methods throw exceptions as soon as they detect an invalid condition, whereas the mobile library checks these conditions only during a few fundamental methods such as `connect`, `subscribe`, etc.
+    The equivalent code for the mobile library is:
+
+    ```dart
+    var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
+    await client.connect();
+    ```
+
+    While the `await` command before the connection is optional in this case, it is recommended to include it to catch exceptions.
+
+3. **Exception Types** The web library throws exceptions such as `IllegalArgumentException` or `IllegalStateException`, while the mobile library only throws `PlatformException`.
+
+4. **Exception Timing** The web library methods throw exceptions as soon as they detect an invalid condition, whereas the mobile library checks these conditions only during a few fundamental methods such as `connect`, `subscribe`, etc.
+However, both libraries document the thrown exceptions when discussing the methods to which the exceptions logically belong.
+
+5. **Precondition Failures on iOS** Since the mobile library leverages the [Lightstreamer iOS Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-swift) to support the iOS target, and the iOS Client SDK uses Swift [preconditions](https://developer.apple.com/documentation/swift/precondition(_:_:file:line:)) to validate method arguments, a failed precondition will abruptly stop the program execution when a Flutter app runs on an iOS device. However, in the same circumstances, both the web library and the Android library will throw an `IllegalArgumentException`.
 
 ## Getting Started (Android/iOS)
 
