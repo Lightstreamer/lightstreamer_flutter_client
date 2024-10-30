@@ -93,8 +93,8 @@ class NativeBridge {
       if (sub != null) {
         res.add(sub);
       } else {
-        if (channelLogger.isWarnEnabled()) {
-          channelLogger.warn('Unknown Subscription $subId in getSubscriptions');
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error('Unknown Subscription $subId in getSubscriptions');
         }
       }
     }
@@ -135,8 +135,8 @@ class NativeBridge {
       if (sub != null) {
         res.add(sub);
       } else {
-        if (channelLogger.isWarnEnabled()) {
-          channelLogger.warn('Unknown MpnSubscription $mpnSubId in getMpnSubscriptions');
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error('Unknown MpnSubscription $mpnSubId in getMpnSubscriptions');
         }
       }
     }
@@ -162,8 +162,8 @@ class NativeBridge {
       if (sub != null) {
         return sub;
       } else {
-        if (channelLogger.isWarnEnabled()) {
-          channelLogger.warn('Unknown MpnSubscription $mpnSubId in findMpnSubscription');
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error('Unknown MpnSubscription $mpnSubId in findMpnSubscription');
         }
         return null;
       }
@@ -672,7 +672,7 @@ class NativeBridge {
     var device = _mpnDeviceMap[mpnDevId];
     if (device == null) {
        if (channelLogger.isErrorEnabled()) {
-        channelLogger.error("No MpnDevice $mpnDevId registered MpnDeviceListener.$listenerName", null);
+        channelLogger.error("Unknown MpnDevice $mpnDevId in MpnDeviceListener.$listenerName", null);
       }
       return;
     }
