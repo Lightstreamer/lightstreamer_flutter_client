@@ -12,7 +12,7 @@ In the `dependencies:` section of your `pubspec.yaml`, add the following line:
 
 ```yaml
 dependencies:
-  lightstreamer_flutter_client: <latest_version>
+  lightstreamer_flutter_client: 2.0.0
 ```
 
 ## ⚠ Differences Between Mobile and Web Libraries ⚠
@@ -429,8 +429,9 @@ the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messa
 
  - [Lightstreamer Flutter Plugin](https://pub.dev/packages/lightstreamer_flutter_client)
  - [Lightstreamer Flutter Stock-List Demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter)
- - TODO [Flutter Mobile API Client Reference](https://www.lightstreamer.com/api/ls-android-client/latest/)
- - TODO [Flutter Web API Client Reference](https://www.lightstreamer.com/api/ls-web-client/latest/)
+ - [Lightstreamer Flutter Project](https://github.com/Lightstreamer/lightstreamer_flutter_client/tree/2.0.0)
+ - [Flutter Mobile API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.0.0/api/lightstreamer_client/lightstreamer_client-library.html)
+ - [Flutter Web API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.0.0/api/lightstreamer_client_web/lightstreamer_client_web-library.html)
  - [Lightstreamer Documentation](https://lightstreamer.com/docs)
 
 ## Compatibility
