@@ -2,6 +2,7 @@ PODS:
   - Alamofire (5.8.1)
   - FlutterMacOS (1.0.0)
   - lightstreamer_flutter_client (2.1.0-alpha.1):
+    - Flutter
     - FlutterMacOS
     - LightstreamerClient (~> 6.2.0)
   - LightstreamerClient (6.2.0):
@@ -13,7 +14,7 @@ PODS:
 
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
-  - lightstreamer_flutter_client (from `Flutter/ephemeral/.symlinks/plugins/lightstreamer_flutter_client/macos`)
+  - lightstreamer_flutter_client (from `Flutter/ephemeral/.symlinks/plugins/lightstreamer_flutter_client/darwin`)
 
 SPEC REPOS:
   trunk:
@@ -26,12 +27,12 @@ EXTERNAL SOURCES:
   FlutterMacOS:
     :path: Flutter/ephemeral
   lightstreamer_flutter_client:
-    :path: Flutter/ephemeral/.symlinks/plugins/lightstreamer_flutter_client/macos
+    :path: Flutter/ephemeral/.symlinks/plugins/lightstreamer_flutter_client/darwin
 
 SPEC CHECKSUMS:
   Alamofire: 3ca42e259043ee0dc5c0cdd76c4bc568b8e42af7
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  lightstreamer_flutter_client: d349543ba6bfbcf8566535727f6385c47f24336d
+  lightstreamer_flutter_client: b01c9377946daa452750827b4dcdc7c970c60d35
   LightstreamerClient: a2b5c87633dc43ee94e1976aaaa1aaf733cd43c4
   RMJSONPatch: 9d08c18158c5a224ec471d876457f65cdafb1ecb
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
