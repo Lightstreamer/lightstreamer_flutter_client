@@ -33,7 +33,7 @@ void main() {
       assertEqual('Lightstreamer Internal Error', e.code);
       assertEqual('value must be greater than zero', e.message);
     }
-  }, skip: Platform.isIOS ? "When a precondition fails, Swift Client SDK throws an unrecoverable exception" : false);
+  }, skip: Platform.isIOS || Platform.isMacOS ? "When a precondition fails, Swift Client SDK throws an unrecoverable exception" : false);
 
   test('Subscription errors', () async {
     client = LightstreamerClient(host, "TEST");
@@ -590,8 +590,8 @@ void main() {
         var u = updates[1];
         var patch = u.getValueAsJSONPatchIfAvailableByPosition(1)!;
         expect(patch, contains('"op":"replace"'));
-        if (Platform.isIOS) {
-          // by default iOS JSON serialization escapes forward slashes
+        if (Platform.isIOS || Platform.isMacOS) {
+          // by default iOS/macOS JSON serialization escapes forward slashes
           expect(patch, contains('"path":"\\/value"'));
         } else {
           expect(patch, contains('"path":"/value"'));
