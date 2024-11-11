@@ -1,8 +1,19 @@
 import Foundation
+#if os(iOS)
 import Flutter
 import UIKit
+#elseif os(macOS)
+import FlutterMacOS
+import Cocoa
+#endif
 import LightstreamerClient
 import os.log
+
+#if os(iOS)
+public typealias MyApplication = UIApplication
+#elseif os(macOS)
+public typealias MyApplication = NSApplication
+#endif
 
 /**
  * A plugin manages the communication between the Flutter component (the Flutter app targeting iOS using the Lightstreamer Flutter Client SDK)
@@ -53,8 +64,13 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   let _listenerChannel: FlutterMethodChannel;
   
   init(_ registrar: FlutterPluginRegistrar) {
+#if os(iOS)
     _methodChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/methods", binaryMessenger: registrar.messenger());
     _listenerChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/listeners", binaryMessenger: registrar.messenger());
+#elseif os(macOS)
+    _methodChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/methods", binaryMessenger: registrar.messenger);
+    _listenerChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/listeners", binaryMessenger: registrar.messenger);
+#endif
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -316,7 +332,7 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     {
       result.append("; Expires=" + formatCookieDate(expires));
     }
-    if #available(iOS 13.0, *) {
+    if #available(iOS 13.0, macOS 10.15, *) {
       switch (c.sameSitePolicy) {
       case .sameSiteLax:
         result.append("; SameSite=Lax");
@@ -583,14 +599,14 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
         return
       }
       self.tokenListeners.append((onTokenSuccess, onTokenError))
-      UIApplication.shared.registerForRemoteNotifications()
+      MyApplication.shared.registerForRemoteNotifications()
     }
   }
   
   // NB the array should be accessed inside the main dispatch queue
   var tokenListeners = [((String)->(), (String)->())]()
   
-  public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+  public func application(_ application: MyApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     if (self.channelLogger.isDebugEnabled) {
       self.channelLogger.debug("MPN Device Token obtained")
     }
@@ -602,7 +618,7 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     tokenListeners.removeAll()
   }
 
-  public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+  public func application(_ application: MyApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
     let errMsg = "MPN Device Token not available: \(error) (user info: \((error as NSError).userInfo))"
     if (self.channelLogger.isErrorEnabled) {
       self.channelLogger.error(errMsg)
