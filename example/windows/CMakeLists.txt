@@ -1,3 +1,5 @@
+set(LightstreamerCppClient_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/debug")
+
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
 project(lightstreamer_flutter_client_example LANGUAGES CXX)
