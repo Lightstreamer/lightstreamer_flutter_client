@@ -5,7 +5,6 @@
 #include <flutter/plugin_registrar_windows.h>
 
 #include "Lightstreamer/LightstreamerClient.h"
-#include "Lightstreamer/Logger.h"
 
 #include <memory>
 
@@ -19,12 +18,22 @@ class LightstreamerFlutterClientPlugin : public flutter::Plugin {
    * The mapping is created when any LightstreamerClient method is called by the Flutter component.
    * It is removed when the map is cleaned.
    */
-  std::map<std::string, LS::LightstreamerClient*> _clientMap;
-  LS::LightstreamerClient& getClient(const flutter::MethodCall<flutter::EncodableValue>& call);
+  std::map<std::string, std::shared_ptr<LS::LightstreamerClient>> _clientMap;
+
+  /**
+   * The channel through which the events fired by the listeners are communicated to the Flutter component.
+   */
+  std::shared_ptr<flutter::MethodChannel<flutter::EncodableValue>> _listenerChannel;
+
+  std::shared_ptr<LS::LightstreamerClient> getClient(const flutter::MethodCall<flutter::EncodableValue>& call);
+  void Client_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+  void Client_setLoggerProvider(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+  void Client_connect(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+  void Client_disconnect(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  LightstreamerFlutterClientPlugin();
+  LightstreamerFlutterClientPlugin(flutter::PluginRegistrarWindows* registrar);
 
   virtual ~LightstreamerFlutterClientPlugin();
 

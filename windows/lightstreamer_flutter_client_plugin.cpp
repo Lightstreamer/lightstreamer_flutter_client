@@ -1,31 +1,23 @@
 #include "lightstreamer_flutter_client_plugin.h"
 
+#include "Lightstreamer\ClientListener.h"
+#include "Lightstreamer\ConsoleLoggerProvider.h"
+
 // This must be included before many other Windows headers.
 #include <windows.h>
-
-// For getPlatformVersion; remove unless needed for your plugin implementation.
-#include <VersionHelpers.h>
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
-#include "Lightstreamer\LightstreamerClient.h"
-#include "Lightstreamer\ConsoleLoggerProvider.h"
-#include "Lightstreamer\Subscription.h"
-
 #include <cassert>
 #include <memory>
 #include <sstream>
 
-using std::string;
-using std::vector;
-using std::unique_ptr;
-using flutter::MethodCall;
-using flutter::MethodResult;
 using flutter::EncodableValue;
 using flutter::EncodableList;
 using flutter::EncodableMap;
+using MyChannel = flutter::MethodChannel<flutter::EncodableValue>;
 
 /**
  * A plugin manages the communication between the Flutter component (the Flutter app targeting Windows using the Lightstreamer Flutter Client SDK)
@@ -37,31 +29,62 @@ namespace lightstreamer_flutter_client {
 
   static LS::Logger* channelLogger;
 
-  static void Client_handle(string& method, const MethodCall<EncodableValue>& call, unique_ptr<MethodResult<EncodableValue>>& result);
-  static void Client_setLoggerProvider(const MethodCall<EncodableValue>& call, unique_ptr<MethodResult<EncodableValue>>& result);
-  static void Client_connect(const MethodCall<EncodableValue>& call, unique_ptr<MethodResult<EncodableValue>>& result);
+  class MyClientListener : public LS::ClientListener {
+    std::string clientId;
+    std::shared_ptr<LS::LightstreamerClient> client;
+    std::shared_ptr<MyChannel> plugin;
 
-  static inline EncodableMap getArguments(const MethodCall<EncodableValue>& call) {
+    void invoke(const std::string& method, flutter::EncodableMap& arguments);
+  public:
+    MyClientListener(const std::string& clientId, std::shared_ptr<LS::LightstreamerClient> client, std::shared_ptr<MyChannel> plugin) :
+      clientId(clientId), client(client), plugin(plugin) {}
+    ~MyClientListener() {}
+    void onListenEnd() {}
+    void onListenStart() {}
+    void onServerError(int errorCode, const std::string& errorMessage);
+    void onStatusChange(const std::string& status);
+    void onPropertyChange(const std::string& property);
+  };
+
+  static inline flutter::EncodableMap getArguments(const flutter::MethodCall<flutter::EncodableValue>& call) {
     return std::get<EncodableMap>(*call.arguments());
   }
 
   template <typename T>
-  static T getArg(const EncodableMap& arguments, const char* key) {
+  static T getArg(const flutter::EncodableMap& arguments, const char* key) {
     EncodableValue val = arguments.at(EncodableValue(key));
     assert(std::holds_alternative<T>(val));
     return std::get<T>(val);
   }
 
-  static inline int32_t getInt(const EncodableMap& arguments, const char* key) {
+  static inline int32_t getInt(const flutter::EncodableMap& arguments, const char* key) {
     return getArg<int32_t>(arguments, key);
   }
 
-  static inline string getString(const EncodableMap& arguments, const char* key) {
-    return getArg<string>(arguments, key);
+  static std::string getString(const flutter::EncodableMap& arguments, const char* key) {
+    EncodableValue val = arguments.at(EncodableValue(key));
+    // null values coming from Dart are converted into empty strings
+    if (val.IsNull()) {
+      return "";
+    }
+    assert(std::holds_alternative<std::string>(val));
+    return std::get<std::string>(val);
+  }
+
+  static inline bool getBool(const flutter::EncodableMap& arguments, const char* key) {
+    return getArg<bool>(arguments, key);
+  }
+
+  static inline EncodableMap getMap(const flutter::EncodableMap& arguments, const char* key) {
+    return getArg<EncodableMap>(arguments, key);
+  }
+
+  static inline EncodableList getList(const flutter::EncodableMap& arguments, const char* key) {
+    return getArg<EncodableList>(arguments, key);
   }
 
   template <typename T>
-  static inline T* getValue(const std::map<string, T*>& map, const string& key) {
+  static inline T getValue(const std::map<std::string, T>& map, const std::string& key) {
     auto i = map.find(key);
     return i == map.end() ? nullptr : i->second;
   }
@@ -84,7 +107,7 @@ void LightstreamerFlutterClientPlugin::RegisterWithRegistrar(
           registrar->messenger(), "com.lightstreamer.flutter/methods",
           &flutter::StandardMethodCodec::GetInstance());
 
-  auto plugin = std::make_unique<LightstreamerFlutterClientPlugin>();
+  auto plugin = std::make_unique<LightstreamerFlutterClientPlugin>(registrar);
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -94,7 +117,9 @@ void LightstreamerFlutterClientPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-LightstreamerFlutterClientPlugin::LightstreamerFlutterClientPlugin() {}
+LightstreamerFlutterClientPlugin::LightstreamerFlutterClientPlugin(flutter::PluginRegistrarWindows* registrar) 
+  : _listenerChannel{ new flutter::MethodChannel<flutter::EncodableValue>(registrar->messenger(), "com.lightstreamer.flutter/listeners",
+          &flutter::StandardMethodCodec::GetInstance()) } {}
 
 LightstreamerFlutterClientPlugin::~LightstreamerFlutterClientPlugin() {}
 
@@ -136,37 +161,38 @@ void LightstreamerFlutterClientPlugin::HandleMethodCall(
   }*/
 }
 
-LS::LightstreamerClient& LightstreamerFlutterClientPlugin::getClient(const flutter::MethodCall<flutter::EncodableValue>& call) {
-  /*String id = call.argument("id");
-  LightstreamerClient ls = _clientMap.get(id);
-  if (ls == null) {
-    ls = new LightstreamerClient(null, null);
-    _clientMap.put(id, ls);
-    ls.addListener(new MyClientListener(id, ls, this));
-  }
-  return ls;*/
+std::shared_ptr<LS::LightstreamerClient> LightstreamerFlutterClientPlugin::getClient(const flutter::MethodCall<flutter::EncodableValue>& call) {
   auto arguments = getArguments(call);
   auto id = getString(arguments, "id");
   auto ls = getValue(_clientMap, id);
   if (ls == nullptr) {
-    ls = new LS::LightstreamerClient("", "");
+    ls = std::make_shared<LS::LightstreamerClient>("", "");
     _clientMap.insert({ id, ls });
-    // TODO ...
+    ls->addListener(new MyClientListener(id, ls, _listenerChannel));
   }
-  return *ls;
+  return ls;
 }
 
-static void Client_handle(string& method, const MethodCall<EncodableValue>& call, unique_ptr<MethodResult<EncodableValue>>& result) {
+static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& method, flutter::EncodableMap& arguments) {
+  if (channelLogger->isDebugEnabled()) {
+    // TODO print arguments
+    channelLogger->debug("Invoking " + method);
+  }
+  auto val = std::make_unique<flutter::EncodableValue>(arguments);
+  channel->InvokeMethod(method, std::move(val));
+}
+
+void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
   // TODO complete
   if (method == "connect")
   {
     Client_connect(call, result);
   }
-  /*else if (method == "disconnect")
+  else if (method == "disconnect")
   {
     Client_disconnect(call, result);
   }
-  else if (method == "getStatus")
+  /*else if (method == "getStatus")
   {
     Client_getStatus(call, result);
   }
@@ -212,7 +238,7 @@ static void Client_handle(string& method, const MethodCall<EncodableValue>& call
   }
 }
 
-static void Client_setLoggerProvider(const MethodCall<EncodableValue>& call, unique_ptr<MethodResult<EncodableValue>>& result) {
+void LightstreamerFlutterClientPlugin::Client_setLoggerProvider(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
   auto arguments = getArguments(call);
   auto level = getInt(arguments, "level");
   LS::ConsoleLogLevel level_;
@@ -243,32 +269,91 @@ static void Client_setLoggerProvider(const MethodCall<EncodableValue>& call, uni
   result->Success();
 }
 
-static void Client_connect(const MethodCall<EncodableValue>& call, unique_ptr<MethodResult<EncodableValue>>& result) {
- /* LightstreamerClient client = getClient(call);
-  Map<String, Object> details = call.argument("connectionDetails");
-  client.connectionDetails.setAdapterSet((String)details.get("adapterSet"));
-  client.connectionDetails.setServerAddress((String)details.get("serverAddress"));
-  client.connectionDetails.setUser((String)details.get("user"));
-  client.connectionDetails.setPassword((String)details.get("password"));
-  Map<String, Object> options = call.argument("connectionOptions");
-  client.connectionOptions.setContentLength((int)options.get("contentLength"));
-  client.connectionOptions.setFirstRetryMaxDelay((int)options.get("firstRetryMaxDelay"));
-  client.connectionOptions.setForcedTransport((String)options.get("forcedTransport"));
-  client.connectionOptions.setHttpExtraHeaders((Map<String, String>) options.get("httpExtraHeaders"));
-  client.connectionOptions.setIdleTimeout((int)options.get("idleTimeout"));
-  client.connectionOptions.setKeepaliveInterval((int)options.get("keepaliveInterval"));
-  client.connectionOptions.setPollingInterval((int)options.get("pollingInterval"));
-  client.connectionOptions.setReconnectTimeout((int)options.get("reconnectTimeout"));
-  client.connectionOptions.setRequestedMaxBandwidth((String)options.get("requestedMaxBandwidth"));
-  client.connectionOptions.setRetryDelay((int)options.get("retryDelay"));
-  client.connectionOptions.setReverseHeartbeatInterval((int)options.get("reverseHeartbeatInterval"));
-  client.connectionOptions.setSessionRecoveryTimeout((int)options.get("sessionRecoveryTimeout"));
-  client.connectionOptions.setStalledTimeout((int)options.get("stalledTimeout"));
-  client.connectionOptions.setHttpExtraHeadersOnSessionCreationOnly((boolean)options.get("httpExtraHeadersOnSessionCreationOnly"));
-  client.connectionOptions.setServerInstanceAddressIgnored((boolean)options.get("serverInstanceAddressIgnored"));
-  client.connectionOptions.setSlowingEnabled((boolean)options.get("slowingEnabled"));
-  client.connect();
-  result.success(null);*/
+void LightstreamerFlutterClientPlugin::Client_connect(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto details = getMap(arguments, "connectionDetails");
+  client->connectionDetails.setAdapterSet(getString(details, "adapterSet"));
+  client->connectionDetails.setServerAddress(getString(details, "serverAddress"));
+  client->connectionDetails.setUser(getString(details, "user"));
+  client->connectionDetails.setPassword(getString(details, "password"));
+  auto options = getMap(arguments, "connectionOptions");
+  client->connectionOptions.setContentLength(getInt(options, "contentLength"));
+  client->connectionOptions.setFirstRetryMaxDelay(getInt(options, "firstRetryMaxDelay"));
+  client->connectionOptions.setForcedTransport(getString(options, "forcedTransport"));
+  // TODO httpExtraHeaders
+  //client->connectionOptions.setHttpExtraHeaders((Map<String, String>) options.get("httpExtraHeaders"));
+  client->connectionOptions.setIdleTimeout(getInt(options, "idleTimeout"));
+  client->connectionOptions.setKeepaliveInterval(getInt(options, "keepaliveInterval"));
+  client->connectionOptions.setPollingInterval(getInt(options, "pollingInterval"));
+  client->connectionOptions.setReconnectTimeout(getInt(options, "reconnectTimeout"));
+  client->connectionOptions.setRequestedMaxBandwidth(getString(options, "requestedMaxBandwidth"));
+  client->connectionOptions.setRetryDelay(getInt(options, "retryDelay"));
+  client->connectionOptions.setReverseHeartbeatInterval(getInt(options, "reverseHeartbeatInterval"));
+  client->connectionOptions.setSessionRecoveryTimeout(getInt(options, "sessionRecoveryTimeout"));
+  client->connectionOptions.setStalledTimeout(getInt(options, "stalledTimeout"));
+  client->connectionOptions.setHttpExtraHeadersOnSessionCreationOnly(getBool(options, "httpExtraHeadersOnSessionCreationOnly"));
+  client->connectionOptions.setServerInstanceAddressIgnored(getBool(options, "serverInstanceAddressIgnored"));
+  client->connectionOptions.setSlowingEnabled(getBool(options, "slowingEnabled"));
+  client->connect();
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_disconnect(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto client = getClient(call);
+  client->disconnect();
+  result->Success();
+}
+
+void MyClientListener::onServerError(int errorCode, const std::string& errorMessage) {
+  EncodableMap arguments{
+    { EncodableValue("errorCode"), EncodableValue(errorCode) },
+    { EncodableValue("errorMessage"), EncodableValue(errorMessage) },
+  };
+  invoke("onServerError", arguments);
+}
+
+void MyClientListener::onStatusChange(const std::string& status) {
+  EncodableMap arguments{
+      { EncodableValue("status"), EncodableValue(status) },
+  };
+  invoke("onStatusChange", arguments);
+}
+
+void MyClientListener::onPropertyChange(const std::string& property) {
+  EncodableMap arguments{
+      { EncodableValue("property"), EncodableValue(property) },
+  };
+  if (property == "serverInstanceAddress") {
+    arguments.insert({ "value", client->connectionDetails.getServerInstanceAddress() });
+  }
+  else if (property == "serverSocketName") {
+    arguments.insert({ "value", client->connectionDetails.getServerSocketName() });
+  }
+  else if (property == "clientIp") {
+    arguments.insert({ "value", client->connectionDetails.getClientIp() });
+  }
+  else if (property == "sessionId") {
+    arguments.insert({ "value", client->connectionDetails.getSessionId() });
+  }
+  else if (property == "realMaxBandwidth") {
+    arguments.insert({ "value", client->connectionOptions.getRealMaxBandwidth() });
+  }
+  else if (property == "idleTimeout") {
+    arguments.insert({ "value", client->connectionOptions.getIdleTimeout() });
+  }
+  else if (property == "keepaliveInterval") {
+    arguments.insert({ "value", client->connectionOptions.getKeepaliveInterval() });
+  }
+  else if (property == "pollingInterval") {
+    arguments.insert({ "value", client->connectionOptions.getPollingInterval() });
+  }
+  invoke("onPropertyChange", arguments);
+}
+
+void MyClientListener::invoke(const std::string& method, EncodableMap& arguments) {
+  arguments.insert({ EncodableValue("id"), EncodableValue(clientId) });
+  invokeMethod(plugin, "ClientListener." + method, arguments);
 }
 
 }  // namespace lightstreamer_flutter_client
