@@ -179,6 +179,7 @@ static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& 
     channelLogger->debug("Invoking " + method);
   }
   auto val = std::make_unique<flutter::EncodableValue>(arguments);
+  // TODO call on the platform thread
   channel->InvokeMethod(method, std::move(val));
 }
 
@@ -192,11 +193,11 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   {
     Client_disconnect(call, result);
   }
-  /*else if (method == "getStatus")
+  else if (method == "getStatus")
   {
     Client_getStatus(call, result);
   }
-  else if (method == "subscribe")
+  /*else if (method == "subscribe")
   {
     Client_subscribe(call, result);
   }
@@ -303,6 +304,12 @@ void LightstreamerFlutterClientPlugin::Client_disconnect(const flutter::MethodCa
   auto client = getClient(call);
   client->disconnect();
   result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_getStatus(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto client = getClient(call);
+  auto res = client->getStatus();
+  result->Success(flutter::EncodableValue(res));
 }
 
 void MyClientListener::onServerError(int errorCode, const std::string& errorMessage) {
