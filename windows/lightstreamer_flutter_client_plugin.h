@@ -21,16 +21,27 @@ class LightstreamerFlutterClientPlugin : public flutter::Plugin {
   std::map<std::string, std::shared_ptr<LS::LightstreamerClient>> _clientMap;
 
   /**
+   * Maps a subId (i.e. the `subId` field of a MethodCall object) to a Subscription.
+   * The mapping is created when `LightstreamerClient.subscribe` is called.
+   * It is removed when the map is cleaned.
+   */
+  std::map<std::string, std::shared_ptr<LS::Subscription>> _subMap;
+
+  /**
    * The channel through which the events fired by the listeners are communicated to the Flutter component.
    */
   std::shared_ptr<flutter::MethodChannel<flutter::EncodableValue>> _listenerChannel;
 
   std::shared_ptr<LS::LightstreamerClient> getClient(const flutter::MethodCall<flutter::EncodableValue>& call);
+  std::shared_ptr<LS::Subscription> getSubscription(const std::string& subId);
   void Client_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void Client_setLoggerProvider(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+  void Client_cleanResources(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void Client_connect(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void Client_disconnect(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void Client_getStatus(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+  void Client_subscribe(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+  void Client_unsubscribe(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 

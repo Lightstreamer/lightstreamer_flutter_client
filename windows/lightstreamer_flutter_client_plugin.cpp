@@ -1,6 +1,8 @@
 #include "lightstreamer_flutter_client_plugin.h"
 
 #include "Lightstreamer\ClientListener.h"
+#include "Lightstreamer\SubscriptionListener.h"
+#include "Lightstreamer\ItemUpdate.h"
 #include "Lightstreamer\ConsoleLoggerProvider.h"
 
 // This must be included before many other Windows headers.
@@ -33,7 +35,6 @@ namespace lightstreamer_flutter_client {
     std::string clientId;
     std::shared_ptr<LS::LightstreamerClient> client;
     std::shared_ptr<MyChannel> plugin;
-
     void invoke(const std::string& method, flutter::EncodableMap& arguments);
   public:
     MyClientListener(const std::string& clientId, std::shared_ptr<LS::LightstreamerClient> client, std::shared_ptr<MyChannel> plugin) :
@@ -44,6 +45,29 @@ namespace lightstreamer_flutter_client {
     void onServerError(int errorCode, const std::string& errorMessage);
     void onStatusChange(const std::string& status);
     void onPropertyChange(const std::string& property);
+  };
+
+  class MySubscriptionListener : public LS::SubscriptionListener {
+    std::string _subId;
+    std::shared_ptr<LS::Subscription> _sub;
+    std::shared_ptr<MyChannel> _plugin;
+    void invoke(const std::string& method, flutter::EncodableMap& arguments);
+  public:
+    MySubscriptionListener(const std::string& subId, std::shared_ptr<LS::Subscription> sub, std::shared_ptr<MyChannel> plugin) :
+      _subId(subId), _sub(sub), _plugin(plugin) {}
+    ~MySubscriptionListener() {}
+    void onListenEnd() {}
+    void onListenStart() {}
+    void onClearSnapshot(const std::string& itemName, int itemPos);
+    void onCommandSecondLevelItemLostUpdates(int lostUpdates, const std::string& key);
+    void onCommandSecondLevelSubscriptionError(int code, const std::string& message, const std::string& key);
+    void onEndOfSnapshot(const std::string& itemName, int itemPos);
+    void onItemLostUpdates(const std::string& itemName, int itemPos, int lostUpdates);
+    void onItemUpdate(LS::ItemUpdate& update);
+    void onSubscription();
+    void onSubscriptionError(int code, const std::string& message);
+    void onUnsubscription();
+    void onRealMaxFrequency(const std::string& frequency);
   };
 
   static inline flutter::EncodableMap getArguments(const flutter::MethodCall<flutter::EncodableValue>& call) {
@@ -79,8 +103,19 @@ namespace lightstreamer_flutter_client {
     return getArg<EncodableMap>(arguments, key);
   }
 
-  static inline EncodableList getList(const flutter::EncodableMap& arguments, const char* key) {
-    return getArg<EncodableList>(arguments, key);
+  static std::vector<std::string> getStringList(const flutter::EncodableMap& arguments, const char* key) {
+    EncodableValue val = arguments.at(EncodableValue(key));
+    // null values coming from Dart are converted into empty lists
+    if (val.IsNull()) {
+      return std::vector<std::string>();
+    }
+    assert(std::holds_alternative<EncodableList>(val));
+    EncodableList ls = std::get<EncodableList>(val);
+    std::vector<std::string> ls_;
+    for (auto& s : ls) {
+      ls_.push_back(std::get<std::string>(s));
+    }
+    return ls_;
   }
 
   template <typename T>
@@ -139,6 +174,7 @@ void LightstreamerFlutterClientPlugin::HandleMethodCall(
   if (className == "LightstreamerClient") {
     Client_handle(methodName, call, result);
   }
+  // TODO implement the other cases
   else {
     if (channelLogger->isErrorEnabled()) {
       channelLogger->error("Unknown method " + call.method_name());
@@ -173,6 +209,20 @@ std::shared_ptr<LS::LightstreamerClient> LightstreamerFlutterClientPlugin::getCl
   return ls;
 }
 
+std::shared_ptr<LS::Subscription> LightstreamerFlutterClientPlugin::getSubscription(const std::string& subId) {
+  auto sub = getValue(_subMap, subId);
+  if (sub == nullptr) {
+    auto errMsg = "Subscription " + subId + " doesn't exist";
+    if (channelLogger->isErrorEnabled()) {
+      channelLogger->error(errMsg);
+    }
+    // TODO throw IllegalStateException
+    //throw new IllegalStateException(errMsg);
+    throw "IllegalStateException: " + errMsg;
+  }
+  return sub;
+}
+
 static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& method, flutter::EncodableMap& arguments) {
   if (channelLogger->isDebugEnabled()) {
     // TODO print arguments
@@ -197,7 +247,7 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   {
     Client_getStatus(call, result);
   }
-  /*else if (method == "subscribe")
+  else if (method == "subscribe")
   {
     Client_subscribe(call, result);
   }
@@ -205,7 +255,7 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   {
     Client_unsubscribe(call, result);
   }
-  else if (method == "getSubscriptions")
+  /*else if (method == "getSubscriptions")
   {
     Client_getSubscriptions(call, result);
   }
@@ -224,11 +274,11 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   else if (method == "getCookies")
   {
     Client_getCookies(call, result);
-  }
+  }*/
   else if (method == "cleanResources")
   {
     Client_cleanResources(call, result);
-  }*/
+  }
   else
   {
     if (channelLogger->isErrorEnabled())
@@ -267,6 +317,11 @@ void LightstreamerFlutterClientPlugin::Client_setLoggerProvider(const flutter::M
   }
   // TODO memory leak
   LS::LightstreamerClient::setLoggerProvider(new LS::ConsoleLoggerProvider(level_));
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_cleanResources(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  // TODO Client_cleanResources
   result->Success();
 }
 
@@ -310,6 +365,86 @@ void LightstreamerFlutterClientPlugin::Client_getStatus(const flutter::MethodCal
   auto client = getClient(call);
   auto res = client->getStatus();
   result->Success(flutter::EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto options = getMap(arguments, "subscription");
+  auto subId = getString(options, "id");
+  auto mode = getString(options, "mode");
+  auto items = getStringList(options, "items");
+  auto fields = getStringList(options, "fields");
+  auto group = getString(options, "group");
+  auto schema = getString(options, "schema");
+  auto dataAdapter = getString(options, "dataAdapter");
+  auto bufferSize = getString(options, "bufferSize");
+  auto snapshot = getString(options, "snapshot");
+  auto requestedMaxFrequency = getString(options, "requestedMaxFrequency");
+  auto selector = getString(options, "selector");
+  auto dataAdapter2 = getString(options, "dataAdapter2");
+  auto fields2 = getStringList(options, "fields2");
+  auto schema2 = getString(options, "schema2");
+  auto sub = getValue(_subMap, subId);
+  if (sub == nullptr) {
+    sub = std::make_shared<LS::Subscription>(mode, std::vector<std::string>(), std::vector<std::string>());
+    sub->addListener(new MySubscriptionListener(subId, sub, _listenerChannel));
+    _subMap.insert({ subId, sub });
+  }
+  if (sub->isActive()) {
+    // TODO throw IllegalStateException
+    //throw new IllegalStateException("Cannot subscribe to an active Subscription");
+    throw "IllegalStateException: Cannot subscribe to an active Subscription";
+  }
+  if (!items.empty()) {
+    sub->setItems(items);
+  }
+  if (!fields.empty()) {
+    sub->setFields(fields);
+  }
+  if (!group.empty()) {
+    sub->setItemGroup(group);
+  }
+  if (!schema.empty()) {
+    sub->setFieldSchema(schema);
+  }
+  if (!dataAdapter.empty()) {
+    sub->setDataAdapter(dataAdapter);
+  }
+  if (!bufferSize.empty()) {
+    sub->setRequestedBufferSize(bufferSize);
+  }
+  if (!snapshot.empty()) {
+    sub->setRequestedSnapshot(snapshot);
+  }
+  if (!requestedMaxFrequency.empty()) {
+    sub->setRequestedMaxFrequency(requestedMaxFrequency);
+  }
+  if (!selector.empty()) {
+    sub->setSelector(selector);
+  }
+  if (!dataAdapter2.empty()) {
+    sub->setCommandSecondLevelDataAdapter(dataAdapter2);
+  }
+  if (!fields2.empty()) {
+    sub->setCommandSecondLevelFields(fields2);
+  }
+  if (!schema2.empty()) {
+    sub->setCommandSecondLevelFieldSchema(schema2);
+  }
+  // TODO memory leak?
+  client->subscribe(sub.get());
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_unsubscribe(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  // TODO memory leak?
+  client->unsubscribe(sub.get());
+  result->Success();
 }
 
 void MyClientListener::onServerError(int errorCode, const std::string& errorMessage) {
@@ -361,6 +496,131 @@ void MyClientListener::onPropertyChange(const std::string& property) {
 void MyClientListener::invoke(const std::string& method, EncodableMap& arguments) {
   arguments.insert({ EncodableValue("id"), EncodableValue(clientId) });
   invokeMethod(plugin, "ClientListener." + method, arguments);
+}
+
+void MySubscriptionListener::onClearSnapshot(const std::string& itemName, int itemPos) {
+  EncodableMap arguments{
+    { EncodableValue("itemName"), EncodableValue(itemName) },
+    { EncodableValue("itemPos"), EncodableValue(itemPos) },
+  };
+  invoke("onClearSnapshot", arguments);
+}
+
+void MySubscriptionListener::onCommandSecondLevelItemLostUpdates(int lostUpdates, const std::string& key) {
+  EncodableMap arguments{
+    { EncodableValue("lostUpdates"), EncodableValue(lostUpdates) },
+    { EncodableValue("key"), EncodableValue(key) },
+  };
+  invoke("onCommandSecondLevelItemLostUpdates", arguments);
+}
+
+void MySubscriptionListener::onCommandSecondLevelSubscriptionError(int code, const std::string& message, const std::string& key) {
+  EncodableMap arguments{
+    { EncodableValue("code"), EncodableValue(code) },
+    { EncodableValue("message"), EncodableValue(message) },
+    { EncodableValue("key"), EncodableValue(key) },
+  };
+  invoke("onCommandSecondLevelSubscriptionError", arguments);
+}
+
+void MySubscriptionListener::onEndOfSnapshot(const std::string& itemName, int itemPos) {
+  EncodableMap arguments{
+    { EncodableValue("itemName"), EncodableValue(itemName) },
+    { EncodableValue("itemPos"), EncodableValue(itemPos) },
+  };
+  invoke("onEndOfSnapshot", arguments);
+}
+
+void MySubscriptionListener::onItemLostUpdates(const std::string& itemName, int itemPos, int lostUpdates) {
+  EncodableMap arguments{
+    { EncodableValue("itemName"), EncodableValue(itemName) },
+    { EncodableValue("itemPos"), EncodableValue(itemPos) },
+    { EncodableValue("lostUpdates"), EncodableValue(lostUpdates) },
+  };
+  invoke("onItemLostUpdates", arguments);
+}
+
+void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
+  EncodableMap arguments{
+    { EncodableValue("itemName"), EncodableValue(update.getItemName()) },
+    { EncodableValue("itemPos"), EncodableValue(update.getItemPos()) },
+    { EncodableValue("isSnapshot"), EncodableValue(update.isSnapshot()) },
+  };
+  if (!_sub->getFields().empty() || !_sub->getCommandSecondLevelFields().empty()) {
+    try {
+      auto changedFields = update.getChangedFields();
+      auto fields = update.getFields();
+
+      EncodableMap changedFields_;
+      for (auto p : changedFields) {
+        changedFields_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+      }
+      EncodableMap fields_;
+      for (auto p : fields) {
+        fields_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+      }
+
+      arguments.insert({ EncodableValue("changedFields"), EncodableValue(changedFields_) });
+      arguments.insert({ EncodableValue("fields"), EncodableValue(fields_) });
+      // NB json fields are not supported by the C++ client library
+      arguments.insert({ EncodableValue("jsonFields"), EncodableValue(EncodableMap()) });
+    }
+    catch(...) {
+      // if the subscription doesn't have field names, the methods getChangedFields and
+      // getFields may throw exceptions
+    }
+  }
+  auto changedFieldsByPosition = update.getChangedFieldsByPosition();
+  auto fieldsByPosition = update.getFieldsByPosition();
+
+  EncodableMap changedFieldsByPosition_;
+  for (auto p : changedFieldsByPosition) {
+    changedFieldsByPosition_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+  }
+  EncodableMap fieldsByPosition_;
+  for (auto p : fieldsByPosition) {
+    fieldsByPosition_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+  }
+
+  arguments.insert({ EncodableValue("changedFieldsByPosition"), EncodableValue(changedFieldsByPosition_) });
+  arguments.insert({ EncodableValue("fieldsByPosition"), EncodableValue(fieldsByPosition_) });
+  // NB json fields are not supported by the C++ client library
+  arguments.insert({ EncodableValue("jsonFieldsByPosition"), EncodableValue(EncodableMap()) });
+  invoke("onItemUpdate", arguments);
+}
+
+void MySubscriptionListener::onSubscription() {
+  EncodableMap arguments{};
+  if ("COMMAND" == _sub->getMode()) {
+    arguments.insert({ EncodableValue("commandPosition"), EncodableValue(_sub->getCommandPosition()) });
+    arguments.insert({ EncodableValue("keyPosition"), EncodableValue(_sub->getKeyPosition()) });
+  }
+  invoke("onSubscription", arguments);
+}
+
+void MySubscriptionListener::onSubscriptionError(int code, const std::string& message) {
+  EncodableMap arguments{
+    { EncodableValue("errorCode"), EncodableValue(code) },
+    { EncodableValue("errorMessage"), EncodableValue(message) },
+  };
+  invoke("onSubscriptionError", arguments);
+}
+
+void MySubscriptionListener::onUnsubscription() {
+  EncodableMap arguments{};
+  invoke("onUnsubscription", arguments);
+}
+
+void MySubscriptionListener::onRealMaxFrequency(const std::string& frequency) {
+  EncodableMap arguments{
+    { EncodableValue("frequency"), EncodableValue(frequency) },
+  };
+  invoke("onRealMaxFrequency", arguments);
+}
+
+void MySubscriptionListener::invoke(const std::string& method, EncodableMap& arguments) {
+  arguments.insert({ EncodableValue("subId"), EncodableValue(_subId) });
+  invokeMethod(_plugin, "SubscriptionListener." + method, arguments);
 }
 
 }  // namespace lightstreamer_flutter_client
