@@ -43,6 +43,7 @@ class LightstreamerFlutterClientPlugin : public flutter::Plugin {
   void Client_subscribe(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void Client_unsubscribe(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void Client_getSubscriptions(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+  void Client_sendMessage(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 

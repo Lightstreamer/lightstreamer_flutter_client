@@ -2,6 +2,7 @@
 
 #include "Lightstreamer\ClientListener.h"
 #include "Lightstreamer\SubscriptionListener.h"
+#include "Lightstreamer\ClientMessageListener.h"
 #include "Lightstreamer\ItemUpdate.h"
 #include "Lightstreamer\ConsoleLoggerProvider.h"
 
@@ -70,24 +71,37 @@ namespace lightstreamer_flutter_client {
     void onRealMaxFrequency(const std::string& frequency);
   };
 
+  class MyClientMessageListener : public LS::ClientMessageListener {
+    std::string _msgId;
+    std::shared_ptr<MyChannel> _plugin;
+    void invoke(const std::string& method, flutter::EncodableMap& arguments);
+  public:
+    MyClientMessageListener(const std::string& msgId, std::shared_ptr<MyChannel> plugin) 
+      : _msgId(msgId), _plugin(plugin) {}
+    ~MyClientMessageListener() {}
+    void onAbort(const std::string& originalMessage, bool sentOnNetwork);
+    void onDeny(const std::string& originalMessage, int code, const std::string& error);
+    void onDiscarded(const std::string& originalMessage);
+    void onError(const std::string& originalMessage);
+    void onProcessed(const std::string& originalMessage, const std::string& response);
+  };
+
   static inline flutter::EncodableMap getArguments(const flutter::MethodCall<flutter::EncodableValue>& call) {
     return std::get<EncodableMap>(*call.arguments());
   }
 
-  template <typename T>
-  static T getArg(const flutter::EncodableMap& arguments, const char* key) {
+  static int32_t getInt(const flutter::EncodableMap& arguments, const char* key, int32_t orElse = -1) {
     EncodableValue val = arguments.at(EncodableValue(key));
-    assert(std::holds_alternative<T>(val));
-    return std::get<T>(val);
+    if (val.IsNull()) {
+      return orElse;
+    }
+    assert(std::holds_alternative<int32_t>(val));
+    return std::get<int32_t>(val);
   }
 
-  static inline int32_t getInt(const flutter::EncodableMap& arguments, const char* key) {
-    return getArg<int32_t>(arguments, key);
-  }
-
+  /// null values are converted into empty strings
   static std::string getString(const flutter::EncodableMap& arguments, const char* key) {
     EncodableValue val = arguments.at(EncodableValue(key));
-    // null values coming from Dart are converted into empty strings
     if (val.IsNull()) {
       return "";
     }
@@ -95,17 +109,28 @@ namespace lightstreamer_flutter_client {
     return std::get<std::string>(val);
   }
 
-  static inline bool getBool(const flutter::EncodableMap& arguments, const char* key) {
-    return getArg<bool>(arguments, key);
+  static bool getBool(const flutter::EncodableMap& arguments, const char* key, bool orElse = false) {
+    EncodableValue val = arguments.at(EncodableValue(key));
+    if (val.IsNull()) {
+      return orElse;
+    }
+    assert(std::holds_alternative<bool>(val));
+    return std::get<bool>(val);
   }
 
-  static inline EncodableMap getMap(const flutter::EncodableMap& arguments, const char* key) {
-    return getArg<EncodableMap>(arguments, key);
+  /// null values are converted into empty maps
+  static EncodableMap getMap(const flutter::EncodableMap& arguments, const char* key) {
+    EncodableValue val = arguments.at(EncodableValue(key));
+    if (val.IsNull()) {
+      return EncodableMap();
+    }
+    assert(std::holds_alternative<EncodableMap>(val));
+    return std::get<EncodableMap>(val);
   }
 
+  /// null values are converted into empty lists
   static std::vector<std::string> getStringList(const flutter::EncodableMap& arguments, const char* key) {
     EncodableValue val = arguments.at(EncodableValue(key));
-    // null values coming from Dart are converted into empty lists
     if (val.IsNull()) {
       return std::vector<std::string>();
     }
@@ -255,7 +280,7 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   }
   else if (method == "sendMessage")
   {
-    // TODO Client_sendMessage(call, result);
+    Client_sendMessage(call, result);
   }
   else if (method == "setLoggerProvider")
   {
@@ -453,6 +478,22 @@ void LightstreamerFlutterClientPlugin::Client_getSubscriptions(const flutter::Me
   result->Success(res);
 }
 
+void LightstreamerFlutterClientPlugin::Client_sendMessage(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto msgId = getString(arguments, "msgId");
+  auto message = getString(arguments, "message");
+  auto sequence = getString(arguments, "sequence");
+  int delayTimeout = getInt(arguments, "delayTimeout", -1);
+  bool enqueueWhileDisconnected = getBool(arguments, "enqueueWhileDisconnected", false);
+  MyClientMessageListener* listener = nullptr;
+  if (!msgId.empty()) {
+    listener = new MyClientMessageListener(msgId, _listenerChannel);
+  }
+  client->sendMessage(message, sequence, delayTimeout, listener, enqueueWhileDisconnected);
+  result->Success();
+}
+
 void MyClientListener::onServerError(int errorCode, const std::string& errorMessage) {
   EncodableMap arguments{
     { EncodableValue("errorCode"), EncodableValue(errorCode) },
@@ -627,6 +668,50 @@ void MySubscriptionListener::onRealMaxFrequency(const std::string& frequency) {
 void MySubscriptionListener::invoke(const std::string& method, EncodableMap& arguments) {
   arguments.insert({ EncodableValue("subId"), EncodableValue(_subId) });
   invokeMethod(_plugin, "SubscriptionListener." + method, arguments);
+}
+
+void MyClientMessageListener::onAbort(const std::string& originalMessage, bool sentOnNetwork) {
+  EncodableMap arguments{
+    { EncodableValue("originalMessage"), EncodableValue(originalMessage) },
+    { EncodableValue("sentOnNetwork"), EncodableValue(sentOnNetwork) },
+  };
+  invoke("onAbort", arguments);
+}
+
+void MyClientMessageListener::onDeny(const std::string& originalMessage, int errorCode, const std::string& errorMessage) {
+  EncodableMap arguments{
+    { EncodableValue("originalMessage"), EncodableValue(originalMessage) },
+    { EncodableValue("errorCode"), EncodableValue(errorCode) },
+    { EncodableValue("errorMessage"), EncodableValue(errorMessage) },
+  };
+  invoke("onDeny", arguments);
+}
+
+void MyClientMessageListener::onDiscarded(const std::string& originalMessage) {
+  EncodableMap arguments{
+    { EncodableValue("originalMessage"), EncodableValue(originalMessage) },
+  };
+  invoke("onDiscarded", arguments);
+}
+
+void MyClientMessageListener::onError(const std::string& originalMessage) {
+  EncodableMap arguments{
+    { EncodableValue("originalMessage"), EncodableValue(originalMessage) },
+  };
+  invoke("onError", arguments);
+}
+
+void MyClientMessageListener::onProcessed(const std::string& originalMessage, const std::string& response) {
+  EncodableMap arguments{
+    { EncodableValue("originalMessage"), EncodableValue(originalMessage) },
+    { EncodableValue("response"), EncodableValue(response) },
+  };
+  invoke("onProcessed", arguments);
+}
+
+void MyClientMessageListener::invoke(const std::string& method, EncodableMap& arguments) {
+  arguments.insert({ EncodableValue("msgId"), EncodableValue(_msgId) });
+  invokeMethod(_plugin, "ClientMessageListener." + method, arguments);
 }
 
 }  // namespace lightstreamer_flutter_client
