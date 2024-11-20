@@ -251,7 +251,7 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   }
   else if (method == "getSubscriptions")
   {
-    // TODO Client_getSubscriptions(call, result);
+    Client_getSubscriptions(call, result);
   }
   else if (method == "sendMessage")
   {
@@ -439,6 +439,18 @@ void LightstreamerFlutterClientPlugin::Client_unsubscribe(const flutter::MethodC
   // TODO memory leak?
   client->unsubscribe(sub.get());
   result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_getSubscriptions(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto client = getClient(call);
+  std::vector<LS::Subscription*> subs = client->getSubscriptions();
+  EncodableList res;
+  for (auto& e : _subMap) {
+    if (std::find(subs.begin(), subs.end(), e.second.get()) != subs.end()) {
+      res.push_back(EncodableValue(e.first));
+    }
+  }
+  result->Success(res);
 }
 
 void MyClientListener::onServerError(int errorCode, const std::string& errorMessage) {
