@@ -340,7 +340,28 @@ void LightstreamerFlutterClientPlugin::Client_setLoggerProvider(const flutter::M
 }
 
 void LightstreamerFlutterClientPlugin::Client_cleanResources(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
-  // TODO Client_cleanResources
+  auto arguments = getArguments(call);
+  auto clientIds = getStringList(arguments, "clientIds");
+  auto subIds = getStringList(arguments, "subIds");
+  int removedClientIds = 0;
+  for (auto& id : clientIds) {
+    auto i = _clientMap.find(id);
+    if (i != _clientMap.end()) {
+      _clientMap.erase(i);
+      removedClientIds++;
+    }
+  }
+  int removedSubIds = 0;
+  for (auto& id : subIds) {
+    auto i = _subMap.find(id);
+    if (i != _subMap.end()) {
+      _subMap.erase(i);
+      removedSubIds++;
+    }
+  }
+  if (channelLogger->isDebugEnabled()) {
+    channelLogger->debug("Cleaned clients: " + std::to_string(removedClientIds) + " subscriptions: " + std::to_string(removedSubIds));
+  }
   result->Success();
 }
 
