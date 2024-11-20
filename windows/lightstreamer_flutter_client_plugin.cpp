@@ -171,30 +171,25 @@ void LightstreamerFlutterClientPlugin::HandleMethodCall(
   assert(pos != std::string::npos);
   auto className = name.substr(0, pos);
   auto methodName = name.substr(pos + 1);
+  // TODO wrap in a try-catch
   if (className == "LightstreamerClient") {
     Client_handle(methodName, call, result);
   }
-  // TODO implement the other cases
+  else if (className == "ConnectionDetails") {
+    // TODO ConnectionDetails_handle(methodName, call, result);
+  }
+  else if (className == "ConnectionOptions") {
+    // TODO ConnectionOptions_handle(methodName, call, result);
+  }
+  else if (className == "Subscription") {
+    // TODO Subscription_handle(methodName, call, result);
+  }
   else {
     if (channelLogger->isErrorEnabled()) {
       channelLogger->error("Unknown method " + call.method_name());
     }
     result->NotImplemented();
   }
-  /*if (method_call.method_name().compare("getPlatformVersion") == 0) {
-    std::ostringstream version_stream;
-    version_stream << "Windows ";
-    if (IsWindows10OrGreater()) {
-      version_stream << "10+";
-    } else if (IsWindows8OrGreater()) {
-      version_stream << "8";
-    } else if (IsWindows7OrGreater()) {
-      version_stream << "7";
-    }
-    result->Success(flutter::EncodableValue(version_stream.str()));
-  } else {
-    result->NotImplemented();
-  }*/
 }
 
 std::shared_ptr<LS::LightstreamerClient> LightstreamerFlutterClientPlugin::getClient(const flutter::MethodCall<flutter::EncodableValue>& call) {
@@ -234,7 +229,6 @@ static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& 
 }
 
 void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
-  // TODO complete
   if (method == "connect")
   {
     Client_connect(call, result);
@@ -255,26 +249,26 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   {
     Client_unsubscribe(call, result);
   }
-  /*else if (method == "getSubscriptions")
+  else if (method == "getSubscriptions")
   {
-    Client_getSubscriptions(call, result);
+    // TODO Client_getSubscriptions(call, result);
   }
   else if (method == "sendMessage")
   {
-    Client_sendMessage(call, result);
-  }*/
+    // TODO Client_sendMessage(call, result);
+  }
   else if (method == "setLoggerProvider")
   {
     Client_setLoggerProvider(call, result);
   }
-  /*else if (method == "addCookies")
+  else if (method == "addCookies")
   {
-    Client_addCookies(call, result);
+    // TODO Client_addCookies(call, result);
   }
   else if (method == "getCookies")
   {
-    Client_getCookies(call, result);
-  }*/
+    // TODO Client_getCookies(call, result);
+  }
   else if (method == "cleanResources")
   {
     Client_cleanResources(call, result);
