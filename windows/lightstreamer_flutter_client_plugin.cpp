@@ -288,11 +288,11 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   }
   else if (method == "addCookies")
   {
-    // TODO Client_addCookies(call, result);
+    Client_addCookies(call, result);
   }
   else if (method == "getCookies")
   {
-    // TODO Client_getCookies(call, result);
+    Client_getCookies(call, result);
   }
   else if (method == "cleanResources")
   {
@@ -337,6 +337,25 @@ void LightstreamerFlutterClientPlugin::Client_setLoggerProvider(const flutter::M
   // TODO memory leak
   LS::LightstreamerClient::setLoggerProvider(new LS::ConsoleLoggerProvider(level_));
   result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_addCookies(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto arguments = getArguments(call);
+  auto uri = getString(arguments, "uri");
+  auto cookies = getStringList(arguments, "cookies");
+  LS::LightstreamerClient::addCookies(uri, cookies);
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_getCookies(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto arguments = getArguments(call);
+  auto uri = getString(arguments, "uri");
+  auto cookies = LS::LightstreamerClient::getCookies(uri);
+  EncodableList res;
+  for (auto& c : cookies) {
+    res.push_back(EncodableValue(c));
+  }
+  result->Success(res);
 }
 
 void LightstreamerFlutterClientPlugin::Client_cleanResources(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
