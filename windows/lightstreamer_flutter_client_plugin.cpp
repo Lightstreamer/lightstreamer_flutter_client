@@ -201,10 +201,10 @@ void LightstreamerFlutterClientPlugin::HandleMethodCall(
     Client_handle(methodName, call, result);
   }
   else if (className == "ConnectionDetails") {
-    // TODO ConnectionDetails_handle(methodName, call, result);
+    ConnectionDetails_handle(methodName, call, result);
   }
   else if (className == "ConnectionOptions") {
-    // TODO ConnectionOptions_handle(methodName, call, result);
+    ConnectionOptions_handle(methodName, call, result);
   }
   else if (className == "Subscription") {
     // TODO Subscription_handle(methodName, call, result);
@@ -297,6 +297,45 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   else if (method == "cleanResources")
   {
     Client_cleanResources(call, result);
+  }
+  else
+  {
+    if (channelLogger->isErrorEnabled())
+    {
+      channelLogger->error("Unknown method " + call.method_name());
+    }
+    result->NotImplemented();
+  }
+}
+
+void LightstreamerFlutterClientPlugin::ConnectionDetails_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  if (method == "setServerAddress")
+  {
+    Details_setServerAddress(call, result);
+  }
+  else
+  {
+    if (channelLogger->isErrorEnabled())
+    {
+      channelLogger->error("Unknown method " + call.method_name());
+    }
+    result->NotImplemented();
+  }
+}
+
+void LightstreamerFlutterClientPlugin::ConnectionOptions_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  if (method == "setForcedTransport")
+  {
+    ConnectionOptions_setForcedTransport(call, result);
+  }
+  else if (method == "setRequestedMaxBandwidth")
+  {
+    ConnectionOptions_setRequestedMaxBandwidth(call, result);
+  }
+  else if (method == "setReverseHeartbeatInterval")
+  {
+    ConnectionOptions_setReverseHeartbeatInterval(call, result);
   }
   else
   {
@@ -534,6 +573,43 @@ void LightstreamerFlutterClientPlugin::Client_sendMessage(const flutter::MethodC
   result->Success();
 }
 
+void LightstreamerFlutterClientPlugin::Details_setServerAddress(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto newVal = getString(arguments, "newVal");
+  client->connectionDetails.setServerAddress(newVal);
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::ConnectionOptions_setForcedTransport(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto newVal = getString(arguments, "newVal");
+  client->connectionOptions.setForcedTransport(newVal);
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::ConnectionOptions_setRequestedMaxBandwidth(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto newVal = getString(arguments, "newVal");
+  client->connectionOptions.setRequestedMaxBandwidth(newVal);
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::ConnectionOptions_setReverseHeartbeatInterval(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto client = getClient(call);
+  auto newVal = getInt(arguments, "newVal");
+  client->connectionOptions.setReverseHeartbeatInterval(newVal);
+  result->Success();
+}
+
+// ********** MyClientListener implementation **********
+
 void MyClientListener::onServerError(int errorCode, const std::string& errorMessage) {
   EncodableMap arguments{
     { EncodableValue("errorCode"), EncodableValue(errorCode) },
@@ -584,6 +660,8 @@ void MyClientListener::invoke(const std::string& method, EncodableMap& arguments
   arguments.insert({ EncodableValue("id"), EncodableValue(clientId) });
   invokeMethod(plugin, "ClientListener." + method, arguments);
 }
+
+// ********** MySubscriptionListener implementation **********
 
 void MySubscriptionListener::onClearSnapshot(const std::string& itemName, int itemPos) {
   EncodableMap arguments{
@@ -709,6 +787,8 @@ void MySubscriptionListener::invoke(const std::string& method, EncodableMap& arg
   arguments.insert({ EncodableValue("subId"), EncodableValue(_subId) });
   invokeMethod(_plugin, "SubscriptionListener." + method, arguments);
 }
+
+// ********** MyClientMessageListener implementation **********
 
 void MyClientMessageListener::onAbort(const std::string& originalMessage, bool sentOnNetwork) {
   EncodableMap arguments{
