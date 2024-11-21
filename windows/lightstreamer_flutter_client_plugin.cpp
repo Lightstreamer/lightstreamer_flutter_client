@@ -207,7 +207,7 @@ void LightstreamerFlutterClientPlugin::HandleMethodCall(
     ConnectionOptions_handle(methodName, call, result);
   }
   else if (className == "Subscription") {
-    // TODO Subscription_handle(methodName, call, result);
+    Subscription_handle(methodName, call, result);
   }
   else {
     if (channelLogger->isErrorEnabled()) {
@@ -346,6 +346,57 @@ void LightstreamerFlutterClientPlugin::ConnectionOptions_handle(std::string& met
     result->NotImplemented();
   }
 }
+
+void LightstreamerFlutterClientPlugin::Subscription_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+    if (method == "getCommandPosition") {
+      Subscription_getCommandPosition(call, result);
+    }
+    else if (method == "getKeyPosition") {
+      Subscription_getKeyPosition(call, result);
+    }
+    else if (method == "setRequestedMaxFrequency") {
+      Subscription_setRequestedMaxFrequency(call, result);
+    }
+    else if (method == "isActive") {
+      Subscription_isActive(call, result);
+    }
+    else if (method == "isSubscribed") {
+      Subscription_isSubscribed(call, result);
+    }
+    else if (method == "getValueByItemNameAndFieldName") {
+      Subscription_getValueByItemNameAndFieldName(call, result);
+    }
+    else if (method == "getValueByItemNameAndFieldPos") {
+      Subscription_getValueByItemNameAndFieldPos(call, result);
+    }
+    else if (method == "getValueByItemPosAndFieldName") {
+      Subscription_getValueByItemPosAndFieldName(call, result);
+    }
+    else if (method == "getValueByItemPosAndFieldPos") {
+      Subscription_getValueByItemPosAndFieldPos(call, result);
+    }
+    else if (method == "getCommandValueByItemNameAndFieldName") {
+      Subscription_getCommandValueByItemNameAndFieldName(call, result);
+    }
+    else if (method == "getCommandValueByItemNameAndFieldPos") {
+      Subscription_getCommandValueByItemNameAndFieldPos(call, result);
+    }
+    else if (method == "getCommandValueByItemPosAndFieldName") {
+      Subscription_getCommandValueByItemPosAndFieldName(call, result);
+    }
+    else if (method == "getCommandValueByItemPosAndFieldPos") {
+      Subscription_getCommandValueByItemPosAndFieldPos(call, result);
+    }
+    else {
+      if (channelLogger->isErrorEnabled()) {
+        channelLogger->error("Unknown method " + call.method_name());
+      }
+      result->NotImplemented();
+    }
+}
+
+// ********** LightstreamerClient implementation **********
 
 void LightstreamerFlutterClientPlugin::Client_setLoggerProvider(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
   auto arguments = getArguments(call);
@@ -573,6 +624,8 @@ void LightstreamerFlutterClientPlugin::Client_sendMessage(const flutter::MethodC
   result->Success();
 }
 
+// ********** ConnectionDetails implementation **********
+
 void LightstreamerFlutterClientPlugin::Details_setServerAddress(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
   auto arguments = getArguments(call);
   auto client = getClient(call);
@@ -580,6 +633,8 @@ void LightstreamerFlutterClientPlugin::Details_setServerAddress(const flutter::M
   client->connectionDetails.setServerAddress(newVal);
   result->Success();
 }
+
+// ********** ConnectionOptions implementation **********
 
 void LightstreamerFlutterClientPlugin::ConnectionOptions_setForcedTransport(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 {
@@ -606,6 +661,146 @@ void LightstreamerFlutterClientPlugin::ConnectionOptions_setReverseHeartbeatInte
   auto newVal = getInt(arguments, "newVal");
   client->connectionOptions.setReverseHeartbeatInterval(newVal);
   result->Success();
+}
+
+// ********** Subscription implementation **********
+
+void LightstreamerFlutterClientPlugin::Subscription_getCommandPosition(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto res = sub->getCommandPosition();
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getKeyPosition(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto res = sub->getKeyPosition();
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_setRequestedMaxFrequency(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto newVal = getString(arguments, "newVal");
+  auto sub = getSubscription(subId);
+  sub->setRequestedMaxFrequency(newVal);
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_isActive(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto res = sub->isActive();
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_isSubscribed(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto res = sub->isSubscribed();
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getValueByItemNameAndFieldName(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getString(arguments, "item");
+  auto field = getString(arguments, "field");
+  auto res = sub->getValue(item, field);
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getValueByItemNameAndFieldPos(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getString(arguments, "item");
+  auto field = getInt(arguments, "field");
+  auto res = sub->getValue(item, field);
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getValueByItemPosAndFieldName(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getInt(arguments, "item");
+  auto field = getString(arguments, "field");
+  auto res = sub->getValue(item, field);
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getValueByItemPosAndFieldPos(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getInt(arguments, "item");
+  auto field = getInt(arguments, "field");
+  auto res = sub->getValue(item, field);
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getCommandValueByItemNameAndFieldName(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getString(arguments, "item");
+  auto key = getString(arguments, "key");
+  auto field = getString(arguments, "field");
+  auto res = sub->getCommandValue(item, key, field);
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getCommandValueByItemNameAndFieldPos(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getString(arguments, "item");
+  auto key = getString(arguments, "key");
+  auto field = getInt(arguments, "field");
+  auto res = sub->getCommandValue(item, key, field);
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getCommandValueByItemPosAndFieldName(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getInt(arguments, "item");
+  auto key = getString(arguments, "key");
+  auto field = getString(arguments, "field");
+  auto res = sub->getCommandValue(item, key, field);
+  result->Success(EncodableValue(res));
+}
+
+void LightstreamerFlutterClientPlugin::Subscription_getCommandValueByItemPosAndFieldPos(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+{
+  auto arguments = getArguments(call);
+  auto subId = getString(arguments, "subId");
+  auto sub = getSubscription(subId);
+  auto item = getInt(arguments, "item");
+  auto key = getString(arguments, "key");
+  auto field = getInt(arguments, "field");
+  auto res = sub->getCommandValue(item, key, field);
+  result->Success(EncodableValue(res));
 }
 
 // ********** MyClientListener implementation **********
