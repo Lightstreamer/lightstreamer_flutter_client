@@ -1,5 +1,8 @@
 // ignore_for_file: unnecessary_new, prefer_interpolation_to_compose_strings
 
+// MPN is not available on windows
+@TestOn('!windows')
+
 import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

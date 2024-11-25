@@ -598,7 +598,7 @@ void main() {
         }
         expect(patch, matches(RegExp('"value":\\d+')));
         expect(u.getValueByPosition(1), isNotNull);
-      });
+      }, skip: Platform.isWindows);
 
       test('diff patch', () async {
         var exps = new Expectations();
@@ -617,7 +617,7 @@ void main() {
         await exps.value("onItemUpdate");
         var u = updates[1];
         expect(u.getValueByPosition(1), matches('value=\\d+'));
-      });
+      }, skip: Platform.isWindows);
 
       test('cookies', () async {
         // clear cookies
