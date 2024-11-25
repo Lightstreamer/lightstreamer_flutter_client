@@ -102,11 +102,12 @@ class NativeBridge {
   }
 
   Future<void> client_sendMessage(String clientId, ClientMessageListener? listener, Map<String, dynamic> arguments) async {
+    var msgId = null;
     if (listener != null) {
-      var msgId = 'msg${_msgIdGenerator++}';
+      msgId = 'msg${_msgIdGenerator++}';
       _msgListenerMap[msgId] = listener;
-      arguments['msgId'] = msgId;
     }
+    arguments['msgId'] = msgId;
     return await _invokeClientMethod(clientId, 'sendMessage', arguments);
   }
 
