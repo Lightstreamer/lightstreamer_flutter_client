@@ -190,30 +190,46 @@ void LightstreamerFlutterClientPlugin::HandleMethodCall(
     // TODO log arguments
     channelLogger->debug("Accepting " + call.method_name());
   }
-  auto name = call.method_name();
-  auto pos = name.find(".");
-  // TODO check condition
-  assert(pos != std::string::npos);
-  auto className = name.substr(0, pos);
-  auto methodName = name.substr(pos + 1);
-  // TODO wrap in a try-catch
-  if (className == "LightstreamerClient") {
-    Client_handle(methodName, call, result);
-  }
-  else if (className == "ConnectionDetails") {
-    ConnectionDetails_handle(methodName, call, result);
-  }
-  else if (className == "ConnectionOptions") {
-    ConnectionOptions_handle(methodName, call, result);
-  }
-  else if (className == "Subscription") {
-    Subscription_handle(methodName, call, result);
-  }
-  else {
-    if (channelLogger->isErrorEnabled()) {
-      channelLogger->error("Unknown method " + call.method_name());
+  try {
+    auto name = call.method_name();
+    auto pos = name.find(".");
+    // TODO check condition
+    assert(pos != std::string::npos);
+    auto className = name.substr(0, pos);
+    auto methodName = name.substr(pos + 1);
+    if (className == "LightstreamerClient") {
+      Client_handle(methodName, call, result);
     }
-    result->NotImplemented();
+    else if (className == "ConnectionDetails") {
+      ConnectionDetails_handle(methodName, call, result);
+    }
+    else if (className == "ConnectionOptions") {
+      ConnectionOptions_handle(methodName, call, result);
+    }
+    else if (className == "Subscription") {
+      Subscription_handle(methodName, call, result);
+    }
+    else {
+      if (channelLogger->isErrorEnabled()) {
+        channelLogger->error("Unknown method " + call.method_name());
+      }
+      result->NotImplemented();
+    }
+  }
+  catch (const std::exception& e)
+  {
+    if (channelLogger->isErrorEnabled()) {
+      channelLogger->error(e.what());
+    }
+    result->Error("Lightstreamer Internal Error", e.what());
+  }
+  catch (...)
+  {
+    auto errorMsg = "Unknown error";
+    if (channelLogger->isErrorEnabled()) {
+      channelLogger->error(errorMsg);
+    }
+    result->Error("Lightstreamer Internal Error", errorMsg);
   }
 }
 
