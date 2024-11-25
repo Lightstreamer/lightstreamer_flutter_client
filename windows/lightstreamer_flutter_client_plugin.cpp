@@ -252,9 +252,7 @@ std::shared_ptr<LS::Subscription> LightstreamerFlutterClientPlugin::getSubscript
     if (channelLogger->isErrorEnabled()) {
       channelLogger->error(errMsg);
     }
-    // TODO throw IllegalStateException
-    //throw new IllegalStateException(errMsg);
-    throw "IllegalStateException: " + errMsg;
+    throw std::runtime_error("IllegalStateException: " + errMsg);
   }
   return sub;
 }
@@ -557,9 +555,7 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
     _subMap.insert({ subId, sub });
   }
   if (sub->isActive()) {
-    // TODO throw IllegalStateException
-    //throw new IllegalStateException("Cannot subscribe to an active Subscription");
-    throw "IllegalStateException: Cannot subscribe to an active Subscription";
+    throw std::runtime_error("IllegalStateException: Cannot subscribe to an active Subscription");
   }
   if (!items.empty()) {
     sub->setItems(items);
