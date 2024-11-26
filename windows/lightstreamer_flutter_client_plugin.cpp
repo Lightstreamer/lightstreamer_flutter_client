@@ -33,6 +33,9 @@ namespace lightstreamer_flutter_client {
 
   static LS::Logger* channelLogger;
 
+  static std::string encodableValueToString(const flutter::EncodableValue& value);
+  static std::string encodableMapToString(const flutter::EncodableMap& map);
+
   class MyClientListener : public LS::ClientListener {
     std::string clientId;
     std::shared_ptr<LS::LightstreamerClient> client;
@@ -201,13 +204,12 @@ void LightstreamerFlutterClientPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   if (channelLogger->isDebugEnabled()) {
-    // TODO log arguments
-    channelLogger->debug("Accepting " + call.method_name());
+    auto arguments = getArguments(call);
+    channelLogger->debug("Accepting " + call.method_name() + " " + encodableMapToString(arguments));
   }
   try {
-    auto name = call.method_name();
+    auto& name = call.method_name();
     auto pos = name.find(".");
-    // TODO check condition
     assert(pos != std::string::npos);
     auto className = name.substr(0, pos);
     auto methodName = name.substr(pos + 1);
@@ -273,8 +275,7 @@ std::shared_ptr<LS::Subscription> LightstreamerFlutterClientPlugin::getSubscript
 
 static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& method, flutter::EncodableMap& arguments) {
   if (channelLogger->isDebugEnabled()) {
-    // TODO print arguments
-    channelLogger->debug("Invoking " + method);
+    channelLogger->debug("Invoking " + method + " " + encodableMapToString(arguments));
   }
   auto val = std::make_unique<flutter::EncodableValue>(arguments);
   // TODO call on the platform thread
@@ -1061,6 +1062,61 @@ void MyClientMessageListener::onProcessed(const std::string& originalMessage, co
 void MyClientMessageListener::invoke(const std::string& method, EncodableMap& arguments) {
   arguments.insert({ EncodableValue("msgId"), EncodableValue(_msgId) });
   invokeMethod(_plugin, "ClientMessageListener." + method, arguments);
+}
+
+std::string encodableValueToString(const flutter::EncodableValue& value) {
+  if (std::holds_alternative<std::monostate>(value)) {
+    return "null";
+  }
+  else if (std::holds_alternative<bool>(value)) {
+    return std::get<bool>(value) ? "true" : "false";
+  }
+  else if (std::holds_alternative<int32_t>(value)) {
+    return std::to_string(std::get<int32_t>(value));
+  }
+  else if (std::holds_alternative<int64_t>(value)) {
+    return std::to_string(std::get<int64_t>(value));
+  }
+  else if (std::holds_alternative<double>(value)) {
+    return std::to_string(std::get<double>(value));
+  }
+  else if (std::holds_alternative<std::string>(value)) {
+    return std::get<std::string>(value);
+  }
+  else if (std::holds_alternative<flutter::EncodableList>(value)) {
+    std::ostringstream oss;
+    oss << "[";
+    auto& lst = std::get<flutter::EncodableList>(value);
+    auto cnt = lst.size() - 1;
+    for (const auto& item : lst) {
+      oss << encodableValueToString(item);
+      if (cnt-- > 0) {
+        oss << ", ";
+      }
+    }
+    oss << "]";
+    return oss.str();
+  }
+  else if (std::holds_alternative<flutter::EncodableMap>(value)) {
+    return encodableMapToString(std::get<flutter::EncodableMap>(value));
+  }
+  else {
+    return "unknown";
+  }
+}
+
+std::string encodableMapToString(const flutter::EncodableMap& map) {
+  std::ostringstream oss;
+  oss << "{";
+  auto cnt = map.size() - 1;
+  for (const auto& pair : map) {
+    oss << encodableValueToString(pair.first) << ": " << encodableValueToString(pair.second);
+    if (cnt-- > 0) {
+      oss << ", ";
+    }
+  }
+  oss << "}";
+  return oss.str();
 }
 
 }  // namespace lightstreamer_flutter_client
