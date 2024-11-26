@@ -273,6 +273,7 @@ std::shared_ptr<LS::Subscription> LightstreamerFlutterClientPlugin::getSubscript
   return sub;
 }
 
+// ***** WARNING this method can be called by a thread other than the Flutter thread *****
 static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& method, flutter::EncodableMap& arguments) {
   if (channelLogger->isDebugEnabled()) {
     channelLogger->debug("Invoking " + method + " " + encodableMapToString(arguments));
@@ -454,6 +455,9 @@ void LightstreamerFlutterClientPlugin::Client_setLoggerProvider(const flutter::M
     level_ = LS::ConsoleLogLevel::Error;
   }
   // TODO memory leak
+  // when the current logger provider is replaced, it should be disposed of to avoid a memory leak.
+  // however, since the Lighstreamer library can own it or a child logger, its destruction can result in dangling pointers,
+  // which are worse than a small memory leak
   auto providerClass = getString(arguments, "provider");
   LS::LoggerProvider* provider;
   if (providerClass == "FileLoggerProvider") {
@@ -616,7 +620,8 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
   if (!schema2.empty()) {
     sub->setCommandSecondLevelFieldSchema(schema2);
   }
-  // TODO a possible dangling pointer if `sub` is removed from `_subMap` while the object is still subscribed?
+  // TODO dangling pointer?
+  // if `sub` is removed from `_subMap` while the object is still subscribed, it can result in a possible dangling pointer
   client->subscribe(sub.get());
   result->Success();
 }
