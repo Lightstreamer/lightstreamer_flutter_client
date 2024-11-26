@@ -616,7 +616,7 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
   if (!schema2.empty()) {
     sub->setCommandSecondLevelFieldSchema(schema2);
   }
-  // TODO memory leak?
+  // TODO a possible dangling pointer if `sub` is removed from `_subMap` while the object is still subscribed?
   client->subscribe(sub.get());
   result->Success();
 }
@@ -626,7 +626,6 @@ void LightstreamerFlutterClientPlugin::Client_unsubscribe(const flutter::MethodC
   auto client = getClient(call);
   auto subId = getString(arguments, "subId");
   auto sub = getSubscription(subId);
-  // TODO memory leak?
   client->unsubscribe(sub.get());
   result->Success();
 }
