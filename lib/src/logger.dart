@@ -300,3 +300,8 @@ class _ConsoleLogger implements Logger {
     return _traceEnabled;
   }
 }
+
+/// @nodoc
+class FileLoggerProvider extends ConsoleLoggerProvider {
+  FileLoggerProvider(super.level);
+}

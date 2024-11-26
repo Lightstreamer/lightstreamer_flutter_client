@@ -5,6 +5,7 @@
 #include "Lightstreamer\ClientMessageListener.h"
 #include "Lightstreamer\ItemUpdate.h"
 #include "Lightstreamer\ConsoleLoggerProvider.h"
+#include "file_logger.h"
 
 // This must be included before many other Windows headers.
 #include <windows.h>
@@ -158,9 +159,7 @@ void LightstreamerFlutterClientPlugin::RegisterWithRegistrar(
      std::exit(1);
    });
 
-  // TODO use LogManager
-  auto loggerProvider = new LS::ConsoleLoggerProvider(LS::ConsoleLogLevel::Debug);
-  channelLogger = loggerProvider->getLogger("lightstreamer.flutter");
+  channelLogger = new EmptyLogger();
 
   auto channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
@@ -439,7 +438,16 @@ void LightstreamerFlutterClientPlugin::Client_setLoggerProvider(const flutter::M
     level_ = LS::ConsoleLogLevel::Error;
   }
   // TODO memory leak
-  LS::LightstreamerClient::setLoggerProvider(new LS::ConsoleLoggerProvider(level_));
+  auto providerClass = getString(arguments, "provider");
+  LS::LoggerProvider* provider;
+  if (providerClass == "FileLoggerProvider") {
+    provider = new FileLoggerProvider(level_);
+  }
+  else {
+    provider = new LS::ConsoleLoggerProvider(level_);
+  }
+  channelLogger = provider->getLogger("lightstreamer.flutter");
+  LS::LightstreamerClient::setLoggerProvider(provider);
   result->Success();
 }
 

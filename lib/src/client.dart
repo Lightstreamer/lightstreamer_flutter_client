@@ -148,7 +148,8 @@ class LightstreamerClient {
               : logger.isFatalEnabled() ? ConsoleLogLevel.FATAL
               : ConsoleLogLevel.TRACE;
     var arguments = <String, dynamic>{
-      'level': level
+      'level': level,
+      'provider': provider.runtimeType.toString()
     };
     LogManager.setLoggerProvider(provider);
     return await NativeBridge.instance.invokeMethod('LightstreamerClient.setLoggerProvider', arguments);

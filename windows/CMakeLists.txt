@@ -20,6 +20,8 @@ set(PLUGIN_NAME "lightstreamer_flutter_client_plugin")
 list(APPEND PLUGIN_SOURCES
   "lightstreamer_flutter_client_plugin.cpp"
   "lightstreamer_flutter_client_plugin.h"
+  "file_logger.cpp"
+  "file_logger.h"
 )
 
 # Define the plugin library target. Its name must not be changed (see comment
