@@ -33,7 +33,7 @@ class LightstreamerFlutterClientPlugin : public flutter::Plugin {
   std::shared_ptr<flutter::MethodChannel<flutter::EncodableValue>> _listenerChannel;
 
   std::shared_ptr<LS::LightstreamerClient> getClient(const flutter::MethodCall<flutter::EncodableValue>& call);
-  std::shared_ptr<LS::Subscription> getSubscription(const std::string& subId);
+  std::shared_ptr<LS::Subscription> getSubscription(const std::string& subId) const;
   void Client_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void ConnectionDetails_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
   void ConnectionOptions_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);

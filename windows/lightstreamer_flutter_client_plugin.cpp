@@ -261,7 +261,7 @@ std::shared_ptr<LS::LightstreamerClient> LightstreamerFlutterClientPlugin::getCl
   return ls;
 }
 
-std::shared_ptr<LS::Subscription> LightstreamerFlutterClientPlugin::getSubscription(const std::string& subId) {
+std::shared_ptr<LS::Subscription> LightstreamerFlutterClientPlugin::getSubscription(const std::string& subId) const {
   auto sub = getValue(_subMap, subId);
   if (sub == nullptr) {
     auto errMsg = "Subscription " + subId + " doesn't exist";
@@ -951,11 +951,11 @@ void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
       auto fields = update.getFields();
 
       EncodableMap changedFields_;
-      for (auto p : changedFields) {
+      for (auto& p : changedFields) {
         changedFields_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
       }
       EncodableMap fields_;
-      for (auto p : fields) {
+      for (auto& p : fields) {
         fields_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
       }
 
@@ -973,11 +973,11 @@ void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
   auto fieldsByPosition = update.getFieldsByPosition();
 
   EncodableMap changedFieldsByPosition_;
-  for (auto p : changedFieldsByPosition) {
+  for (auto& p : changedFieldsByPosition) {
     changedFieldsByPosition_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
   }
   EncodableMap fieldsByPosition_;
-  for (auto p : fieldsByPosition) {
+  for (auto& p : fieldsByPosition) {
     fieldsByPosition_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
   }
 
