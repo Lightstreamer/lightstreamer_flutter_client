@@ -144,6 +144,21 @@ namespace lightstreamer_flutter_client {
     return ls_;
   }
 
+  /// null values are converted into empty maps
+  static std::map<std::string, std::string> getStringMap(const flutter::EncodableMap& arguments, const char* key) {
+    EncodableValue val = arguments.at(EncodableValue(key));
+    if (val.IsNull()) {
+      return std::map<std::string, std::string>();
+    }
+    assert(std::holds_alternative<EncodableMap>(val));
+    EncodableMap ls = std::get<EncodableMap>(val);
+    std::map<std::string, std::string> ls_;
+    for (auto& s : ls) {
+      ls_.emplace(std::get<std::string>(s.first), std::get<std::string>(s.second));
+    }
+    return ls_;
+  }
+
   template <typename T>
   static inline T getValue(const std::map<std::string, T>& map, const std::string& key) {
     auto i = map.find(key);
@@ -508,8 +523,7 @@ void LightstreamerFlutterClientPlugin::Client_connect(const flutter::MethodCall<
   client->connectionOptions.setContentLength(getInt(options, "contentLength"));
   client->connectionOptions.setFirstRetryMaxDelay(getInt(options, "firstRetryMaxDelay"));
   client->connectionOptions.setForcedTransport(getString(options, "forcedTransport"));
-  // TODO httpExtraHeaders
-  //client->connectionOptions.setHttpExtraHeaders((Map<String, String>) options.get("httpExtraHeaders"));
+  client->connectionOptions.setHttpExtraHeaders(getStringMap(options, "httpExtraHeaders"));
   client->connectionOptions.setIdleTimeout(getInt(options, "idleTimeout"));
   client->connectionOptions.setKeepaliveInterval(getInt(options, "keepaliveInterval"));
   client->connectionOptions.setPollingInterval(getInt(options, "pollingInterval"));
