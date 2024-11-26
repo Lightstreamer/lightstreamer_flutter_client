@@ -24,11 +24,6 @@ FileLogger::FileLogger(LS::ConsoleLogLevel level, const std::string& category) :
   }
 }
 
-FileLogger::~FileLogger() {
-  // TODO when closing?
-  _of->close();
-}
-
 void FileLogger::print(const std::string& level, const std::string& line) const {
   std::tm tm;
   std::time_t t = std::time(nullptr);

@@ -40,7 +40,7 @@ class FileLogger : public LS::Logger {
   void print(const std::string& level, const std::string& line) const;
 public:
   FileLogger(LS::ConsoleLogLevel level, const std::string& category);
-  ~FileLogger();
+  ~FileLogger() {}
   // Inherited via Logger
   void error(const std::string& line) override
   {
