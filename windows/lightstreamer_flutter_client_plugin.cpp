@@ -279,7 +279,8 @@ static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& 
     channelLogger->debug("Invoking " + method + " " + encodableMapToString(arguments));
   }
   auto val = std::make_unique<flutter::EncodableValue>(arguments);
-  // TODO call on the platform thread
+  // TODO post tasks to Flutter thread
+  // see https://github.com/flutter/flutter/issues/79213
   channel->InvokeMethod(method, std::move(val));
 }
 
