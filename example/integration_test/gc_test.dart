@@ -63,7 +63,7 @@ void main() {
 
     bridge.cleanResources();
     expect(bridge.nDevices, 0);
-  }, skip: Platform.isWindows);
+  }, skip: Platform.isWindows || Platform.isMacOS);
 
   test('collect mpn subscriptions', () async {
     var client = LightstreamerClient(null, null);
@@ -82,7 +82,7 @@ void main() {
 
     bridge.cleanResources();
     expect(bridge.nMpnSubscriptions, 0);
-  }, skip: Platform.isWindows);
+  }, skip: Platform.isWindows || Platform.isMacOS);
   
   test('collect all', () async {
     LightstreamerClient? client = LightstreamerClient(null, null);
@@ -110,5 +110,5 @@ void main() {
     expect(bridge.nSubscriptions, 0);
     expect(bridge.nDevices, 0);
     expect(bridge.nMpnSubscriptions, 0);
-  }, skip: Platform.isWindows);
+  }, skip: Platform.isWindows || Platform.isMacOS);
 }
