@@ -1,10 +1,19 @@
 # Lightstreamer Flutter Plugin
 
-The Lightstreamer Flutter Plugin enables any mobile (Android or iOS) or Web application to communicate bidirectionally with the Lightstreamer Server. The fully asynchronous API allows to subscribe to real-time data delivered directly by the server or routed via mobile push notifications, and to send any message to the server.
+The Lightstreamer Flutter Plugin enables any mobile (Android or iOS), desktop (macOS or Windows) or Web application to communicate bidirectionally with the Lightstreamer Server. The fully asynchronous API allows to subscribe to real-time data delivered directly by the server or routed via mobile push notifications, and to send any message to the server.
 
 The library offers automatic recovery from connection failures, automatic selection of the best available transport, and full decoupling of subscription and connection operations.
 
 The library also offers support for mobile push notifications (MPN). While real-time subscriptions deliver their updates via the client connection, MPN subscriptions deliver their updates via push notifications, even when the application is offline. They are handled by a special module of the Server, the MPN Module, that keeps them active at all times and continues pushing with no need for a client connection. However, push notifications are not real-time, they may be delayed by the service provider (Google Firebase or Apple APNs) and their delivery is not guaranteed.
+
+## Contents 
+
+1. [Installation](#installation)
+1. [Differences Among Platforms](#-differences-among-platforms-)
+1. [Getting Started (Mobile/Desktop)](#getting-started-mobiledesktop)
+1. [Getting Started (Web)](#getting-started-web)
+1. [See Also](#see-also)
+1. [Compatibility](#compatibility)
 
 ## Installation
 
@@ -12,16 +21,44 @@ In the `dependencies:` section of your `pubspec.yaml`, add the following line:
 
 ```yaml
 dependencies:
-  lightstreamer_flutter_client: 2.0.0
+  lightstreamer_flutter_client: 2.1.0
 ```
 
-## ⚠ Differences Between Mobile and Web Libraries ⚠
+### Windows Installation
 
-The `lightstreamer_flutter_client` package comprises two libraries: `lightstreamer_client.dart` for Android and iOS targets and `lightstreamer_client_web.dart` for Web target.
+To use the plugin on Windows, first build the `Lightstreamer C++ Client SDK` by following [these instructions](https://github.com/Lightstreamer/Lightstreamer-lib-client-haxe/blob/main/README.md#building). (In the following notes, we assume that the dynamically-linked debug version of the C++ Client library has been built. However, note that the exact values to be entered below depend on the settings used to build the library.)
 
-These libraries are very similar, as they expose the same classes and methods. This means an application using the mobile library is almost source-code compatible with the same application using the web library. However, there are a few differences to keep in mind when writing apps that should work both on mobile and web devices.
+Next, in the `windows` folder of your app, create the folder `cmake/debug` and place a file named `LightstreamerCppClientConfig.cmake` inside it with the following content:
 
-1. **Object lifespan** When using the mobile library, references to the `LightstreamerClient`, `Subscription`, `MpnDevice` and `MpnSubscription` instances _**must be maintained by the Flutter app for as long as these objects are in use**_. Failing to do so may result in the loss of events directed to these objects (e.g. listener notifications).
+```cmake
+set(LightstreamerCppClient_ROOT_DIR "<Lightstreamer C++ Client SDK path>/bin/cpp/win/debug")
+set(LightstreamerCppClient_INCLUDE_DIRS "${LightstreamerCppClient_ROOT_DIR}/include")
+set(LightstreamerCppClient_LIBRARY_DIRS "${LightstreamerCppClient_ROOT_DIR}/obj/lib")
+set(LightstreamerCppClient_LIBRARIES "lightstreamer_clientd")
+set(LightstreamerCppClient_RUNTIME_LIBRARIES "${LightstreamerCppClient_ROOT_DIR}/lightstreamer_clientd.dll")
+```
+
+Then, open the file `windows/CMakeLists.txt` and add this line at the top: `set(LightstreamerCppClient_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/debug")`.
+
+From the root folder of your Flutter project, run the command `flutter build windows` to build your app.
+
+#### Debug in Visual Studio
+
+A Flutter app for Windows can be built, run and debugged in Microsoft Visual Studio (version 2022 or above).
+
+First complete the steps above. Then, in Visual Studio, open the file `build/windows/x64/<your app name>.sln` (the exact subfolder of `build/windows` where the solution file is located may depend on your machine's architecture).
+
+You can run your app by right-clicking `<your app name>` in the Solution Explorer, selecting **Set as Startup Project**, and then pressing the run (▶) button. Remind that, after making changes to your code, you must select **Build > Build Solution** before running again.
+
+## ⚠ Differences Among Platforms ⚠
+
+The `lightstreamer_flutter_client` package comprises two libraries: `lightstreamer_client.dart` for mobile and desktop platforms, and `lightstreamer_client_web.dart` for the Web platform.
+
+These libraries are very similar, as they expose the same classes and methods. This means an application using the mobile/desktop library is almost source-code compatible with the same application using the web library. However, there are a few differences to keep in mind when writing multi-platform apps.
+
+### Mobile/Desktop vs Web
+
+1. **Object lifespan** When using the mobile/desktop library, references to the `LightstreamerClient`, `Subscription`, `MpnDevice` and `MpnSubscription` instances _**must be maintained by the Flutter app for as long as these objects are in use**_. Failing to do so may result in the loss of events directed to these objects (e.g. listener notifications).
 
     ```dart
     // DO
@@ -45,7 +82,7 @@ These libraries are very similar, as they expose the same classes and methods. T
 
     The web library does not require such precautions.
 
-2. **Async Methods** In the mobile library, most methods of the `LightstreamerClient` class (e.g. `connect`, `subscribe`, etc.) return a `Future`, whereas the corresponding methods of the web library return `void` or simple values.
+2. **Async Methods** In the mobile/desktop library, most methods of the `LightstreamerClient` class (e.g. `connect`, `subscribe`, etc.) return a `Future`, whereas the corresponding methods of the web library return `void` or simple values.
 
     For example, in the web library, a client establishes a session as follows:
 
@@ -54,7 +91,7 @@ These libraries are very similar, as they expose the same classes and methods. T
     client.connect();
     ```
 
-    The equivalent code for the mobile library is:
+    The equivalent code for the mobile/desktop library is:
 
     ```dart
     var client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
@@ -63,14 +100,32 @@ These libraries are very similar, as they expose the same classes and methods. T
 
     While the `await` command before the connection is optional in this case, it is recommended to include it to catch exceptions.
 
-3. **Exception Types** The web library throws exceptions such as `IllegalArgumentException` or `IllegalStateException`, while the mobile library only throws `PlatformException`.
+3. **Exception Types** The web library throws exceptions such as `IllegalArgumentException` or `IllegalStateException`, while the mobile/desktop library only throws `PlatformException`.
 
-4. **Exception Timing** The web library methods throw exceptions as soon as they detect an invalid condition, whereas the mobile library checks these conditions only during a few fundamental methods such as `connect`, `subscribe`, etc.
+4. **Exception Timing** The web library methods throw exceptions as soon as they detect an invalid condition, whereas the mobile/desktop library checks these conditions only during a few fundamental methods such as `connect`, `subscribe`, etc.
 However, both libraries document the thrown exceptions when discussing the methods to which the exceptions logically belong.
 
-5. **Precondition Failures on iOS** Since the mobile library leverages the [Lightstreamer iOS Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-swift) to support the iOS target, and the iOS Client SDK uses Swift [preconditions](https://developer.apple.com/documentation/swift/precondition(_:_:file:line:)) to validate method arguments, a failed precondition will abruptly stop the program execution when a Flutter app runs on an iOS device. However, in the same circumstances, both the web library and the Android library will throw an `IllegalArgumentException`.
+5. **Precondition Failures on iOS and macOS** Since the iOS and macOS libraries leverages the [Lightstreamer Swift Client SDK](https://github.com/Lightstreamer/Lightstreamer-lib-client-swift) and the Swift Client SDK uses [preconditions](https://developer.apple.com/documentation/swift/precondition(_:_:file:line:)) to validate method arguments, a failed precondition will abruptly stop the program execution when a Flutter app runs on an iOS/macOS device. However, in the same circumstances, the other libraries will throw an `IllegalArgumentException` or a `PlatformException`.
 
-## Getting Started (Android/iOS)
+### Push Notifications
+
+Push Notifications (MPN) are a means to receive messages from the Lightstreamer Server even if the app is in background or not even running. For further information, please refer to chapter 5 in the [General Concepts guide](https://lightstreamer.com/distros/ls-server/7.4.5/docs/General%20Concepts.pdf)
+
+Push Notifications are available on the following platforms:
+
+1. Android
+1. iOS
+1. Web (for Chrome, Firefox, and Safari browsers)
+
+### Optimized JSON Delivery
+
+Lightstreamer Server avoids using JSON, XML, or any other verbose transport protocol. Instead, Lightstreamer uses a position-based protocol, which reduces the overhead to a minimum. 
+However, if the JSON format is used for the values of some field, it is possible to specify whether the field is suitable for the use of [JSON Patch Format](https://jsonpatch.com) as a "diff" format in the data delivery.
+For further information, please refer to this [page](https://sdk.lightstreamer.com/ls-adapter-inprocess/8.0.0/api/com/lightstreamer/interfaces/data/ItemEventListener.html#declareFieldDiffOrder(java.lang.String,java.util.Map)).
+
+Optimized JSON delivery is available on all platforms except Windows.
+
+## Getting Started (Mobile/Desktop)
 
 ### Import the package
 
@@ -173,11 +228,11 @@ var provider = ConsoleLoggerProvider(ConsoleLogLevel.DEBUG);
 await LightstreamerClient.setLoggerProvider(provider);
 ```
 
-### Mobile Push Notifications
+### Mobile Push Notifications (only for Android and iOS)
 
 The library offers support for Push Notifications on Apple platforms through **Apple Push Notification Service (APNs)** and Google platforms through **Firebase Cloud Messaging (FCM)**. With Push Notifications, subscriptions deliver their updates through push notifications even when the application is offline.
 
-#### Firebase configuration
+#### Firebase configuration (Android)
 
 1. Before you can add Firebase to your Android app, you need to create a [Firebase project](https://firebase.google.com/docs/projects/learn-more) to connect to your Android app.
 
@@ -226,7 +281,7 @@ The library offers support for Push Notifications on Apple platforms through **A
 
 For further information, see the [Firebase documentation](https://firebase.google.com/docs/android/setup).
 
-#### APNs configuration
+#### APNs configuration (iOS)
 
 1. In your [Developer Account](https://developer.apple.com/account/), enable the push notification service for the App ID assigned to your project.
 
@@ -429,9 +484,9 @@ the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messa
 
  - [Lightstreamer Flutter Plugin](https://pub.dev/packages/lightstreamer_flutter_client)
  - [Lightstreamer Flutter Stock-List Demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter)
- - [Lightstreamer Flutter Project](https://github.com/Lightstreamer/lightstreamer_flutter_client/tree/2.0.0)
- - [Flutter Mobile API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.0.0/api/lightstreamer_client/lightstreamer_client-library.html)
- - [Flutter Web API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.0.0/api/lightstreamer_client_web/lightstreamer_client_web-library.html)
+ - [Lightstreamer Flutter Project](https://github.com/Lightstreamer/lightstreamer_flutter_client/tree/2.1.0)
+ - [Flutter Mobile/Desktop API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.1.0/api/lightstreamer_client/lightstreamer_client-library.html)
+ - [Flutter Web API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.1.0/api/lightstreamer_client_web/lightstreamer_client_web-library.html)
  - [Lightstreamer Documentation](https://lightstreamer.com/docs)
 
 ## Compatibility
@@ -439,3 +494,5 @@ the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messa
 * The Plugin requires Lightstreamer Server 7.4.0 or later
 * On Android devices, Android 8 (API 26) or later is required.
 * On iOS devices, iOS 12.0 or later is required.
+* On macOS desktops, macOS 11 (Big Sur) or later is required.
+* On Windows desktops, Windows 10 or 11 is required.
