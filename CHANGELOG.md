@@ -1,5 +1,29 @@
 # Lightstreamer Flutter Plugin Changelog
 
+## 2.1.0
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 12*<br/>
+*Compatible with macOS 11 (Big Sur)*<br/>
+*Compatible with Windows 10*<br/>
+*Compatible with Dart 3.1.3*<br/>
+*Compatible with Flutter 3.7.0*<br/>
+*May not be compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.2.1*<br/>
+*Based on Lightstreamer Swift Client SDK 6.2.0*<br/>
+*Based on Lightstreamer Web Client SDK 9.2.1*<br/>
+*Based on Lightstreamer C++ Client SDK 1.0.0-beta.1*<br/>
+*Made available on 11 Dec 2024*
+
+### New Features
+
+Added support for macOS and Windows platforms. For installation and quickstart, refer to the [README](https://github.com/Lightstreamer/lightstreamer_flutter_client/blob/2.1.0/README.md).
+
+### Breaking Changes
+
+Increased the minimum version of Flutter. The plugin now requires Flutter 3.7.0 or above. 
+
+
 ## 2.0.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
