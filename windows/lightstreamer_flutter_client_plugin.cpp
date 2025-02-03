@@ -942,7 +942,7 @@ void MySubscriptionListener::onItemLostUpdates(const std::string& itemName, int 
 
 void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
   EncodableMap arguments{
-    { EncodableValue("itemName"), EncodableValue(update.getItemName()) },
+    { EncodableValue("itemName"), update.getItemName().empty() ? EncodableValue(std::monostate{}) : EncodableValue(update.getItemName()) },
     { EncodableValue("itemPos"), EncodableValue(update.getItemPos()) },
     { EncodableValue("isSnapshot"), EncodableValue(update.isSnapshot()) },
   };
@@ -953,11 +953,11 @@ void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
 
       EncodableMap changedFields_;
       for (auto& p : changedFields) {
-        changedFields_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+        changedFields_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
       }
       EncodableMap fields_;
       for (auto& p : fields) {
-        fields_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+        fields_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
       }
 
       arguments.insert({ EncodableValue("changedFields"), EncodableValue(changedFields_) });
@@ -975,11 +975,11 @@ void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
 
   EncodableMap changedFieldsByPosition_;
   for (auto& p : changedFieldsByPosition) {
-    changedFieldsByPosition_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+    changedFieldsByPosition_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
   }
   EncodableMap fieldsByPosition_;
   for (auto& p : fieldsByPosition) {
-    fieldsByPosition_.insert({ EncodableValue(p.first), EncodableValue(p.second) });
+    fieldsByPosition_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
   }
 
   arguments.insert({ EncodableValue("changedFieldsByPosition"), EncodableValue(changedFieldsByPosition_) });
