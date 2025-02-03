@@ -647,6 +647,27 @@ void main() {
         expect(cookies_, contains("X-Server=server"));
       });
 
+      test('null field', () async {
+        var exps = new Expectations();
+        var updates = <ItemUpdate>[];
+        var sub = Subscription("MERGE", ["null_item"], ["null_field"]);
+        sub.setRequestedSnapshot("no");
+        sub.setDataAdapter("NULL_ITEM");
+        sub.addListener(subListener);
+        subListener.fItemUpdate = (update) {
+          updates.add(update);
+          exps.signal("onItemUpdate");
+        };
+        client.subscribe(sub);
+        client.connect();
+        await exps.value("onItemUpdate");
+        var u = updates[0];
+        expect(u.getValueByPosition(1), isNull);
+        expect(u.getValue("null_field"), isNull);
+        expect(u.getFields(), {"null_field": null});
+        expect(u.getFieldsByPosition(), {1: null});
+      });
+
     }); // group
   }); // for each group
 } // main

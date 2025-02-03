@@ -29,12 +29,12 @@ interface class ItemUpdate {
   final String? _itemName;
   final int _itemPos;
   final bool _isSnapshot;
-  final Map<String, String> _changedFields;
-  final Map<String, String> _fields;
-  final Map<String, String> _jsonFields;
-  final Map<int, String> _changedFieldsByPosition;
-  final Map<int, String> _fieldsByPosition;
-  final Map<int, String> _jsonFieldsByPosition;
+  final Map<String, String?> _changedFields;
+  final Map<String, String?> _fields;
+  final Map<String, String?> _jsonFields;
+  final Map<int, String?> _changedFieldsByPosition;
+  final Map<int, String?> _fieldsByPosition;
+  final Map<int, String?> _jsonFieldsByPosition;
 
   ItemUpdate._(MethodCall call) :
     _itemName = call.arguments['itemName'],

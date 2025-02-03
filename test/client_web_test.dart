@@ -468,6 +468,24 @@ void main() {
         expect(u.getValue(1), matches('value=\\d+'));
       });
 
+      test('null field', () async {
+        var updates = <ItemUpdate>[];
+        var sub = Subscription("MERGE", ["null_item"], ["null_field"]);
+        sub.setRequestedSnapshot("no");
+        sub.setDataAdapter("NULL_ITEM");
+        sub.addListener(subListener);
+        subListener.fItemUpdate = (update) {
+          updates.add(update);
+          exps.signal("onItemUpdate");
+        };
+        client.subscribe(sub);
+        client.connect();
+        await exps.value("onItemUpdate");
+        var u = updates[0];
+        expect(u.getValue(1), isNull);
+        expect(u.getValue("null_field"), isNull);
+      });
+
     }); // group
   }); // for each group
 } // main
