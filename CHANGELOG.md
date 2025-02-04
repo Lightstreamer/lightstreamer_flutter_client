@@ -1,5 +1,25 @@
 # Lightstreamer Flutter Plugin Changelog
 
+## 2.1.1
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 12*<br/>
+*Compatible with macOS 11 (Big Sur)*<br/>
+*Compatible with Windows 10*<br/>
+*Compatible with Dart 3.1.3*<br/>
+*Compatible with Flutter 3.7.0*<br/>
+*Compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.2.1*<br/>
+*Based on Lightstreamer Swift Client SDK 6.2.0*<br/>
+*Based on Lightstreamer Web Client SDK 9.2.2*<br/>
+*Based on Lightstreamer C++ Client SDK 1.0.0-beta.1*<br/>
+*Made available on 4 Feb 2025*
+
+**Fixed:** `ItemUpdate.getChangedFields` and other `ItemUpdate` methods that threw a `ClassCastException` when the returned map contained null values. This bug affected the Android, iOS and macOS targets.
+
+**Fixed:** `ItemUpdate` methods, such as `getValue` and similar, that returned an empty string when a field was null. This bug affected the Windows target.
+
+
 ## 2.1.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
