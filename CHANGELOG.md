@@ -13,7 +13,7 @@
 *Based on Lightstreamer Swift Client SDK 6.2.1*<br/>
 *Based on Lightstreamer Web Client SDK 9.2.3*<br/>
 *Based on Lightstreamer C++ Client SDK 1.0.0*<br/>
-*Made available on 25 Feb 2025*
+*Made available on 26 Feb 2025*
 
 Updated library dependencies to the latest versions.
 
