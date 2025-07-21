@@ -1,6 +1,6 @@
 name: lightstreamer_flutter_client
 description: A Flutter plugin for Lightstreamer.
-version: 2.1.2
+version: 2.1.3
 homepage: https://lightstreamer.com/
 repository: https://github.com/Lightstreamer/lightstreamer_flutter_client
 # publish_to: none
