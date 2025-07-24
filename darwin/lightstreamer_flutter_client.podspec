@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'lightstreamer_flutter_client'
-  s.version          = '2.1.3'
+  s.version          = '2.1.4'
   s.summary          = 'A Flutter plugin for Lightstreamer.'
   s.homepage         = 'https://github.com/Lightstreamer/lightstreamer_flutter_client'
   s.license          = { :file => '../LICENSE' }
