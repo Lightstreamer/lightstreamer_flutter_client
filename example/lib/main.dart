@@ -46,6 +46,8 @@ class MyAppState extends State<MyApp> {
     super.initState();
     
     LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+    // Gracefully handle Flutter hot restart
+    LightstreamerClient.reset();
 
     _client = LightstreamerClient("https://push.lightstreamer.com/", "DEMO");
     _client.addListener(_MyClientListener(this));
