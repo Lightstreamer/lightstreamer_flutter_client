@@ -344,6 +344,10 @@ void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const 
   {
     Client_cleanResources(call, result);
   }
+  else if (method == "reset")
+  {
+    Client_reset(call, result);
+  }
   else
   {
     if (channelLogger->isErrorEnabled())
@@ -528,6 +532,21 @@ void LightstreamerFlutterClientPlugin::Client_cleanResources(const flutter::Meth
   }
   if (channelLogger->isDebugEnabled()) {
     channelLogger->debug("Cleaned clients: " + std::to_string(removedClientIds) + " subscriptions: " + std::to_string(removedSubIds));
+  }
+  result->Success();
+}
+
+void LightstreamerFlutterClientPlugin::Client_reset(const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
+  for (auto& clientPair : _clientMap) {
+    auto client = clientPair.second;
+    client->disconnect();
+  }
+  _clientMap.clear();
+  _subMap.clear();
+  _mpnDeviceMap.clear();
+  _mpnSubMap.clear();
+  if (channelLogger->isDebugEnabled()) {
+    channelLogger->debug("Clients reset");
   }
   result->Success();
 }
