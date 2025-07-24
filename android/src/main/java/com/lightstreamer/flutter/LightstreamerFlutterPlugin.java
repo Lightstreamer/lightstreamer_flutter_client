@@ -211,6 +211,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
             case "cleanResources":
                 Client_cleanResources(call, result);
                 break;
+            case "reset":
+                Client_reset(call, result);
+                break;
             default:
                 if (channelLogger.isErrorEnabled()) {
                     channelLogger.error("Unknown method " + call.method, null);
@@ -388,6 +391,20 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         }
         if (channelLogger.isDebugEnabled()) {
             channelLogger.debug("Cleaned clients: " + removedClientIds + " subscriptions: " + removedSubIds + " devices: " + removedDevIds + " mpn subscriptions: " + removedMpnSubIds, null);
+        }
+        result.success(null);
+    }
+
+    void Client_reset(MethodCall call, MethodChannel.Result result) {
+        for (LightstreamerClient client : _clientMap.values()) {
+            client.disconnect();
+        }
+        _clientMap.clear();
+        _subMap.clear();
+        _mpnDeviceMap.clear();
+        _mpnSubMap.clear();
+        if (channelLogger.isDebugEnabled()) {
+            channelLogger.debug("Clients reset", null);
         }
         result.success(null);
     }
