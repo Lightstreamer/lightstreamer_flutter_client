@@ -17,6 +17,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:meta/meta.dart' show experimental;
 import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
 import 'package:lightstreamer_flutter_client/src/log_manager.dart';
 import 'package:lightstreamer_flutter_client/src/logger.dart';
@@ -118,7 +119,15 @@ class LightstreamerClient {
     return NativeBridge.instance.cleanResources();
   }
 
-  @visibleForTesting
+  /// Resets the state of the underlying native Lightstreamer Client library, ensuring that all active connections are terminated and all 
+  /// existing subscriptions are removed. 
+  /// 
+  /// When working in an IDE like Visual Studio Code, developers often use hot restart during debugging or iterative development. 
+  /// This action reloads code changes into the Dart VM and restarts the Flutter app without fully tearing down the native platform state. 
+  /// By invoking `reset()` at app startup, before creating any instances of `LightstreamerClient`, you ensure that 
+  /// the native Lightstreamer Client library is refreshed as if a full app restart occurred, 
+  /// preserving predictable behavior and preventing inconsistent states across development cycles.
+  @experimental
   static Future<void> reset() {
     return NativeBridge.instance.reset();
   }
