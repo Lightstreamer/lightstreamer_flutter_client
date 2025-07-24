@@ -21,7 +21,7 @@ In the `dependencies:` section of your `pubspec.yaml`, add the following line:
 
 ```yaml
 dependencies:
-  lightstreamer_flutter_client: 2.1.3
+  lightstreamer_flutter_client: 2.1.4
 ```
 
 ### Windows Installation
@@ -484,9 +484,9 @@ the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messa
 
  - [Lightstreamer Flutter Plugin](https://pub.dev/packages/lightstreamer_flutter_client)
  - [Lightstreamer Flutter Stock-List Demo](https://github.com/Lightstreamer/Lightstreamer-example-StockList-client-flutter)
- - [Lightstreamer Flutter Project](https://github.com/Lightstreamer/lightstreamer_flutter_client/tree/2.1.3/)
- - [Flutter Mobile/Desktop API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.1.3/api/lightstreamer_client/lightstreamer_client-library.html)
- - [Flutter Web API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.1.3/api/lightstreamer_client_web/lightstreamer_client_web-library.html)
+ - [Lightstreamer Flutter Project](https://github.com/Lightstreamer/lightstreamer_flutter_client/tree/2.1.4/)
+ - [Flutter Mobile/Desktop API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.1.4/api/lightstreamer_client/lightstreamer_client-library.html)
+ - [Flutter Web API Client Reference](https://lightstreamer.com/sdks/ls-flutter-client/2.1.4/api/lightstreamer_client_web/lightstreamer_client_web-library.html)
  - [Lightstreamer Documentation](https://lightstreamer.com/docs)
 
 ## Compatibility
