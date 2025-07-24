@@ -10,3 +10,6 @@ example/web/lightstreamer-*.js
 
 doc/
 .ruby-version
+
+# FVM Version Cache
+.fvm/
