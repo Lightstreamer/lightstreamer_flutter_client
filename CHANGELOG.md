@@ -1,5 +1,25 @@
 # Lightstreamer Flutter Plugin Changelog
 
+## 2.1.4
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 13*<br/>
+*Compatible with macOS 11 (Big Sur)*<br/>
+*Compatible with Windows 10*<br/>
+*Compatible with Dart 3.1.3*<br/>
+*Compatible with Flutter 3.7.0*<br/>
+*Compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.2.2*<br/>
+*Based on Lightstreamer Swift Client SDK 6.3.0*<br/>
+*Based on Lightstreamer Web Client SDK 9.2.3*<br/>
+*Based on Lightstreamer C++ Client SDK 1.0.0*<br/>
+*Made available on 24 Jul 2025*
+
+### New Features
+
+Added the experimental method `LightstreamerClient.reset` for mobile and desktop platforms, which resets the state of the underlying native Lightstreamer Client library. When using hot restart in an IDE like Visual Studio Code, the Flutter app is restarted without resetting native platform state. Calling `reset()` at app startup ensures the native Lightstreamer Client is refreshed, maintaining consistent behavior across development cycles.
+
+
 ## 2.1.3
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
