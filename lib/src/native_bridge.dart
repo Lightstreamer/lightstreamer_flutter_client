@@ -83,6 +83,11 @@ class NativeBridge {
     return await invokeMethod("LightstreamerClient.cleanResources", arguments);
   }
 
+  @visibleForTesting
+  Future<void> reset() async {
+    return await invokeMethod("LightstreamerClient.reset", {});
+  }
+
   NativeBridge._() {
     _listenerChannel.setMethodCallHandler(_listenerChannelHandler);
   }

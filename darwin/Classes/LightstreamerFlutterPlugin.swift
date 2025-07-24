@@ -167,6 +167,8 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
       try Client_getCookies(call, result);
     case "cleanResources":
       try Client_cleanResources(call, result);
+    case "reset":
+        try Client_reset(call, result);
     default:
       if (channelLogger.isErrorEnabled) {
         channelLogger.error("Unknown method " + call.method);
@@ -418,6 +420,20 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
     if (channelLogger.isDebugEnabled) {
       channelLogger.debug("Cleaned clients: \(removedClientIds) subscriptions: \(removedSubIds) devices: \(removedDevIds) mpn subscriptions: \(removedMpnSubIds)")
+    }
+    result(nil)
+  }
+    
+  func Client_reset(_ call: FlutterMethodCall, _ result: FlutterResult) throws {
+    for client in _clientMap.values {
+      client.disconnect()
+    }
+    _clientMap.removeAll()
+    _subMap.removeAll()
+    _mpnDeviceMap.removeAll()
+    _mpnSubMap.removeAll()
+    if (channelLogger.isDebugEnabled) {
+      channelLogger.debug("Clients reset")
     }
     result(nil)
   }

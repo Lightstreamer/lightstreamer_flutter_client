@@ -9,3 +9,4 @@ example/web/lightstreamer-*.js
 .vscode/
 
 doc/
+.ruby-version

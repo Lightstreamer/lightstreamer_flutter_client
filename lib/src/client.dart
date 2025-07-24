@@ -118,6 +118,11 @@ class LightstreamerClient {
     return NativeBridge.instance.cleanResources();
   }
 
+  @visibleForTesting
+  static Future<void> reset() {
+    return NativeBridge.instance.reset();
+  }
+
   /**
    * Static method that permits to configure the logging system used by the library. 
    * 
