@@ -13,7 +13,6 @@ dependencies:
   flutter:
     sdk: flutter
   js: ^0.6.7
-  meta: ^1.16.0
 
 dev_dependencies:
   flutter_test:

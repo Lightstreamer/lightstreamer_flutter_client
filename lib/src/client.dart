@@ -17,7 +17,6 @@ import 'dart:io';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
-import 'package:meta/meta.dart' show experimental;
 import 'package:lightstreamer_flutter_client/src/client_listeners.dart';
 import 'package:lightstreamer_flutter_client/src/log_manager.dart';
 import 'package:lightstreamer_flutter_client/src/logger.dart';
@@ -129,7 +128,6 @@ class LightstreamerClient {
   /// By invoking `reset()` at app startup, before creating any instances of `LightstreamerClient`, you ensure that 
   /// the native Lightstreamer Client library is refreshed as if a full app restart occurred, 
   /// preserving predictable behavior and preventing inconsistent states across development cycles.
-  @experimental
   static Future<void> reset() {
     return NativeBridge.instance.reset();
   }
