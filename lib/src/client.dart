@@ -119,6 +119,8 @@ class LightstreamerClient {
     return NativeBridge.instance.cleanResources();
   }
 
+  /// EXPERIMENTAL
+  /// 
   /// Resets the state of the underlying native Lightstreamer Client library, ensuring that all active connections are terminated and all 
   /// existing subscriptions are removed. 
   /// 
