@@ -543,8 +543,6 @@ void LightstreamerFlutterClientPlugin::Client_reset(const flutter::MethodCall<fl
   }
   _clientMap.clear();
   _subMap.clear();
-  _mpnDeviceMap.clear();
-  _mpnSubMap.clear();
   if (channelLogger->isDebugEnabled()) {
     channelLogger->debug("Clients reset");
   }
