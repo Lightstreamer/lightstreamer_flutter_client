@@ -336,6 +336,10 @@ extension LightstreamerClientExt on LightstreamerClient {
    * - [enqueueWhileDisconnected] if this flag is set to true, and the client is in a disconnected status when
    * the provided message is handled, then the message is not aborted right away but is queued waiting for a new
    * session. Note that the message can still be aborted later when a new session is established.
+   * 
+   * See Also
+   * 
+   * - [Client-to-Server Messaging in Lightstreamer Explained](https://lightstreamer.com/blog/client-to-server-messaging-in-lightstreamer-explained/)
    */
   void sendMessage(String message, [String? sequence, int? delayTimeout, ClientMessageListener? listener, bool? enqueueWhileDisconnected]) {
     _sendMessage(message, sequence, delayTimeout, listener?._asJSObject, enqueueWhileDisconnected);
@@ -775,6 +779,10 @@ abstract class ClientMessageListener {
    * - [sentOnNetwork] true if the message was sent on the network, false otherwise. 
    *        Even if the flag is true, it is not possible to infer whether the message actually reached the 
    *        Lightstreamer Server or not.
+   * 
+   * See Also
+   * 
+   * - [Client-to-Server Messaging in Lightstreamer Explained — Aborted messages](https://lightstreamer.com/blog/client-to-server-messaging-in-lightstreamer-explained/#Aborted_messages)
    */
   void onAbort(String originalMessage, bool sentOnNetwork) {}
   /**
