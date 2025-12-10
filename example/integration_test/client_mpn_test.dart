@@ -162,7 +162,7 @@ void main() {
     });
   }
 
-  ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
+  for (var transport in ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"]) { 
 
     group(transport, () {
 
@@ -190,7 +190,7 @@ void main() {
         }
       });
 
-      Future<void> _cleanup() async {
+      Future<void> cleanup() async {
         var exps = new Expectations();
         if ((await client.getStatus()) != "DISCONNECTED" &&
             (await client.getMpnSubscriptions(null)).isNotEmpty) {
@@ -205,7 +205,7 @@ void main() {
 
       tearDown(() async {
         var exps = new Expectations();
-        await _cleanup();
+        await cleanup();
         devListener.fStatusChanged = (status, ts) => exps.signal("onStatusChanged " + status);
         if ((await client.getStatus()) != "DISCONNECTED") {
           client.disconnect();
@@ -1088,7 +1088,7 @@ void main() {
       });
 
     }); // group
-  }); // for each group
+  } // for each group
 } // main
 
 Future<String> buildFormat() async {

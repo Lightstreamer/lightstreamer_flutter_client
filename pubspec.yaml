@@ -1,5 +1,11 @@
 name: lightstreamer_flutter_client
-description: A Flutter plugin for Lightstreamer.
+description: >
+  A Flutter plugin for Lightstreamer, a real-time data streaming server. 
+  This plugin allows Flutter applications to connect to Lightstreamer 
+  and subscribe to real-time data updates. It supports multiple platforms 
+  including Android, iOS, Web, macOS, and Windows, enabling seamless 
+  integration of real-time data streaming capabilities into your Flutter apps.
+
 version: 2.2.0-alpha.1
 homepage: https://lightstreamer.com/
 repository: https://github.com/Lightstreamer/lightstreamer_flutter_client

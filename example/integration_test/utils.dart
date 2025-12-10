@@ -60,12 +60,13 @@ class Expectations {
   _State _state = _State.s1;
   late Completer<void> _pendingFuture;
   late String _pendingExpected;
-  List<String> _queue = [];
+  final List<String> _queue = [];
   
   /// Hint: to isolate the tests more effectively, instantiate `Expectations` as a local variable within each test case
   Expectations();
   
   void signal([String actual = '']) {
+    // ignore: avoid_print
     print('--> signal $actual');
     switch (_state) {
       case _State.s3:
@@ -121,7 +122,7 @@ class Expectations {
   Future<void> _s3(String expected) {
     _state = _State.s3;
     _pendingExpected = expected;
-    _pendingFuture = new Completer();
+    _pendingFuture = Completer();
     return _pendingFuture.future;
   }
 
@@ -147,7 +148,7 @@ class Expectations {
   Future<void> _s6(String expected) {
     _state = _State.s6;
     _pendingExpected = expected;
-    _pendingFuture = new Completer();
+    _pendingFuture = Completer();
     return _pendingFuture.future;
   }
 
@@ -164,7 +165,7 @@ class Expectations {
     _state = _State.s9;
     _queue.clear();
     _pendingExpected = expected;
-    _pendingFuture = new Completer();
+    _pendingFuture = Completer();
     return _pendingFuture.future;
   }
 
@@ -180,79 +181,111 @@ class Expectations {
 
 class BaseClientListener extends ClientListener {
   void Function(String)? fStatusChange;
+  @override
   void onStatusChange(String status) => fStatusChange?.call(status);
   void Function(int, String)? fServerError;
+  @override
   void onServerError(int code, String msg) => fServerError?.call(code, msg);
   void Function(String)? fPropertyChange;
+  @override
   void onPropertyChange(String property) => fPropertyChange?.call(property);
   void Function()? fListenStart;
+  @override
   void onListenStart() => fListenStart?.call();
   void Function()? fListenEnd;
+  @override
   void onListenEnd() => fListenEnd?.call();
 }
 
 class BaseSubscriptionListener extends SubscriptionListener {
   void Function()? fSubscription;
+  @override
   void onSubscription() => fSubscription?.call();
   void Function(int, String)? fSubscriptionError;
+  @override
   void onSubscriptionError(int code, String msg) => fSubscriptionError?.call(code, msg);
   void Function(ItemUpdate)? fItemUpdate;
+  @override
   void onItemUpdate(ItemUpdate update) => fItemUpdate?.call(update);
   void Function()? fUnsubscription;
+  @override
   void onUnsubscription() => fUnsubscription?.call();
   void Function(String, int)? fClearSnapshot;
+  @override
   void onClearSnapshot(String item, int pos) => fClearSnapshot?.call(item, pos);
   void Function(String?)? fRealMaxFrequency;
+  @override
   void onRealMaxFrequency(String? frequency) => fRealMaxFrequency?.call(frequency);
   void Function(String, int)? fEndOfSnapshot;
+  @override
   void onEndOfSnapshot(String name, int pos) => fEndOfSnapshot?.call(name, pos);
   void Function(String, int, int)? fItemLostUpdates;
+  @override
   void onItemLostUpdates(String name, int pos, int lost) => fItemLostUpdates?.call(name, pos, lost);
   void Function()? fListenStart;
+  @override
   void onListenStart() => fListenStart?.call();
   void Function()? fListenEnd;
+  @override
   void onListenEnd() => fListenEnd?.call();
 }
 
 class BaseMessageListener extends ClientMessageListener {
   void Function(String, String)? fProcessed;
+  @override
   void onProcessed(String msg, String resp) => fProcessed?.call(msg, resp);
   void Function(String, int, String)? fDeny;
+  @override
   void onDeny(String msg, int errorCode, String errorMessage) => fDeny?.call(msg, errorCode, errorMessage);
 }
 
 class BaseDeviceListener extends MpnDeviceListener {
   void Function()? fSubscriptionsUpdated;
+  @override
   void onSubscriptionsUpdated() => fSubscriptionsUpdated?.call();
   void Function()? fRegistered;
+  @override
   void onRegistered() => fRegistered?.call();
   void Function(String, int)? fStatusChanged;
+  @override
   void onStatusChanged(String status, int ts) => fStatusChanged?.call(status, ts);
   void Function(int, String)? fRegistrationFailed;
+  @override
   void onRegistrationFailed(int code, String msg) => fRegistrationFailed?.call(code, msg);
   void Function()? fListenStart;
+  @override
   void onListenStart() => fListenStart?.call();
   void Function()? fListenEnd;
+  @override
   void onListenEnd() => fListenEnd?.call();
 }
 
 class BaseMpnSubscriptionListener extends MpnSubscriptionListener {
   void Function()? fSubscription;
+  @override
   void onSubscription() => fSubscription?.call();
   void Function(String, int)? fStatusChanged;
+  @override
   void onStatusChanged(String status, int ts) => fStatusChanged?.call(status, ts);
   void Function(String)? fPropertyChanged;
+  @override
   void onPropertyChanged(String property) => fPropertyChanged?.call(property);
   void Function(int, String)? fSubscriptionError;
+  @override
   void onSubscriptionError(int code, String msg) => fSubscriptionError?.call(code, msg);
   void Function()? fUnsubscription;
+  @override
   void onUnsubscription() => fUnsubscription?.call();
   void Function()? fTriggered;
+  @override
   void onTriggered() => fTriggered?.call();
   void Function(int, String, String)? fModificationError;
+  @override
   void onModificationError(int code, String msg, String prop) => fModificationError?.call(code, msg, prop);
   void Function()? fListenStart;
+  @override
   void onListenStart() => fListenStart?.call();
   void Function()? fListenEnd;
+  @override
   void onListenEnd() => fListenEnd?.call();
 }

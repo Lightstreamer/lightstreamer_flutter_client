@@ -67,7 +67,7 @@ void main() {
     await client.subscribe(sub);
   });
 
-  ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
+  for (var transport in ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"]) { 
     group(transport, () {
 
       setUp(() async {
@@ -637,7 +637,9 @@ void main() {
       test('cookies', () async {
         // clear cookies
         var cookies0_ = await LightstreamerClient.getCookies(host);
-        cookies0_.forEach((c) => c.maxAge = 0);
+        for (var c in cookies0_) {
+          c.maxAge = 0;
+        }
         await LightstreamerClient.addCookies(host, cookies0_);
         
         var cookies0 = await LightstreamerClient.getCookies(host);
@@ -684,5 +686,5 @@ void main() {
       });
 
     }); // group
-  }); // for each group
+  } // for each group
 } // main

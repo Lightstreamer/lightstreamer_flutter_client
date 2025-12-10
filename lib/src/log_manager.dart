@@ -26,6 +26,7 @@ class LogManager {
 
   static Logger getLogger(String category) {
     var log = _logInstances[category];
+    // ignore: prefer_conditional_assignment
     if (log == null) {
       log = _logInstances[category] = _LoggerProxy(_newLogger(category));
     }

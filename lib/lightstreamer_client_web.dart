@@ -747,6 +747,7 @@ abstract class ClientListener {
     _that = createDartExport(this) as _ClientListener;
   }
   _ClientListener get _asJSObject => _that;
+  // ignore: unused_element
   ClientListener get _asDartObject => this;
 }
 
@@ -755,6 +756,7 @@ abstract class ClientListener {
 class _ClientMessageListener {}
 
 extension _ClientMessageListenerExt on _ClientMessageListener {
+  // ignore: unused_element
   external ClientMessageListener get _asDartObject;
 }
 
@@ -826,6 +828,7 @@ abstract class ClientMessageListener {
     _that = createDartExport(this) as _ClientMessageListener;
   }
   _ClientMessageListener get _asJSObject => _that;
+  // ignore: unused_element
   ClientMessageListener get _asDartObject => this;
 }
 
@@ -1084,6 +1087,7 @@ abstract class SubscriptionListener {
     _that = createDartExport(this) as _SubscriptionListener;
   }
   _SubscriptionListener get _asJSObject => _that;
+  // ignore: unused_element
   SubscriptionListener get _asDartObject => this;
 }
 
@@ -2994,36 +2998,42 @@ class ConsoleLogLevel {
      
     This level enables all logging except tracing.
    */
+  // ignore: non_constant_identifier_names
   external static int DEBUG;
   /**
     Error logging level.
      
     This level enables logging for errors and fatal errors.
    */
+  // ignore: non_constant_identifier_names
   external static int ERROR;
   /**
     Fatal logging level.
      
     This level enables logging for fatal errors only.
    */
+  // ignore: non_constant_identifier_names
   external static int FATAL;
   /**
     Info logging level.
      
     This level enables logging for information, warnings, errors and fatal errors.
    */
+  // ignore: non_constant_identifier_names
   external static int INFO;
   /**
     Trace logging level.
    
     This level enables all logging.
    */
+  // ignore: non_constant_identifier_names
   external static int TRACE;
   /**
     Warn logging level.
      
     This level enables logging for warnings, errors and fatal errors.
    */
+  // ignore: non_constant_identifier_names
   external static int WARN;
 }
 
@@ -3326,6 +3336,7 @@ abstract class MpnDeviceListener {
     _that = createDartExport(this) as _MpnDeviceListener;
   }
   _MpnDeviceListener get _asJSObject => _that;
+  // ignore: unused_element
   MpnDeviceListener get _asDartObject => this;
 }
 
@@ -4079,6 +4090,7 @@ abstract class MpnSubscriptionListener {
     _that = createDartExport(this) as _MpnSubscriptionListener;
   }
   _MpnSubscriptionListener get _asJSObject => _that;
+  // ignore: unused_element
   MpnSubscriptionListener get _asDartObject => this;
 }
 

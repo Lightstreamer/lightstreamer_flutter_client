@@ -29,9 +29,10 @@ class Expectations {
   _State _state = _State.s1;
   late Completer<void> _pendingFuture;
   late String _pendingExpected;
-  List<String> _queue = [];
+  final List<String> _queue = [];
   
   void signal([String actual = '']) {
+    // ignore: avoid_print
     print('--> signal $actual');
     switch (_state) {
       case _State.s3:
@@ -87,7 +88,7 @@ class Expectations {
   Future<void> _s3(String expected) {
     _state = _State.s3;
     _pendingExpected = expected;
-    _pendingFuture = new Completer();
+    _pendingFuture = Completer();
     return _pendingFuture.future;
   }
 
@@ -113,7 +114,7 @@ class Expectations {
   Future<void> _s6(String expected) {
     _state = _State.s6;
     _pendingExpected = expected;
-    _pendingFuture = new Completer();
+    _pendingFuture = Completer();
     return _pendingFuture.future;
   }
 
@@ -130,7 +131,7 @@ class Expectations {
     _state = _State.s9;
     _queue.clear();
     _pendingExpected = expected;
-    _pendingFuture = new Completer();
+    _pendingFuture = Completer();
     return _pendingFuture.future;
   }
 
@@ -146,35 +147,48 @@ class Expectations {
 
 class BaseClientListener extends ClientListener {
   void Function(String)? fStatusChange;
+  @override
   void onStatusChange(String status) => fStatusChange?.call(status);
   void Function(int, String)? fServerError;
+  @override
   void onServerError(int code, String msg) => fServerError?.call(code, msg);
   void Function(String)? fPropertyChange;
+  @override
   void onPropertyChange(String property) => fPropertyChange?.call(property);
 }
 
 class BaseSubscriptionListener extends SubscriptionListener {
   void Function()? fSubscription;
+  @override
   void onSubscription() => fSubscription?.call();
   void Function(int, String)? fSubscriptionError;
+  @override
   void onSubscriptionError(int code, String msg) => fSubscriptionError?.call(code, msg);
   void Function(ItemUpdate)? fItemUpdate;
+  @override
   void onItemUpdate(ItemUpdate update) => fItemUpdate?.call(update);
   void Function()? fUnsubscription;
+  @override
   void onUnsubscription() => fUnsubscription?.call();
   void Function(String, int)? fClearSnapshot;
+  @override
   void onClearSnapshot(String item, int pos) => fClearSnapshot?.call(item, pos);
   void Function(String?)? fRealMaxFrequency;
+  @override
   void onRealMaxFrequency(String? frequency) => fRealMaxFrequency?.call(frequency);
   void Function(String, int)? fEndOfSnapshot;
+  @override
   void onEndOfSnapshot(String name, int pos) => fEndOfSnapshot?.call(name, pos);
   void Function(String, int, int)? fItemLostUpdates;
+  @override
   void onItemLostUpdates(String name, int pos, int lost) => fItemLostUpdates?.call(name, pos, lost);
 }
 
 class BaseMessageListener extends ClientMessageListener {
   void Function(String, String)? fProcessed;
+  @override
   void onProcessed(String msg, String resp) => fProcessed?.call(msg, resp);
   void Function(String, int, String)? fDeny;
+  @override
   void onDeny(String msg, int errorCode, String errorMessage) => fDeny?.call(msg, errorCode, errorMessage);
 }

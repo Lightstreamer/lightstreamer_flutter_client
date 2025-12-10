@@ -24,18 +24,18 @@ void main() {
   late BaseClientListener listener;
   late BaseSubscriptionListener subListener;
   late BaseMessageListener msgListener;
-  LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+  LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
-  ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
+  for (var transport in ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"]) { 
 
     group(transport, () {
 
       setUp(() {
-        exps = new Expectations();
-        client = new LightstreamerClient("http://localhost:8080", "TEST");
-        listener = new BaseClientListener();
-        subListener = new BaseSubscriptionListener();
-        msgListener = new BaseMessageListener();
+        exps = Expectations();
+        client = LightstreamerClient("http://localhost:8080", "TEST");
+        listener = BaseClientListener();
+        subListener = BaseSubscriptionListener();
+        msgListener = BaseMessageListener();
         client.addListener(listener);
 
         client.connectionOptions.setForcedTransport(transport);
@@ -54,7 +54,7 @@ void main() {
         assertEqual(1, ls.length);
         assertEqual(true, listener == ls[0]);
 
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.addListener(subListener);
         var subls = sub.getListeners();
         assertEqual(1, subls.length);
@@ -62,7 +62,7 @@ void main() {
       });
 
       test('connect', () async {
-        var expected = "CONNECTED:" + transport;
+        var expected = "CONNECTED:$transport";
         listener.fStatusChange = (status) {
           if (status == expected) {
             exps.signal();
@@ -76,10 +76,10 @@ void main() {
       test('online server', () async {
         client.connectionDetails.setServerAddress("https://push.lightstreamer.com");
         client.connectionDetails.setAdapterSet("DEMO");
-        listener = new BaseClientListener();
+        listener = BaseClientListener();
         client.addListener(listener);
 
-        var expected = "CONNECTED:" + transport;
+        var expected = "CONNECTED:$transport";
         listener.fStatusChange = (status) {
           if (status == expected) {
             exps.signal();
@@ -91,8 +91,8 @@ void main() {
       });
 
       test('error', () async {
-        client = new LightstreamerClient("http://localhost:8080", "XXX");
-        listener = new BaseClientListener();
+        client = LightstreamerClient("http://localhost:8080", "XXX");
+        listener = BaseClientListener();
         client.addListener(listener);
         listener.fServerError = (code, msg) {
           exps.signal('$code $msg');
@@ -103,7 +103,7 @@ void main() {
 
       test('disconnect', () async {
         listener.fStatusChange = (status) {
-          if (status == "CONNECTED:" + transport) {
+          if (status == "CONNECTED:$transport") {
             client.disconnect();
           } else if (status == "DISCONNECTED") {
             exps.signal();
@@ -115,7 +115,7 @@ void main() {
       });
 
       test('subscribe', () async {
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
         subListener.fSubscription = () {
@@ -131,7 +131,7 @@ void main() {
       });
 
       test('subscription error', () async {
-        var sub = new Subscription("RAW", ["count"], ["count"]);
+        var sub = Subscription("RAW", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
         subListener.fSubscriptionError = (code, msg) {
@@ -143,7 +143,7 @@ void main() {
       });
 
       test('subscribe command', () async {
-        var sub = new Subscription("COMMAND", ["mult_table"], ["key", "value1", "value2", "command"]);
+        var sub = Subscription("COMMAND", ["mult_table"], ["key", "value1", "value2", "command"]);
         sub.setDataAdapter("MULT_TABLE");
         sub.addListener(subListener);
         subListener.fSubscription = () {
@@ -158,12 +158,12 @@ void main() {
       });
 
       test('subscribe command 2 levels', () async {
-        var sub = new Subscription("COMMAND", ["two_level_command_count" + transport], ["key", "command"]);
+        var sub = Subscription("COMMAND", ["two_level_command_count$transport"], ["key", "command"]);
         sub.setDataAdapter("TWO_LEVEL_COMMAND");
         sub.setCommandSecondLevelDataAdapter("COUNT");
         sub.setCommandSecondLevelFields(["count"]);
         sub.addListener(subListener);
-        var regex = new RegExp('\\d+');
+        var regex = RegExp('\\d+');
         subListener.fItemUpdate = (update) {
           var val = update.getValue("count") ?? "";
           var key = update.getValue("key") ?? "";
@@ -184,7 +184,7 @@ void main() {
       });
 
       test('unsubscribe', () async {
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
         subListener.fSubscription = () {
@@ -201,7 +201,7 @@ void main() {
       });
 
       test('subscribe non-ascii', () async {
-        var sub = new Subscription("MERGE", ["strange:àìùòlè"], ["value🌐-", "value&+=\r\n%"]);
+        var sub = Subscription("MERGE", ["strange:àìùòlè"], ["value🌐-", "value&+=\r\n%"]);
         sub.setDataAdapter("STRANGE_NAMES");
         sub.addListener(subListener);
         subListener.fSubscription = () {
@@ -216,7 +216,7 @@ void main() {
         listener.fPropertyChange = (prop) {
           switch (prop) {
             case "realMaxBandwidth":
-              exps.signal("realMaxBandwidth=" + (client.connectionOptions.getRealMaxBandwidth() ?? ""));
+              exps.signal("realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth() ?? ""}");
           }
         };
         assertEqual("unlimited", client.connectionOptions.getRequestedMaxBandwidth());
@@ -235,7 +235,7 @@ void main() {
       });
 
       test('clear snapshot', () async {
-        var sub = new Subscription("DISTINCT", ["clear_snapshot"], ["dummy"]);
+        var sub = Subscription("DISTINCT", ["clear_snapshot"], ["dummy"]);
         sub.setDataAdapter("CLEAR_SNAPSHOT");
         sub.addListener(subListener);
         subListener.fClearSnapshot = (name, pos) {
@@ -252,7 +252,7 @@ void main() {
         assertEqual(50000000, client.connectionOptions.getContentLength());
         assertEqual(4000, client.connectionOptions.getRetryDelay());
         assertEqual(15000, client.connectionOptions.getSessionRecoveryTimeout());
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         assertEqual("COUNT", sub.getDataAdapter());
         assertEqual("MERGE", sub.getMode());
@@ -265,15 +265,15 @@ void main() {
           listener.fPropertyChange = (prop) {
             switch (prop) {
             case "clientIp":
-              exps.signal("clientIp=" + client.connectionDetails.getClientIp()!);
+              exps.signal("clientIp=${client.connectionDetails.getClientIp()!}");
             case "serverSocketName":
-              exps.signal("serverSocketName=" + client.connectionDetails.getServerSocketName()!);
+              exps.signal("serverSocketName=${client.connectionDetails.getServerSocketName()!}");
             case "sessionId":
-              exps.signal("sessionId " + (client.connectionDetails.getSessionId() == null ? "is null" : "is not null"));
+              exps.signal("sessionId ${client.connectionDetails.getSessionId() == null ? "is null" : "is not null"}");
             case "keepaliveInterval":
-              exps.signal("keepaliveInterval=" + client.connectionOptions.getKeepaliveInterval().toString());
+              exps.signal("keepaliveInterval=${client.connectionOptions.getKeepaliveInterval()}");
             case "realMaxBandwidth":
-              exps.signal("realMaxBandwidth=" + client.connectionOptions.getRealMaxBandwidth().toString());
+              exps.signal("realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth()}");
             }
           };
         }
@@ -299,19 +299,19 @@ void main() {
         // no outcome expected
         client.sendMessage("test message (sequence)", "test_seq", 0, null, true);
         // no outcome expected
-        msgListener = new BaseMessageListener();
-        msgListener.fProcessed = (msg,_) => exps.signal("onProcessed " + msg);
+        msgListener = BaseMessageListener();
+        msgListener.fProcessed = (msg,_) => exps.signal("onProcessed $msg");
         client.sendMessage("test message (listener)", null, -1, msgListener, true);
         await exps.value("onProcessed test message (listener)");
-        msgListener = new BaseMessageListener();
-        msgListener.fProcessed = (msg,_) => exps.signal("onProcessed " + msg);
+        msgListener = BaseMessageListener();
+        msgListener.fProcessed = (msg,_) => exps.signal("onProcessed $msg");
         client.sendMessage("test message (sequence+listener)", "test_seq", -1, msgListener, true);
         await exps.value("onProcessed test message (sequence+listener)");
       });
 
       test('message with return value', () async {
         client.connect();
-        msgListener = new BaseMessageListener();
+        msgListener = BaseMessageListener();
         msgListener.fProcessed = (msg,resp) => exps.signal('onProcessed `$msg` `$resp`');
         client.sendMessage("give me a result", "test_seq", -1, msgListener, true);
         await exps.value("onProcessed `give me a result` `result:ok`");
@@ -353,7 +353,7 @@ void main() {
       });
 
       test('end of snapshot', () async {
-        var sub = new Subscription("DISTINCT", ["end_of_snapshot"], ["value"]);
+        var sub = Subscription("DISTINCT", ["end_of_snapshot"], ["value"]);
         sub.setRequestedSnapshot("yes");
         sub.setDataAdapter("END_OF_SNAPSHOT");
         subListener.fEndOfSnapshot = (name, pos) {
@@ -375,7 +375,7 @@ void main() {
        * </ul>
        */
       test('overflow', () async {
-        var sub = new Subscription("MERGE", ["overflow"], ["value"]);
+        var sub = Subscription("MERGE", ["overflow"], ["value"]);
         sub.setRequestedSnapshot("yes");
         sub.setDataAdapter("OVERFLOW");
         sub.setRequestedMaxFrequency("unfiltered");
@@ -396,7 +396,7 @@ void main() {
       });
 
       test('frequency', () async {
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
         subListener.fRealMaxFrequency = (freq) {
@@ -408,11 +408,11 @@ void main() {
       });
 
       test('change frequency', () async {
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         sub.addListener(subListener);
         subListener.fRealMaxFrequency = (freq) {
-          exps.signal("frequency=" + freq!);
+          exps.signal("frequency=${freq!}");
         };
         sub.setRequestedMaxFrequency("unlimited");
         client.subscribe(sub);
@@ -429,7 +429,7 @@ void main() {
         var hs = client.connectionOptions.getHttpExtraHeaders()!;
         assertEqual("header", hs["hello"]);
 
-        var expected = "CONNECTED:" + transport;
+        var expected = "CONNECTED:$transport";
         listener.fStatusChange = (status) {
           if (status == expected) exps.signal();
         };
@@ -444,7 +444,7 @@ void main() {
 
       test('json patch', () async {
         var updates = <ItemUpdate>[];
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setRequestedSnapshot("no");
         sub.setDataAdapter("JSON_COUNT");
         sub.addListener(subListener);
@@ -467,7 +467,7 @@ void main() {
 
       test('diff patch', () async {
         var updates = <ItemUpdate>[];
-        var sub = new Subscription("MERGE", ["count"], ["count"]);
+        var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setRequestedSnapshot("no");
         sub.setDataAdapter("DIFF_COUNT");
         sub.addListener(subListener);
@@ -502,5 +502,5 @@ void main() {
       });
 
     }); // group
-  }); // for each group
+  } // for each group
 } // main

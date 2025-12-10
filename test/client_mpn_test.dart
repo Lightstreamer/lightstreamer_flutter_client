@@ -18,39 +18,39 @@ import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 import './utils.dart';
 
 void main() {
-  final host = "http://127.0.0.1:8080";
+  const host = "http://127.0.0.1:8080";
   late Expectations exps;
   late MpnDevice device;
   late MpnSubscription sub;
   late LightstreamerClient client;
   late BaseDeviceListener devListener;
   late BaseMpnSubscriptionListener subListener;
-  LightstreamerClient.setLoggerProvider(new ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+  LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
-  ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"].forEach((transport) { 
+  for (var transport in ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"]) { 
 
     group(transport, () {
 
       setUp(() {
-        exps = new Expectations();
-        client = new LightstreamerClient(host, "TEST");
+        exps = Expectations();
+        client = LightstreamerClient(host, "TEST");
         /* create an Android device */
-        device = new MpnDevice(getFreshToken(), "com.lightstreamer.demo.android.stocklistdemo", "Google");
-        devListener = new BaseDeviceListener();
+        device = MpnDevice(getFreshToken(), "com.lightstreamer.demo.android.stocklistdemo", "Google");
+        devListener = BaseDeviceListener();
         device.addListener(devListener);
         /* create notification descriptor */
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
           .build();
         /* create MPN subscription */
-        sub = new MpnSubscription("MERGE");
+        sub = MpnSubscription("MERGE");
         sub.setDataAdapter("COUNT");
         sub.setItemGroup("count");
         sub.setFieldSchema("count");
         sub.setNotificationFormat(descriptor);
-        subListener = new BaseMpnSubscriptionListener();
+        subListener = BaseMpnSubscriptionListener();
         sub.addListener(subListener);
 
         client.connectionOptions.setForcedTransport(transport);
@@ -60,8 +60,8 @@ void main() {
         }
       });
 
-      Future<void> _cleanup() {
-        if (client.getStatus() != "DISCONNECTED" && client.getMpnSubscriptions(null).length > 0) {
+      Future<void> cleanup() {
+        if (client.getStatus() != "DISCONNECTED" && client.getMpnSubscriptions(null).isNotEmpty) {
           devListener._onSubscriptionsUpdated = () => exps.signal("onSubscriptionsUpdated ${client.getMpnSubscriptions(null).length}");
           client.unsubscribeMpnSubscriptions("ALL");
           return exps.until("onSubscriptionsUpdated 0");
@@ -71,7 +71,7 @@ void main() {
       }
 
       tearDown(() async {
-        await _cleanup();
+        await cleanup();
         client.disconnect();
         // js.Browser.getLocalStorage().clear();
       });
@@ -81,7 +81,7 @@ void main() {
        */
       test('register', () async {
         devListener._onRegistered = () => exps.signal("onRegistered");
-        devListener._onStatusChanged = (status, ts) => exps.signal("onStatusChanged " + status);
+        devListener._onStatusChanged = (status, ts) => exps.signal("onStatusChanged $status");
         client.connect();
         client.registerForMpn(device);
         await exps.value("onStatusChanged REGISTERED");
@@ -99,8 +99,8 @@ void main() {
        * Verifies that when the registration fails the device listener is notified.
        */
       test('register error', () async {
-        device = new MpnDevice(getFreshToken(), "unknwon.app", "Google");
-        devListener = new BaseDeviceListener();
+        device = MpnDevice(getFreshToken(), "unknwon.app", "Google");
+        devListener = BaseDeviceListener();
         device.addListener(devListener);
         devListener._onRegistrationFailed = (code, msg) => exps.signal('onRegistrationFailed $code $msg');
         client.connect();
@@ -125,7 +125,7 @@ void main() {
         assertFalse(sub.isTriggered());
         assertEqual("SUBSCRIBED", sub.getStatus());
         assertTrue(sub.getStatusTimestamp() >= 0);
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
@@ -171,7 +171,7 @@ void main() {
         sub.setTriggerExpression("0<1");
         assertEqual("0<1", sub.getTriggerExpression());
         await exps.until("trigger 0<1");
-        sub.setNotificationFormat(new FirebaseMpnBuilder().setTitle("my_title_2").build());
+        sub.setNotificationFormat(FirebaseMpnBuilder().setTitle("my_title_2").build());
         assertEqual("{\"webpush\":{\"notification\":{\"title\":\"my_title_2\"}}}", sub.getNotificationFormat());
         await exps.until("format {\"webpush\":{\"notification\":{\"title\":\"my_title_2\"}}}");
       });
@@ -180,7 +180,7 @@ void main() {
        * Verifies that, when the client modifies a TRIGGERED subscription, the state changes to SUBSCRIBED.
        */
       test('subscribe modify reactivate', () async {
-        subListener._onStatusChanged = (status, _) => exps.signal("onStatusChanged " +  status);
+        subListener._onStatusChanged = (status, _) => exps.signal("onStatusChanged $status");
         client.connect();
         client.registerForMpn(device);
         sub.setTriggerExpression("true"); // so we are sure that the item becomes triggered
@@ -215,12 +215,12 @@ void main() {
           case "notification_format": exps.signal("format ${sub.getActualNotificationFormat()}");
           }
         };
-        var subCopy = new MpnSubscription("MERGE");
+        var subCopy = MpnSubscription("MERGE");
         subCopy.setDataAdapter("COUNT");
         subCopy.setItemGroup("count");
         subCopy.setFieldSchema("count");
-        subCopy.setNotificationFormat(new FirebaseMpnBuilder().setTitle("my_title_2").build());
-        var subCopyListener = new BaseMpnSubscriptionListener();
+        subCopy.setNotificationFormat(FirebaseMpnBuilder().setTitle("my_title_2").build());
+        var subCopyListener = BaseMpnSubscriptionListener();
         subCopy.addListener(subCopyListener);
         subCopyListener._onSubscription = () => exps.signal("onSubscription copy");
         client.connect();
@@ -288,30 +288,30 @@ void main() {
        * Verifies that the client unsubscribes from all the subscribed items.
        */
       test('unsubscribe filter subscribed', () async {
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
           .build();
 
-        var sub1 = new MpnSubscription("MERGE");
+        var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
         sub1.setItemGroup("count");
         sub1.setFieldSchema("count");
         sub1.setNotificationFormat(descriptor);
-        var sub1Listener = new BaseMpnSubscriptionListener();
+        var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
         sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
         sub1Listener._onUnsubscription = () => exps.signal("onUnsubscription sub1");
 
-        var sub2 = new MpnSubscription("MERGE");
+        var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
         sub2.setItemGroup("count");
         sub2.setFieldSchema("count");
         sub2.setNotificationFormat(descriptor);
         // this expression is always true because the counter is >= 0
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
-        var sub2Listener = new BaseMpnSubscriptionListener();
+        var sub2Listener = BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
         sub2Listener._onTriggered = () => exps.signal("onTriggered sub2");
         sub2Listener._onUnsubscription = () => exps.signal("onUnsubscription sub2");
@@ -355,30 +355,30 @@ void main() {
        * Verifies that the client unsubscribes from all the triggered items.
        */
       test('unsubscribe filter triggered', () async {
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
           .build();
 
-        var sub1 = new MpnSubscription("MERGE");
+        var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
         sub1.setItemGroup("count");
         sub1.setFieldSchema("count");
         sub1.setNotificationFormat(descriptor);
-        var sub1Listener = new BaseMpnSubscriptionListener();
+        var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
         sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
         sub1Listener._onUnsubscription = () => exps.signal("onUnsubscription sub1");
 
-        var sub2 = new MpnSubscription("MERGE");
+        var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
         sub2.setItemGroup("count");
         sub2.setFieldSchema("count");
         sub2.setNotificationFormat(descriptor);
         // this expression is always true because the counter is >= 0
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
-        var sub2Listener = new BaseMpnSubscriptionListener();
+        var sub2Listener = BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
         sub2Listener._onTriggered = () => exps.signal("onTriggered sub2");
         sub2Listener._onUnsubscription = () => exps.signal("onUnsubscription sub2");
@@ -423,30 +423,30 @@ void main() {
        * Verifies that the client unsubscribes from all the triggered items.
        */
       test('unsubscribe filter all', () async {
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
           .build();
 
-        var sub1 = new MpnSubscription("MERGE");
+        var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
         sub1.setItemGroup("count");
         sub1.setFieldSchema("count");
         sub1.setNotificationFormat(descriptor);
-        var sub1Listener = new BaseMpnSubscriptionListener();
+        var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
         sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
         sub1Listener._onUnsubscription = () => exps.signal("onUnsubscription sub1");
 
-        var sub2 = new MpnSubscription("MERGE");
+        var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
         sub2.setItemGroup("count");
         sub2.setFieldSchema("count");
         sub2.setNotificationFormat(descriptor);
         // this expression is always true because the counter is >= 0
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
-        var sub2Listener = new BaseMpnSubscriptionListener();
+        var sub2Listener = BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
         sub2Listener._onTriggered = () => exps.signal("onTriggered sub2");
         sub2Listener._onUnsubscription = () => exps.signal("onUnsubscription sub2");
@@ -536,27 +536,27 @@ void main() {
        * Verifies that the two subscription objects become subscribed.
        */
       test('double subscription', () async {
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
           .build();
 
-        var sub1 = new MpnSubscription("MERGE");
+        var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
         sub1.setItemGroup("count");
         sub1.setFieldSchema("count");
         sub1.setNotificationFormat(descriptor);
-        var sub1Listener = new BaseMpnSubscriptionListener();
+        var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
         sub1Listener._onSubscription = () => exps.signal("onSubscription sub1");
 
-        var sub2 = new MpnSubscription("MERGE");
+        var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
         sub2.setItemGroup("count");
         sub2.setFieldSchema("count");
         sub2.setNotificationFormat(descriptor);
-        var sub2Listener = new BaseMpnSubscriptionListener();
+        var sub2Listener = BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
         sub2Listener._onSubscription = () => exps.signal("onSubscription sub2");
 
@@ -582,7 +582,7 @@ void main() {
        * </ul>
        */
       test('double subscription disconnect', () async {
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
@@ -593,14 +593,14 @@ void main() {
         * NB the following trigger conditions are always false because
         * the counter value is always bigger than zero.
         */
-        var sub1 = new MpnSubscription("MERGE");
+        var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
         sub1.setItemGroup("count");
         sub1.setFieldSchema("count");
         sub1.setNotificationFormat(descriptor);
         sub1.setTriggerExpression("Integer.parseInt(\${count}) < -1");
 
-        var sub2 = new MpnSubscription("MERGE");
+        var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
         sub2.setItemGroup("count");
         sub2.setFieldSchema("count");
@@ -671,7 +671,7 @@ void main() {
        * </ul>
        */
       test('onSubscriptionsUpdated', () async {
-        var descriptor = new FirebaseMpnBuilder()
+        var descriptor = FirebaseMpnBuilder()
           .setTitle("my_title")
           .setBody("my_body")
           .setIcon("my_icon")
@@ -682,14 +682,14 @@ void main() {
         * NB the following trigger conditions are always false because
         * the counter value is always bigger than zero.
         */
-        var sub1 = new MpnSubscription("MERGE");
+        var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
         sub1.setItemGroup("count");
         sub1.setFieldSchema("count");
         sub1.setNotificationFormat(descriptor);
         sub1.setTriggerExpression("Integer.parseInt(\${count}) < -1");
 
-        var sub2 = new MpnSubscription("MERGE");
+        var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
         sub2.setItemGroup("count");
         sub2.setFieldSchema("count");
@@ -758,10 +758,10 @@ void main() {
       });
 
     }); // group
-  }); // for each group
+  } // for each group
 
   test('firebase builder', () {
-    var builder = new FirebaseMpnBuilder();
+    var builder = FirebaseMpnBuilder();
     var format = builder
       .setTitle("TITLE")
       .setBody("BODY")
@@ -775,7 +775,7 @@ void main() {
   });
 
   test('safari builder', () {
-    var builder = new SafariMpnBuilder(); 
+    var builder = SafariMpnBuilder(); 
     var format = builder
       .setTitle("TITLE")
       .setBody("BODY")
@@ -790,29 +790,40 @@ void main() {
 
 class BaseDeviceListener extends MpnDeviceListener {
   void Function()? _onSubscriptionsUpdated;
+  @override
   void onSubscriptionsUpdated() => _onSubscriptionsUpdated?.call();
   void Function()? _onRegistered;
+  @override
   void onRegistered() => _onRegistered?.call();
   void Function(String, int)? _onStatusChanged;
+  @override
   void onStatusChanged(String status, int ts) => _onStatusChanged?.call(status, ts);
   void Function(int, String)? _onRegistrationFailed;
+  @override
   void onRegistrationFailed(int code, String msg) => _onRegistrationFailed?.call(code, msg);
 }
 
 class BaseMpnSubscriptionListener extends MpnSubscriptionListener {
   void Function()? _onSubscription;
+  @override
   void onSubscription() => _onSubscription?.call();
   void Function(String, int)? _onStatusChanged;
+  @override
   void onStatusChanged(String status, int ts) => _onStatusChanged?.call(status, ts);
   void Function(String)? _onPropertyChanged;
+  @override
   void onPropertyChanged(String property) => _onPropertyChanged?.call(property);
   void Function(int, String)? _onSubscriptionError;
+  @override
   void onSubscriptionError(int code, String msg) => _onSubscriptionError?.call(code, msg);
   void Function()? _onUnsubscription;
+  @override
   void onUnsubscription() => _onUnsubscription?.call();
   void Function()? _onTriggered;
+  @override
   void onTriggered() => _onTriggered?.call();
   void Function(int, String, String)? _onModificationError;
+  @override
   void onModificationError(int code, String msg, String prop) => _onModificationError?.call(code, msg, prop);
 }
 
