@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
@@ -96,7 +97,9 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
     /**
      * The channel through which the events fired by the listeners are communicated to the Flutter component.
      */
-    MethodChannel _listenerChannel;
+    EventChannel _listenerChannel;
+    volatile EventChannel.EventSink _listenerChannelSink;
+
     Context _appContext;
     final Handler _loop = new Handler(Looper.getMainLooper());
 
@@ -105,7 +108,24 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         _appContext = binding.getApplicationContext();
         _methodChannel = new MethodChannel(binding.getBinaryMessenger(), "com.lightstreamer.flutter/methods");
         _methodChannel.setMethodCallHandler(this);
-        _listenerChannel = new MethodChannel(binding.getBinaryMessenger(), "com.lightstreamer.flutter/listeners");
+        _listenerChannel = new EventChannel(binding.getBinaryMessenger(), "com.lightstreamer.flutter/listeners");
+        _listenerChannel.setStreamHandler(new EventChannel.StreamHandler() {
+            @Override
+            public void onListen(Object arguments, EventChannel.EventSink events) {
+                if (channelLogger.isDebugEnabled()) {
+                    channelLogger.debug("Setting up channel com.lightstreamer.flutter/listeners", null);
+                }
+                _listenerChannelSink = events;
+            }
+
+            @Override
+            public void onCancel(Object arguments) {
+                if (channelLogger.isDebugEnabled()) {
+                    channelLogger.debug("Disposing channel com.lightstreamer.flutter/listeners", null);
+                }
+                _listenerChannelSink = null;
+            }
+        });
     }
 
     @Override
@@ -996,7 +1016,16 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         if (channelLogger.isDebugEnabled()) {
             channelLogger.debug("Invoking " + method + " " + arguments, null);
         }
-        _loop.post(() -> _listenerChannel.invokeMethod(method, arguments));
+        arguments.put("targetMethod", method);
+        _loop.post(() -> {
+            if (_listenerChannelSink != null) {
+                _listenerChannelSink.success(arguments);
+            } else {
+                if (channelLogger.isErrorEnabled()) {
+                    channelLogger.error("Channel com.lightstreamer.flutter/listeners is not ready, cannot deliver event " + method + " " + arguments, null);
+                }
+            }
+        });
     }
 
     static String cookieToString(HttpCookie c) {

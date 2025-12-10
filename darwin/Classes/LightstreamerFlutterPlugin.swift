@@ -76,16 +76,35 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
   /**
    * The channel through which the events fired by the listeners are communicated to the Flutter component.
    */
-  let _listenerChannel: FlutterMethodChannel;
+  let _listenerChannel: FlutterEventChannel;
+  var _listenerChannelSink: FlutterEventSink?;
   
   init(_ registrar: FlutterPluginRegistrar) {
 #if os(iOS)
     _methodChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/methods", binaryMessenger: registrar.messenger());
-    _listenerChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/listeners", binaryMessenger: registrar.messenger());
+    _listenerChannel = FlutterEventChannel(name: "com.lightstreamer.flutter/listeners", binaryMessenger: registrar.messenger());
 #elseif os(macOS)
     _methodChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/methods", binaryMessenger: registrar.messenger);
-    _listenerChannel = FlutterMethodChannel(name: "com.lightstreamer.flutter/listeners", binaryMessenger: registrar.messenger);
+    _listenerChannel = FlutterEventChannel(name: "com.lightstreamer.flutter/listeners", binaryMessenger: registrar.messenger);
 #endif
+    super.init();
+    _listenerChannel.setStreamHandler((ListenerChannelHandler(self)));
+  }
+  
+  // Delegate of ListenerChannelHandler.onListen
+  func onListenerChannelListen(_ events: @escaping FlutterEventSink) {
+    if (channelLogger.isDebugEnabled) {
+      channelLogger.debug("Setting up channel com.lightstreamer.flutter/listeners");
+    }
+    _listenerChannelSink = events
+  }
+  
+  // Delegate of ListenerChannelHandler.onCancel
+  func onListenerChannelCancel() {
+    if (channelLogger.isDebugEnabled) {
+      channelLogger.debug("Disposing channel com.lightstreamer.flutter/listeners");
+    }
+    _listenerChannelSink = nil
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -1068,8 +1087,16 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     if (channelLogger.isDebugEnabled) {
       channelLogger.debug("Invoking " + method + " " + arguments.debugDescription);
     }
-    DispatchQueue.main.async {
-      self._listenerChannel.invokeMethod(method, arguments: arguments);
+    var newArguments = arguments
+    newArguments["targetMethod"] = method
+    if let sink = _listenerChannelSink {
+      DispatchQueue.main.async {
+        sink(newArguments)
+      }
+    } else {
+      if (channelLogger.isErrorEnabled) {
+        channelLogger.error("Channel com.lightstreamer.flutter/listeners is not ready, cannot deliver event \(method) \(arguments)");
+      }
     }
   }
   
@@ -1617,5 +1644,23 @@ class MyMpnSubscriptionListener : MPNSubscriptionDelegate {
     var arguments = arguments;
     arguments.put("mpnSubId", _mpnSubId);
     _plugin?.invokeMethod("MpnSubscriptionListener." + method, arguments);
+  }
+}
+
+class ListenerChannelHandler: NSObject, FlutterStreamHandler {
+  unowned let parent: LightstreamerFlutterPlugin
+
+  init(_ parent: LightstreamerFlutterPlugin) {
+    self.parent = parent
+  }
+      
+  func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    parent.onListenerChannelListen(events)
+    return nil
+  }
+      
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    parent.onListenerChannelCancel()
+    return nil
   }
 }

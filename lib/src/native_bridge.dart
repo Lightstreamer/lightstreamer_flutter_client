@@ -58,7 +58,7 @@ class NativeBridge {
   /// The channel through which this Flutter component forwards the procedure calls directed to the native component.
   final MethodChannel _methodChannel = const MethodChannel('com.lightstreamer.flutter/methods');
   /// The channel through which the listener events fired by the native component are communicated to this Flutter component.
-  final MethodChannel _listenerChannel = const MethodChannel('com.lightstreamer.flutter/listeners');
+  final EventChannel _listenerChannel = const EventChannel('com.lightstreamer.flutter/listeners');
 
   @visibleForTesting
   int get nClients => _clientMap.length;
@@ -89,7 +89,29 @@ class NativeBridge {
   }
 
   NativeBridge._() {
-    _listenerChannel.setMethodCallHandler(_listenerChannelHandler);
+    _listenerChannel.receiveBroadcastStream().listen(
+      (json) {
+          try {
+            String method = json["targetMethod"] as String;
+            var mc = MethodCall(method, json);
+            _listenerChannelHandler(mc);
+          } catch(ex) {
+            if (channelLogger.isErrorEnabled()) {
+              channelLogger.error('Channel com.lightstreamer.flutter/listeners got unexpected data $json: $ex');
+            }
+          }
+      },
+      onError: (Object error) {
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error('Channel com.lightstreamer.flutter/listeners error: $error');
+        }
+      },
+      onDone: () {
+        if (channelLogger.isErrorEnabled()) {
+          channelLogger.error('Channel com.lightstreamer.flutter/listeners closed unexpectedly');
+        }
+      }
+    );
   }
 
   void client_create(String clientId, LightstreamerClient client) {
