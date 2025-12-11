@@ -16,7 +16,7 @@
 // ignore_for_file: unnecessary_new, prefer_interpolation_to_compose_strings
 
 // MPN is not available on windows and macos
-@TestOn('!windows && !mac-os')
+// @TestOn('!windows && !mac-os')
 
 import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
