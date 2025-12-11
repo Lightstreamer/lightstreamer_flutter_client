@@ -25,8 +25,7 @@
 // This must be included before many other Windows headers.
 #include <windows.h>
 
-#include <flutter/method_channel.h>
-#include <flutter/plugin_registrar_windows.h>
+#include <flutter/event_stream_handler_functions.h>
 #include <flutter/standard_method_codec.h>
 
 #include <cassert>
@@ -36,7 +35,7 @@
 using flutter::EncodableValue;
 using flutter::EncodableList;
 using flutter::EncodableMap;
-using MyChannel = flutter::MethodChannel<flutter::EncodableValue>;
+using MyChannel = flutter::EventSink<flutter::EncodableValue>;
 
 /**
  * A plugin manages the communication between the Flutter component (the Flutter app targeting Windows using the Lightstreamer Flutter Client SDK)
@@ -210,8 +209,33 @@ void LightstreamerFlutterClientPlugin::RegisterWithRegistrar(
 }
 
 LightstreamerFlutterClientPlugin::LightstreamerFlutterClientPlugin(flutter::PluginRegistrarWindows* registrar) 
-  : _listenerChannel{ new flutter::MethodChannel<flutter::EncodableValue>(registrar->messenger(), "com.lightstreamer.flutter/listeners",
-          &flutter::StandardMethodCodec::GetInstance()) } {}
+  : _listenerChannel{ new flutter::EventChannel<flutter::EncodableValue>(registrar->messenger(), "com.lightstreamer.flutter/listeners",
+          &flutter::StandardMethodCodec::GetInstance()) } {
+  // See https://stackoverflow.com/questions/78191134/how-to-create-a-event-channel-in-flutter-windows-desktop-application-dart-and-c
+  _listenerChannel->SetStreamHandler(std::make_unique<flutter::StreamHandlerFunctions<>>(
+    [this](auto arguments, auto events) {
+      this->onListenerChannelListen(std::move(events));
+      return nullptr;
+    },
+    [this](auto arguments) {
+      this->onListenerChannelCancel();
+      return nullptr;
+    }));
+}
+
+void LightstreamerFlutterClientPlugin::onListenerChannelListen(std::unique_ptr<flutter::EventSink<>>&& events) {
+  if (channelLogger->isDebugEnabled()) {
+    channelLogger->debug("Setting up channel com.lightstreamer.flutter/listeners");
+  }
+  _listenerChannelSink = std::move(events);
+}
+
+void LightstreamerFlutterClientPlugin::onListenerChannelCancel() { 
+  if (channelLogger->isDebugEnabled()) {
+    channelLogger->debug("Disposing channel com.lightstreamer.flutter/listeners");
+  }
+  _listenerChannelSink = nullptr;
+}
 
 LightstreamerFlutterClientPlugin::~LightstreamerFlutterClientPlugin() {}
 
@@ -271,7 +295,7 @@ std::shared_ptr<LS::LightstreamerClient> LightstreamerFlutterClientPlugin::getCl
   if (ls == nullptr) {
     ls = std::make_shared<LS::LightstreamerClient>("", "");
     _clientMap.insert({ id, ls });
-    ls->addListener(new MyClientListener(id, ls, _listenerChannel));
+    ls->addListener(new MyClientListener(id, ls, _listenerChannelSink));
   }
   return ls;
 }
@@ -293,10 +317,11 @@ static void invokeMethod(std::shared_ptr<MyChannel> channel, const std::string& 
   if (channelLogger->isDebugEnabled()) {
     channelLogger->debug("Invoking " + method + " " + encodableMapToString(arguments));
   }
+  arguments.insert({ EncodableValue("targetMethod"), EncodableValue(method) });
   auto val = std::make_unique<flutter::EncodableValue>(arguments);
   // TODO post tasks to Flutter thread
   // see https://github.com/flutter/flutter/issues/79213
-  channel->InvokeMethod(method, std::move(val));
+  channel->Success(*val);
 }
 
 void LightstreamerFlutterClientPlugin::Client_handle(std::string& method, const flutter::MethodCall<flutter::EncodableValue>& call, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
@@ -611,7 +636,7 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
   auto sub = getValue(_subMap, subId);
   if (sub == nullptr) {
     sub = std::make_shared<LS::Subscription>(mode, std::vector<std::string>(), std::vector<std::string>());
-    sub->addListener(new MySubscriptionListener(subId, sub, _listenerChannel));
+    sub->addListener(new MySubscriptionListener(subId, sub, _listenerChannelSink));
     _subMap.insert({ subId, sub });
   }
   if (sub->isActive()) {
@@ -690,7 +715,7 @@ void LightstreamerFlutterClientPlugin::Client_sendMessage(const flutter::MethodC
   bool enqueueWhileDisconnected = getBool(arguments, "enqueueWhileDisconnected", false);
   MyClientMessageListener* listener = nullptr;
   if (!msgId.empty()) {
-    listener = new MyClientMessageListener(msgId, _listenerChannel);
+    listener = new MyClientMessageListener(msgId, _listenerChannelSink);
   }
   client->sendMessage(message, sequence, delayTimeout, listener, enqueueWhileDisconnected);
   result->Success();

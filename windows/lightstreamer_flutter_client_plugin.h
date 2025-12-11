@@ -18,6 +18,8 @@
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
+#include <flutter/event_channel.h>
+#include <flutter/event_sink.h>
 
 #include "Lightstreamer/LightstreamerClient.h"
 
@@ -45,7 +47,11 @@ class LightstreamerFlutterClientPlugin : public flutter::Plugin {
   /**
    * The channel through which the events fired by the listeners are communicated to the Flutter component.
    */
-  std::shared_ptr<flutter::MethodChannel<flutter::EncodableValue>> _listenerChannel;
+  std::shared_ptr<flutter::EventChannel<flutter::EncodableValue>> _listenerChannel;
+  std::shared_ptr<flutter::EventSink<flutter::EncodableValue>> _listenerChannelSink;
+
+  void onListenerChannelListen(std::unique_ptr<flutter::EventSink<>>&& events);
+  void onListenerChannelCancel();
 
   std::shared_ptr<LS::LightstreamerClient> getClient(const flutter::MethodCall<flutter::EncodableValue>& call);
   std::shared_ptr<LS::Subscription> getSubscription(const std::string& subId) const;
