@@ -14,6 +14,7 @@ The library also offers support for mobile push notifications (MPN). While real-
 1. [Getting Started (Web)](#getting-started-web)
 1. [See Also](#see-also)
 1. [Compatibility](#compatibility)
+1. [Troubleshooting](#troubleshooting)
 
 ## Installation
 
@@ -58,13 +59,51 @@ These libraries are very similar, as they expose the same classes and methods. T
 
 ### Mobile/Desktop vs Web
 
-1. **Object lifespan** When using the mobile/desktop library, references to the `LightstreamerClient`, `Subscription`, `MpnDevice` and `MpnSubscription` instances _**must be maintained by the Flutter app for as long as these objects are in use**_. Failing to do so may result in the loss of events directed to these objects (e.g. listener notifications).
+1. **Object lifespan** On Mobile and Desktop, instances of the `LightstreamerClient`, `Subscription`, `MpnDevice`, and `MpnSubscription` classes act as proxies for underlying native objects. Because the plugin relies on the Dart Garbage Collector (GC) to determine when a native object is no longer needed, any Dart object (of the types listed above) reclaimed by the GC will cause the plugin to dispose of its corresponding native object. 
+
+If these objects are declared within a local scope (such as inside a function), the GC may reclaim that memory as soon as the function execution completes. This triggers the disposal of the underlying native object, resulting in a silent loss of events and listener notifications. 
+
+To prevent this, ensure these objects remain reachable from the main class — for example, by storing them as instance variables — for as long as the application requires them.
 
     ```dart
     // DO
     class MyClient {
-      final client = LightstreamerClient("host", "adapter");
-      void connect() async {
+      late LightstreamerClient client;
+      final Map<String, Subscription> subMap = {};
+
+      MyClient() {
+        client = LightstreamerClient("https://push.lightstreamer.com/", "WELCOME");
+        client.addListener(MyClientListener());
+      }
+
+      Future<void> connect() async {
+        await client.connect();
+      }
+
+      Future<void> disconnect() async {
+        await client.disconnect();
+      }
+
+      Future<void> subscribe(String item, List<String> fields) async {
+        var sub = Subscription("MERGE", [item], fields);
+        sub.addListener(MySubscriptionListener);
+        subMap[item] = sub;
+        await client.subscribe(sub);
+      }
+
+      Future<void> unsubscribe(String item) async {
+        var sub = subMap.remove(item);
+        if (sub == null) {
+          return;
+        }
+        await client.unsubscribe(sub);
+      }
+    }
+
+    // DO NOT
+    class MyClient {
+      Future<void> connect() async {
+        var client = LightstreamerClient("https://push.lightstreamer.com/", "WELCOME");
         client.addListener(MyClientListener());
         await client.connect();
       }
@@ -72,10 +111,12 @@ These libraries are very similar, as they expose the same classes and methods. T
 
     // DO NOT
     class MyClient {
-      void connect() async {
-        var client = LightstreamerClient("host", "adapter");
-        client.addListener(MyClientListener());
-        await client.connect();
+      // Initialize client...
+
+      Future<void> subscribe(String item, List<String> fields) async {
+        var sub = Subscription("MERGE", [item], fields);
+        sub.addListener(MySubscriptionListener);
+        await client.subscribe(sub);
       }
     }
     ```
@@ -496,3 +537,11 @@ the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messa
 * On iOS devices, iOS 13.0 or later is required.
 * On macOS desktops, macOS 11 (Big Sur) or later is required.
 * On Windows desktops, Windows 10 or 11 is required.
+
+## Troubleshooting
+
+**Q: My mobile/desktop app subscribed to items, but I'm not seeing any updates. However, the same code works for a similar web app. Why?**
+
+**A:** When using the mobile/desktop library, references to `LightstreamerClient`, `Subscription`, `MpnDevice` and `MpnSubscription` objects must be maintained by the Flutter app (for example, by storing them in instance variables) for as long as these objects are in use. Failing to do so may result in the loss of events directed to these objects (e.g. listener notifications).
+
+For further details, see the [Differences Among Platforms](#-differences-among-platforms-) section.
