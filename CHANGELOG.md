@@ -1,6 +1,6 @@
 # Lightstreamer Flutter Plugin Changelog
 
-## 2.2.0-alpha.1
+## 2.2.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
 *Compatible with iOS 13*<br/>
@@ -9,11 +9,11 @@
 *Compatible with Dart 3.1.3*<br/>
 *Compatible with Flutter 3.7.0*<br/>
 *Compatible with code developed for the previous version*<br/>
-*Based on Lightstreamer Android Client SDK 5.2.2*<br/>
+*Based on Lightstreamer Android Client SDK 5.3.0*<br/>
 *Based on Lightstreamer Swift Client SDK 6.3.0*<br/>
 *Based on Lightstreamer Web Client SDK 9.2.3*<br/>
 *Based on Lightstreamer C++ Client SDK 1.0.0*<br/>
-*Made available on 10 Dec 2025*
+*Made available on 11 Mar 2026*
 
 Replaced the `MethodChannel` with an `EventChannel` to deliver events from the native Lightstreamer Client SDKs to the Flutter plugin, as `EventChannel` handles real-time events more efficiently.
 
