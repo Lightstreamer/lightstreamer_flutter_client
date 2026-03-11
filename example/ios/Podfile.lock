@@ -2,7 +2,7 @@ PODS:
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
-  - lightstreamer_flutter_client (2.1.4):
+  - lightstreamer_flutter_client (2.2.0):
     - Flutter
     - FlutterMacOS
     - LightstreamerClient (~> 6.3.0)
@@ -31,7 +31,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
-  lightstreamer_flutter_client: 10d8317aa20082c0855176e197d069fa82e1ea3f
+  lightstreamer_flutter_client: 6197162980705ea432b919e9f59af29f730b7558
   LightstreamerClient: 2bdbccf785b984721cc8bf4c1e4d085480108604
   RMJSONPatch: 9d08c18158c5a224ec471d876457f65cdafb1ecb
 
