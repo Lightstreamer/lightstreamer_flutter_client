@@ -545,3 +545,27 @@ the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messa
 **A:** When using the mobile/desktop library, references to `LightstreamerClient`, `Subscription`, `MpnDevice` and `MpnSubscription` objects must be maintained by the Flutter app (for example, by storing them in instance variables) for as long as these objects are in use. Failing to do so may result in the loss of events directed to these objects (e.g. listener notifications).
 
 For further details, see the [Differences Among Platforms](#-differences-among-platforms-) section.
+
+**Q: The Android build fails with `:app:mergeDebugJavaResource` and reports a duplicate `META-INF/versions/9/OSGI-INF/MANIFEST.MF`. How can I fix it?**
+
+```text
+Execution failed for task ':app:mergeDebugJavaResource'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.MergeJavaResWorkAction
+   > 2 files found with path 'META-INF/versions/9/OSGI-INF/MANIFEST.MF' from inputs:
+      - .gradle/caches/transforms-3/dffab2522735d8e769d2adb09a049c07/transformed/jetified-okhttp-urlconnection-5.3.2.jar
+      - .gradle/caches/transforms-3/b8bfca4d9f2f19c7c0739bdb45a062b0/transformed/jetified-okhttp-java-net-cookiejar-5.3.2.jar
+```
+
+**A:** This error is a duplicate-resource conflict between transitive OkHttp dependencies (`okhttp-urlconnection` and `okhttp-java-net-cookiejar`), which are dependencies of the Android library used by the plugin. To fix it, add the following lines to the `android/app/build.gradle` file of your Flutter app:
+
+```gradle
+android {
+  // ...
+  packaging {
+    resources {
+      // Exclude OkHttp META-INF files to prevent duplicate metadata merge conflicts
+      excludes += ["META-INF/versions/9/OSGI-INF/MANIFEST.MF"]
+    }
+  }
+}
+```
