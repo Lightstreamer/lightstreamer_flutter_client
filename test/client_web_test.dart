@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+
 import 'package:test/test.dart';
-import 'package:js/js_util.dart' as js;
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 import './utils.dart';
 
@@ -458,10 +460,10 @@ void main() {
         await exps.value("onItemUpdate");
         var u = updates[1];
         var patch = u.getValueAsJSONPatchIfAvailable(1)!;
-        patch = js.getProperty(patch, "0");
-        assertEqual("replace", js.getProperty(patch, "op"));
-        assertEqual("/value", js.getProperty(patch, "path"));
-        expect(js.getProperty(patch, "value"), isA<int>());
+        patch = patch.getProperty("0" as JSAny);
+        assertEqual("replace", patch.getProperty("op" as JSAny));
+        assertEqual("/value", patch.getProperty("path" as JSAny));
+        expect(patch.getProperty("value" as JSAny), isA<int>());
         expect(u.getValue(1), isNotNull);
       });
 

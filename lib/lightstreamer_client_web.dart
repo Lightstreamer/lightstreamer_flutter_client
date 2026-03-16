@@ -17,8 +17,8 @@
 @JS('lightstreamer')
 library lightstreamer_client_web;
 
-import 'package:js/js.dart';
-import 'package:js/js_util.dart';
+import 'dart:js_interop';
+import 'package:js_interop_utils/js_interop_utils.dart';
 
 /**
  * Facade class for the management of the communication to
@@ -46,9 +46,7 @@ import 'package:js/js_util.dart';
  * Therefore, you should delegate any slow or blocking operations to a dedicated thread, and keep the listener methods as fast and simple as possible.
  * Note that even if you create multiple instances of LightstreamerClient, they will all use a single event thread, that is shared among them.
  */
-@JS()
-@staticInterop
-class LightstreamerClient {
+extension type LightstreamerClient._(JSObject _) implements JSObject {
   /**
    * Static method that permits to configure the logging system used by the library. 
    * 
@@ -195,7 +193,7 @@ extension LightstreamerClientExt on LightstreamerClient {
   external String getStatus();
   @JS('addListener') external void _addListener(_ClientListener listener);
   @JS('removeListener') external void _removeListener(_ClientListener listener);
-  @JS('getListeners') external List<dynamic> _getListeners();
+  @JS('getListeners') external JSArray<_ClientListener> _getListeners();
   @JS('sendMessage') external void _sendMessage(String msg, [String? sequence, int? delayTimeout, _ClientMessageListener? listener, bool? enqueueWhileDisconnected]);
   /**
    * Operation method that adds a Subscription to the list of "active" Subscriptions. The Subscription cannot already be in the "active" state.
@@ -232,7 +230,7 @@ extension LightstreamerClientExt on LightstreamerClient {
    * instance.
    */
   external void unsubscribe(Subscription sub);
-  @JS('getSubscriptions') external List<dynamic> _getSubscriptions();
+  @JS('getSubscriptions') external JSArray<Subscription> _getSubscriptions();
 
   /**
    * Adds a listener that will receive events from the LightstreamerClient instance.
@@ -269,7 +267,8 @@ extension LightstreamerClientExt on LightstreamerClient {
    * - See [addListener]
    */
   List<ClientListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _ClientListener)._asDartObject).toList();
+    // return _getListeners().map((obj) => (obj as _ClientListener)._asDartObject).toList();
+    return _getListeners().toList().map((obj) => (obj as _ClientListener)._asDartObject).toList();
   }
   /**
    * Operation method that sends a message to the Server. 
@@ -355,7 +354,8 @@ extension LightstreamerClientExt on LightstreamerClient {
    * - See [subscribe]
    */
   List<Subscription> getSubscriptions() {
-    return _getSubscriptions().cast<Subscription>();
+    // return _getSubscriptions().cast<Subscription>();
+    return _getSubscriptions().toList().cast<Subscription>();
   }
 
   /**
@@ -493,7 +493,7 @@ extension LightstreamerClientExt on LightstreamerClient {
    * 
    * - See [getMpnSubscriptions]
    */
-  @JS('getMpnSubscriptions') external List<dynamic> _getMpnSubscriptions(String? filter);
+  @JS('getMpnSubscriptions') external JSArray<MpnSubscription> _getMpnSubscriptions(String? filter);
   external MpnSubscription? findMpnSubscription(String subscriptionId);
 
   /**
@@ -527,13 +527,12 @@ extension LightstreamerClientExt on LightstreamerClient {
    * - See [findMpnSubscription]
    */
   List<MpnSubscription> getMpnSubscriptions(String? filter) {
-    return _getMpnSubscriptions(filter).cast<MpnSubscription>();
+    // return _getMpnSubscriptions(filter).cast<MpnSubscription>();
+    return _getMpnSubscriptions(filter).toList().cast<MpnSubscription>();
   }
 }
 
-@JS()
-@staticInterop
-class _ClientListener {}
+extension type _ClientListener._(JSObject _) implements JSObject {}
 
 extension _ClientListenerExt on _ClientListener {
   external ClientListener get _asDartObject;
@@ -744,16 +743,15 @@ abstract class ClientListener {
 
   late final _ClientListener _that;
   ClientListener() {
-    _that = createDartExport(this) as _ClientListener;
+    // _that = createDartExport(this) as _ClientListener;
+    _that = createJSInteropWrapper(this) as _ClientListener;
   }
   _ClientListener get _asJSObject => _that;
   // ignore: unused_element
   ClientListener get _asDartObject => this;
 }
 
-@JS()
-@staticInterop
-class _ClientMessageListener {}
+extension type _ClientMessageListener._(JSObject _) implements JSObject {}
 
 extension _ClientMessageListenerExt on _ClientMessageListener {
   // ignore: unused_element
@@ -825,16 +823,15 @@ abstract class ClientMessageListener {
 
   late final _ClientMessageListener _that;
   ClientMessageListener() {
-    _that = createDartExport(this) as _ClientMessageListener;
+    // _that = createDartExport(this) as _ClientMessageListener;
+    _that = createJSInteropWrapper(this) as _ClientMessageListener;
   }
   _ClientMessageListener get _asJSObject => _that;
   // ignore: unused_element
   ClientMessageListener get _asDartObject => this;
 }
 
-@JS()
-@staticInterop
-class _SubscriptionListener {}
+extension type _SubscriptionListener._(JSObject _) implements JSObject {}
 
 extension _SubscriptionListenerExt on _SubscriptionListener {
   external SubscriptionListener get _asDartObject;
@@ -1084,7 +1081,8 @@ abstract class SubscriptionListener {
 
   late final _SubscriptionListener _that;
   SubscriptionListener() {
-    _that = createDartExport(this) as _SubscriptionListener;
+    // _that = createDartExport(this) as _SubscriptionListener;
+    _that = createJSInteropWrapper(this) as _SubscriptionListener;
   }
   _SubscriptionListener get _asJSObject => _that;
   // ignore: unused_element
@@ -1092,7 +1090,7 @@ abstract class SubscriptionListener {
 }
 
 /// A String or int value.
-typedef StringOrInt = Object;
+typedef StringOrInt = JSObject;
 
 /**
  * Contains all the information related to an update of the field values for an item.
@@ -1119,13 +1117,11 @@ typedef StringOrInt = Object;
  *  of the first-level schema length would be required.</li>
  *</ul>
  */
-@JS()
-@staticInterop
-class ItemUpdate {}
+extension type ItemUpdate._(JSObject _) implements JSObject {}
 
 extension ItemUpdateExt on ItemUpdate {
-  @JS('forEachChangedField') external void _forEachChangedField(void Function(String? fieldName, int fieldPosition, String? value) callback);
-  @JS('forEachField') external void _forEachField(void Function(String? fieldName, int fieldPosition, String? value) callback);
+  @JS('forEachChangedField') external void _forEachChangedField(JSFunction callback);
+  @JS('forEachField') external void _forEachField(JSFunction callback);
   /**
    * Inquiry method that retrieves the name of the item to which this update pertains.
    *  
@@ -1195,7 +1191,7 @@ extension ItemUpdateExt on ItemUpdate {
    * 
    * - See [ItemUpdate.getValue]
    */
-  external Object? getValueAsJSONPatchIfAvailable(StringOrInt fieldNameOrPosition);
+  external JSObject? getValueAsJSONPatchIfAvailable(StringOrInt fieldNameOrPosition);
   /**
    * Inquiry method that asks whether the current update belongs to the item snapshot (which carries the current item state at the time of Subscription). 
    * 
@@ -1265,7 +1261,8 @@ extension ItemUpdateExt on ItemUpdate {
    * per each field changed on the last update received from the server. 
    */
   void forEachChangedField(void Function(String? fieldName, int fieldPosition, String? value) callback) {
-    _forEachChangedField(allowInterop(callback));
+    // _forEachChangedField(allowInterop(callback));
+    _forEachChangedField(callback.toJS);
   }
   /**
    * Receives an iterator function and invokes it once per each field 
@@ -1277,7 +1274,8 @@ extension ItemUpdateExt on ItemUpdate {
    * per each field in the Subscription. 
    */
   void forEachField(void Function(String? fieldName, int fieldPosition, String? value) callback) {
-    _forEachField(allowInterop(callback));
+    // _forEachField(allowInterop(callback));
+    _forEachField(callback.toJS);
   }
 }
 
@@ -1329,9 +1327,7 @@ extension ItemUpdateExt on ItemUpdate {
  *  [setFields] method or by specifying it in the constructor.</li>
  * </ul>
  */
-@JS()
-@staticInterop
-class Subscription {
+extension type Subscription._(JSObject _) implements JSObject {
   /**
    * Creates an object to be used to describe a Subscription that is going to be subscribed to 
    * through Lightstreamer Server. 
@@ -1366,12 +1362,12 @@ class Subscription {
    * **Throws** IllegalArgumentException If the specified "Item List" or "Field List" is not valid; 
    * see [Subscription.setItems] and [Subscription.setFields] for details.
    */
-  external factory Subscription(String mode, [List<String>? items, List<String>? fields]);
+  external Subscription(String mode, [List<String>? items, List<String>? fields]);
 }
 
 extension SubscriptionExt on Subscription {
   @JS('addListener') external void _addListener(_SubscriptionListener listener);
-  @JS('getListeners') external List<dynamic> _getListeners();
+  @JS('getListeners') external JSArray<_SubscriptionListener> _getListeners();
   @JS('removeListener') external void _removeListener(_SubscriptionListener listener);
   /**
    * Returns the position of the "command" field in a COMMAND Subscription.
@@ -1448,7 +1444,7 @@ extension SubscriptionExt on Subscription {
    * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   external void setCommandSecondLevelDataAdapter(String? dataAdapter);
-  @JS('getCommandSecondLevelFields') external List<dynamic>? _getCommandSecondLevelFields();
+  @JS('getCommandSecondLevelFields') external JSArray<JSString>? _getCommandSecondLevelFields();
   /**
    * Setter method that sets the "Field List" to be subscribed to through 
    * Lightstreamer Server for the second-level items. 
@@ -1489,7 +1485,10 @@ extension SubscriptionExt on Subscription {
    * 
    * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
-  external void setCommandSecondLevelFields(List<String>? fields);
+  @JS('setCommandSecondLevelFields') external void _setCommandSecondLevelFields(JSArray<JSString>? fields);
+  void setCommandSecondLevelFields(List<String>? fields) {
+    _setCommandSecondLevelFields(fields?.toJS);
+  }
   /**
    * Inquiry method that can be used to read the "Field Schema" specified for second-level 
    * Subscriptions.
@@ -1577,7 +1576,7 @@ extension SubscriptionExt on Subscription {
    * - See [ConnectionDetails.setAdapterSet]
    */
   external void setDataAdapter(String? dataAdapter);
-  @JS('getFields') external List<dynamic>? _getFields();
+  @JS('getFields') external JSArray<JSString>? _getFields();
   /**
    * Setter method that sets the "Field List" to be subscribed to through 
    * Lightstreamer Server.
@@ -1596,7 +1595,10 @@ extension SubscriptionExt on Subscription {
    * 
    * - [fields] an array of fields to be subscribed to through the server. 
    */
-  external void setFields(List<String>? fields);
+  @JS('setFields') external void _setFields(JSArray<JSString>? fields);
+  void setFields(List<String>? fields) {
+    _setFields(fields?.toJS);
+  }
   /**
    * Inquiry method that can be used to read the field schema specified for this Subscription.
    *
@@ -1649,7 +1651,7 @@ extension SubscriptionExt on Subscription {
    * Metadata Adapter. 
    */
   external void setItemGroup(String? groupName);
-  @JS('getItems') external List<dynamic>? _getItems();
+  @JS('getItems') external JSArray<JSString>? _getItems();
   /**
    * Setter method that sets the "Item List" to be subscribed to through 
    * Lightstreamer Server.
@@ -1668,7 +1670,10 @@ extension SubscriptionExt on Subscription {
    * 
    * - [items] an array of items to be subscribed to through the server. 
    */
-  external void setItems(List<String>? items);
+  @JS('setItems') external void _setItems(JSArray<JSString>? items);
+  void setItems(List<String>? items) {
+    _setItems(items?.toJS);
+  }
   /**
    * Inquiry method that can be used to read the mode specified for this
    * Subscription.
@@ -1992,7 +1997,8 @@ extension SubscriptionExt on Subscription {
    * - See [addListener]
    */
   List<SubscriptionListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _SubscriptionListener)._asDartObject).toList();
+    // return _getListeners().map((obj) => (obj as _SubscriptionListener)._asDartObject).toList();
+    return _getListeners().toList().map((obj) => (obj as _SubscriptionListener)._asDartObject).toList();
   }
   /**
    * Inquiry method that can be used to read the "Field List" specified for this Subscription.
@@ -2003,7 +2009,8 @@ extension SubscriptionExt on Subscription {
    * **Returns** the "Field List" to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
    */
   List<String>? getFields() {
-    return _getFields()?.cast<String>();
+    // return _getFields()?.cast<String>();
+    return _getFields()?.toListOfString();
   }
   /**
    * Inquiry method that can be used to read the "Item List" specified for this Subscription. 
@@ -2017,7 +2024,8 @@ extension SubscriptionExt on Subscription {
    * **Returns** the "Item List" to be subscribed to through the server, or null if the Subscription was initialized with an "Item Group" or was not initialized at all.
    */
   List<String>? getItems() {
-    return _getItems()?.cast<String>();
+    // return _getItems()?.cast<String>();
+    return _getItems()?.toListOfString();
   }
   /**
    * Inquiry method that can be used to read the "Field List" specified for second-level 
@@ -2032,7 +2040,8 @@ extension SubscriptionExt on Subscription {
    * - See [Subscription.setCommandSecondLevelFields]
    */
   List<String>? getCommandSecondLevelFields() {
-    return _getCommandSecondLevelFields()?.cast<String>();
+    // return _getCommandSecondLevelFields()?.cast<String>();
+    return _getCommandSecondLevelFields()?.toListOfString();
   }
 }
 
@@ -2046,9 +2055,7 @@ extension SubscriptionExt on Subscription {
  * 
  * - See LightstreamerClient
  */
-@JS()
-@staticInterop
-class ConnectionDetails {}
+extension type ConnectionDetails._(JSObject _) implements JSObject {}
 
 extension ConnectionDetailsExt on ConnectionDetails {
   /**
@@ -2273,9 +2280,7 @@ extension ConnectionDetailsExt on ConnectionDetails {
  * 
  * - See LightstreamerClient
  */
-@JS()
-@staticInterop
-class ConnectionOptions {}
+extension type ConnectionOptions._(JSObject _) implements JSObject {}
 
 extension ConnectionOptionsExt on ConnectionOptions {
   /**
@@ -2390,8 +2395,8 @@ extension ConnectionOptionsExt on ConnectionOptions {
    * **Throws** IllegalArgumentException if the given value is not in the list of the admitted ones.
    */
   external void setForcedTransport(String? newVal);
-  @JS('getHttpExtraHeaders') external Object? _getHttpExtraHeaders();
-  @JS('setHttpExtraHeaders') external void _setHttpExtraHeaders(Object? headers);
+  @JS('getHttpExtraHeaders') external JSObject? _getHttpExtraHeaders();
+  @JS('setHttpExtraHeaders') external void _setHttpExtraHeaders(JSObject? headers);
   /**
    * Inquiry method that gets the maximum time the Server is allowed to wait for any data to be sent in response to a polling request, if none has accumulated at request time. 
    * 
@@ -2941,7 +2946,8 @@ extension ConnectionOptionsExt on ConnectionOptions {
    * - See [setHttpExtraHeadersOnSessionCreationOnly]
    */
   Map<String, String>? getHttpExtraHeaders() {
-    return (dartify(_getHttpExtraHeaders()) as Map<dynamic, dynamic>).cast<String, String>();
+    // return (dartify(_getHttpExtraHeaders()) as Map<dynamic, dynamic>).cast<String, String>();
+    return _getHttpExtraHeaders()?.toMap().cast<String, String>();
   }
   /**
    * Setter method that enables/disables the setting of extra HTTP headers to all the request performed to the Lightstreamer server by the client.
@@ -2967,7 +2973,8 @@ extension ConnectionOptionsExt on ConnectionOptions {
    * headers to be sent.
    */
   void setHttpExtraHeaders(Map<String, String>? headers) {
-    _setHttpExtraHeaders(jsify(headers));
+    // _setHttpExtraHeaders(jsify(headers));
+    _setHttpExtraHeaders(headers?.toJSDeep);
   }
 }
 
@@ -2976,23 +2983,19 @@ extension ConnectionOptionsExt on ConnectionOptions {
  
   To be used, an instance of this class has to be passed to the library through the [LightstreamerClient.setLoggerProvider].
  */
-@JS()
-@staticInterop
-class ConsoleLoggerProvider extends LoggerProvider {
+extension type ConsoleLoggerProvider._(JSObject _) implements LoggerProvider {
   /**
     Creates an instance of the concrete system console logger.
      
     - [level] The desired logging level. See [ConsoleLogLevel].
   */
-  external factory ConsoleLoggerProvider(int level);
+  external ConsoleLoggerProvider(int level);
 }
 
 /**
  Logging level.
  */
-@JS()
-@staticInterop
-class ConsoleLogLevel {
+extension type ConsoleLogLevel._(JSObject _) implements JSObject {
   /**
     Debug logging level.
      
@@ -3043,9 +3046,7 @@ class ConsoleLogLevel {
  * An instance of the custom implemented class has to be passed to the library through the 
  * [LightstreamerClient.setLoggerProvider].
  */
-@JS()
-@staticInterop
-class LoggerProvider {}
+extension type LoggerProvider._(JSObject _) implements JSObject {}
 
 /**
  * Class representing a device that supports Mobile Push Notifications (MPN).
@@ -3062,9 +3063,7 @@ class LoggerProvider {}
  * An MpnDevice's state may become "suspended" if errors occur during push notification delivery. In this case MPN subscriptions stop sending notifications
  * and the device state is reset to "registered" at the first subsequent registration.
  */
-@JS()
-@staticInterop
-class MpnDevice {
+extension type MpnDevice._(JSObject _) implements JSObject {
   /**
 	 * Creates an object to be used to describe an MPN device that is going to be registered to the MPN Module of Lightstreamer Server.
    * 
@@ -3079,12 +3078,12 @@ class MpnDevice {
    *
    * **Throws** IllegalArgumentException if <code>token</code> or <code>appId</code> is null or <code>platform</code> is not "Google" or "Apple".
    */
-  external factory MpnDevice(String token, String appId, String platform);
+  external MpnDevice(String token, String appId, String platform);
 }
 
 extension MpnDeviceExt on MpnDevice {
   @JS('addListener') external void _addListener(_MpnDeviceListener listener);
-  @JS('getListeners') external List<dynamic> _getListeners();
+  @JS('getListeners') external JSArray<_MpnDeviceListener> _getListeners();
   @JS('removeListener') external void _removeListener(_MpnDeviceListener listener);
   /**
    * The application ID of this MPN device, corresponding to the package name of the application. In the [MpnDevice]
@@ -3231,13 +3230,12 @@ extension MpnDeviceExt on MpnDevice {
    * - See [addListener]
    */
   List<MpnDeviceListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _MpnDeviceListener)._asDartObject).toList();
+    // return _getListeners().map((obj) => (obj as _MpnDeviceListener)._asDartObject).toList();
+    return _getListeners().toList().map((obj) => (obj as _MpnDeviceListener)._asDartObject).toList();
   }
 }
 
-@JS()
-@staticInterop
-class _MpnDeviceListener {}
+extension type _MpnDeviceListener._(JSObject _) implements JSObject {}
 
 extension _MpnDeviceListenerExt on _MpnDeviceListener {
   external MpnDeviceListener get _asDartObject;
@@ -3333,7 +3331,8 @@ abstract class MpnDeviceListener {
 
   late final _MpnDeviceListener _that;
   MpnDeviceListener() {
-    _that = createDartExport(this) as _MpnDeviceListener;
+    // _that = createDartExport(this) as _MpnDeviceListener;
+    _that = createJSInteropWrapper(this) as _MpnDeviceListener;
   }
   _MpnDeviceListener get _asJSObject => _that;
   // ignore: unused_element
@@ -3361,9 +3360,7 @@ abstract class MpnDeviceListener {
  * MPN subscriptions are associated with the MPN device, and after the device has been registered the client retrieves pre-existing MPN subscriptions from the
  * server's database and exposes them with the [LightstreamerClient.getMpnSubscriptions] method.
  */
-@JS()
-@staticInterop
-class MpnSubscription {
+extension type MpnSubscription._(JSObject _) implements JSObject {
   /**
    * Creates an object to be used to describe an MPN subscription that is going to be subscribed to through the MPN Module of Lightstreamer Server.
    * 
@@ -3385,12 +3382,12 @@ class MpnSubscription {
    * 
    * **Throws** IllegalArgumentException If the specified "Item List" or "Field List" is not valid; see [MpnSubscription.setItems] and [MpnSubscription.setFields] for details.
    */
-  external factory MpnSubscription(String mode, [List<String>? items, List<String>? fields]);
+  external MpnSubscription(String mode, [List<String>? items, List<String>? fields]);
 }
 
 extension MpnSubscriptionExt on MpnSubscription {
   @JS('addListener') external void _addListener(_MpnSubscriptionListener listener);
-  @JS('getListeners') external List<dynamic> _getListeners();
+  @JS('getListeners') external JSArray<_MpnSubscriptionListener> _getListeners();
   @JS('removeListener') external void _removeListener(_MpnSubscriptionListener listener);
   /**
    * Inquiry method that can be used to read the name of the Data Adapter specified for this 
@@ -3434,7 +3431,7 @@ extension MpnSubscriptionExt on MpnSubscription {
    * - See [ConnectionDetails.setAdapterSet]
    */
   external void setDataAdapter(String? dataAdapter);
-  @JS('getFields') external List<dynamic>? _getFields();
+  @JS('getFields') external JSArray<JSString>? _getFields();
   /**
    * Setter method that sets the "Field List" to be subscribed to through 
    * Lightstreamer Server.
@@ -3456,7 +3453,10 @@ extension MpnSubscriptionExt on MpnSubscription {
    * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
    */
-  external void setFields(List<String>? fields);
+  @JS('setFields') external void _setFields(JSArray<JSString>? fields);
+  void setFields(List<String>? fields) {
+    _setFields(fields?.toJS);
+  }
   /**
    * Inquiry method that can be used to read the field schema specified for this MpnSubscription.
    * 
@@ -3521,7 +3521,7 @@ extension MpnSubscriptionExt on MpnSubscription {
    * "active".
    */
   external void setItemGroup(String? groupName);
-  @JS('getItems') external List<dynamic>? _getItems();
+  @JS('getItems') external JSArray<JSString>? _getItems();
   /**
    * Setter method that sets the "Item List" to be subscribed to through 
    * Lightstreamer Server. 
@@ -3543,7 +3543,10 @@ extension MpnSubscriptionExt on MpnSubscription {
    * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
    */
-  external void setItems(List<String>? items);
+  @JS('setItems') external void _setItems(JSArray<JSString>? items);
+  void setItems(List<String>? items) {
+    _setItems(items?.toJS);
+  }
   /**
    * Inquiry method that can be used to read the mode specified for this
    * MpnSubscription.
@@ -3886,7 +3889,7 @@ extension MpnSubscriptionExt on MpnSubscription {
    * - See [addListener]
    */
   List<MpnSubscriptionListener> getListeners() {
-    return _getListeners().map((obj) => (obj as _MpnSubscriptionListener)._asDartObject).toList();
+    return _getListeners().toList().map((obj) => (obj as _MpnSubscriptionListener)._asDartObject).toList();
   }
   /**
    * Inquiry method that can be used to read the "Field List" specified for this MpnSubscription.
@@ -3900,7 +3903,8 @@ extension MpnSubscriptionExt on MpnSubscription {
    * **Returns** the "Field List" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field Schema" or was not initialized at all.
    */
   List<String>? getFields() {
-    return _getFields()?.cast<String>();
+    // return _getFields()?.cast<String>();
+    return _getFields()?.toListOfString();
   }
   /**
    * Inquiry method that can be used to read the "Item List" specified for this MpnSubscription.
@@ -3916,13 +3920,11 @@ extension MpnSubscriptionExt on MpnSubscription {
    * **Returns** the "Item List" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item Group" or was not initialized at all.
    */
   List<String>? getItems() {
-    return _getItems()?.cast<String>();
+    return _getItems()?.toListOfString();
   }
 }
 
-@JS()
-@staticInterop
-class _MpnSubscriptionListener {}
+extension type _MpnSubscriptionListener._(JSObject _) implements JSObject {}
 
 extension _MpnSubscriptionListenerExt on _MpnSubscriptionListener {
   external MpnSubscriptionListener get _asDartObject;
@@ -4087,7 +4089,8 @@ abstract class MpnSubscriptionListener {
 
   late final _MpnSubscriptionListener _that;
   MpnSubscriptionListener() {
-    _that = createDartExport(this) as _MpnSubscriptionListener;
+    // _that = createDartExport(this) as _MpnSubscriptionListener;
+    _that = createJSInteropWrapper(this) as _MpnSubscriptionListener;
   }
   _MpnSubscriptionListener get _asJSObject => _that;
   // ignore: unused_element
@@ -4103,9 +4106,7 @@ abstract class MpnSubscriptionListener {
  *
  * - See [MpnSubscription.setNotificationFormat]
  */
-@JS()
-@staticInterop
-class FirebaseMpnBuilder {
+extension type FirebaseMpnBuilder._(JSObject _) implements JSObject {
   /**
    * Creates an object to be used to create a push notification format.
    * 
@@ -4113,7 +4114,7 @@ class FirebaseMpnBuilder {
    *
    * - [notificationFormat] A JSON structure representing a push notification format.
    */
-  external factory FirebaseMpnBuilder([String? notificationFormat]);
+  external FirebaseMpnBuilder([String? notificationFormat]);
 }
 
 extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
@@ -4129,8 +4130,8 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
    * **Returns** the value of <code>webpush&period;notification&period;body</code> field, or null if absent.
    */
   external String? getBody();
-  @JS('getData') external Object? _getData();
-  @JS('getHeaders') external Object? _getHeaders();
+  @JS('getData') external JSObject? _getData();
+  @JS('getHeaders') external JSObject? _getHeaders();
   /**
    * Gets the value of <code>webpush&period;notification&period;icon</code> field.
    * 
@@ -4151,8 +4152,8 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
    * **Returns** this MpnBuilder object, for fluent use.
    */
   external FirebaseMpnBuilder setBody(String? body);
-  @JS('setData') external FirebaseMpnBuilder _setData(Object? data);
-  @JS('setHeaders') external FirebaseMpnBuilder _setHeaders(Object? headers);
+  @JS('setData') external FirebaseMpnBuilder _setData(JSObject? data);
+  @JS('setHeaders') external FirebaseMpnBuilder _setHeaders(JSObject? headers);
   /**
    * Sets the <code>webpush&period;notification&period;icon</code> field.
    *
@@ -4176,7 +4177,8 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
    * **Returns** a map with sub-fields of the <code>webpush&period;data</code> field, or null if absent.
    */
   Map<String, String>? getData() {
-    return (dartify(_getData()) as Map<dynamic, dynamic>).cast<String, String>();
+    // return (dartify(_getData()) as Map<dynamic, dynamic>).cast<String, String>();
+    return _getData()?.toMap().cast<String, String>();
   }
   /**
    * Sets sub-fields of the <code>webpush&period;data</code> field.
@@ -4186,7 +4188,8 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
    * **Returns** this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setData(Map<String, String>? data) {
-    return _setData(jsify(data));
+    // return _setData(jsify(data));
+    return _setData(data?.toJSDeep);
   }
   /**
    * Gets sub-fields of the <code>webpush&period;headers</code> field.
@@ -4194,7 +4197,8 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
    * **Returns** a map with sub-fields of the <code>webpush&period;headers</code> field, or null if absent.
    */
   Map<String, String>? getHeaders() {
-    return (dartify(_getHeaders()) as Map<dynamic, dynamic>).cast<String, String>();
+    // return (dartify(_getHeaders()) as Map<dynamic, dynamic>).cast<String, String>();
+    return _getHeaders()?.toMap().cast<String, String>();
   }
   /**
    * Sets sub-fields of the <code>webpush&period;headers</code> field.
@@ -4204,7 +4208,8 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
    * **Returns** this MpnBuilder object, for fluent use.
    */
   FirebaseMpnBuilder setHeaders(Map<String, String>? headers) {
-    return _setHeaders(jsify(headers));
+    // return _setHeaders(jsify(headers));
+    return _setHeaders(headers?.toJSDeep);
   }
 }
 
@@ -4216,9 +4221,7 @@ extension FirebaseMpnBuilderExt on FirebaseMpnBuilder {
  *
  * - See [MpnSubscription.setNotificationFormat]
  */
-@JS()
-@staticInterop
-class SafariMpnBuilder {
+extension type SafariMpnBuilder._(JSObject _) implements JSObject {
   /**
    * Creates an object to be used to create a push notification format.
    * 
@@ -4226,7 +4229,7 @@ class SafariMpnBuilder {
    * 
    * - [notificationFormat] A JSON structure representing a push notification format.
    */
-  external factory SafariMpnBuilder([String? notificationFormat]);
+  external SafariMpnBuilder([String? notificationFormat]);
 }
 
 extension SafariMpnBuilderExt on SafariMpnBuilder {
@@ -4254,7 +4257,7 @@ extension SafariMpnBuilderExt on SafariMpnBuilder {
    * **Returns** the value of <code>aps&period;alert&period;title</code> field, or null if absent.
    */
   external String? getTitle();
-  @JS('getUrlArguments') external List<dynamic>? _getUrlArguments();
+  @JS('getUrlArguments') external JSArray<JSString>? _getUrlArguments();
   /**
    * Sets the <code>aps&period;alert&period;action</code> field.
    *
@@ -4294,6 +4297,7 @@ extension SafariMpnBuilderExt on SafariMpnBuilder {
    * **Returns** the value of <code>aps&period;url-args</code> field, or null if absent.
    */
   List<String>? getUrlArguments() {
-    return _getUrlArguments()?.cast<String>();
+    // return (dartify(_getData()) as Map<dynamic, dynamic>).cast<String, String>();
+    return _getUrlArguments()?.toListOfString();
   }
 }
