@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.author           = { 'Lightstreamer' => 'support@lightstreamer.com' }
 
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'lightstreamer_flutter_client/Sources/lightstreamer_flutter_client/**/*.swift'
   
   s.ios.dependency 'Flutter'
   s.osx.dependency 'FlutterMacOS'

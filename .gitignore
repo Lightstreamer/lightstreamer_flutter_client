@@ -5,6 +5,9 @@
 .pub/
 
 build/
+.build/
+.swiftpm/
+/darwin/lightstreamer_flutter_client/Package.resolved
 example/web/lightstreamer-*.js
 .vscode/
 
