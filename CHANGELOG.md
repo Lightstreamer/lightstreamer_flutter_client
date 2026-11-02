@@ -1,5 +1,22 @@
 # Lightstreamer Flutter Plugin Changelog
 
+## Unreleased
+*Compatible with Lightstreamer Server since 7.4.0*<br/>
+*Compatible with Android 8 (API 26)*<br/>
+*Compatible with iOS 13*<br/>
+*Compatible with macOS 11 (Big Sur)*<br/>
+*Compatible with Windows 10*<br/>
+*Compatible with Dart 3.1.3*<br/>
+*Compatible with Flutter 3.7.0*<br/>
+*Compatible with code developed for the previous version*<br/>
+*Based on Lightstreamer Android Client SDK 5.3.0*<br/>
+*Based on Lightstreamer Swift Client SDK 6.3.0*<br/>
+*Based on Lightstreamer Web Client SDK 9.2.3*<br/>
+*Based on Lightstreamer C++ Client SDK 1.0.0*<br/>
+
+**New:** Added Swift Package Manager integration for iOS and macOS, while retaining CocoaPods support.
+
+
 ## 2.2.1
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
