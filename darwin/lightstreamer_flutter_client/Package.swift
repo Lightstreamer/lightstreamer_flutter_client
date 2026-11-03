@@ -18,7 +18,7 @@ let package = Package(
         .package(name: "FlutterFramework", path: "../FlutterFramework"),
         .package(
             url: "https://github.com/Lightstreamer/Lightstreamer-lib-client-swift.git",
-            "6.3.0"..<"6.4.0"
+            .upToNextMinor(from: "6.5.0")
         )
     ],
     targets: [

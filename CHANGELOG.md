@@ -9,8 +9,8 @@
 *Compatible with Dart 3.1.3*<br/>
 *Compatible with Flutter 3.7.0*<br/>
 *Compatible with code developed for the previous version*<br/>
-*Based on Lightstreamer Android Client SDK 5.3.0*<br/>
-*Based on Lightstreamer Swift Client SDK 6.3.0*<br/>
+*Based on Lightstreamer Android Client SDK 5.3.3*<br/>
+*Based on Lightstreamer Swift Client SDK 6.5.0*<br/>
 *Based on Lightstreamer Web Client SDK 9.2.3*<br/>
 *Based on Lightstreamer C++ Client SDK 1.0.0*<br/>
 
