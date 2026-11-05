@@ -1,6 +1,6 @@
 # Lightstreamer Flutter Plugin Changelog
 
-## Unreleased
+## 2.4.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>
 *Compatible with iOS 13*<br/>
@@ -13,6 +13,7 @@
 *Based on Lightstreamer Swift Client SDK 6.5.0*<br/>
 *Based on Lightstreamer Web Client SDK 9.2.3*<br/>
 *Based on Lightstreamer C++ Client SDK 1.0.0*<br/>
+*Made available on 5 Nov 2026*
 
 **Changed:** Migrated the Web implementation to modern Dart JavaScript interoperability, preserving its public API. Removed the direct `js` dependency and raised the minimum Dart SDK to 3.3.0.
 
