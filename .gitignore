@@ -18,3 +18,4 @@ doc/
 .fvm/
 
 .spec/
+Makefile
