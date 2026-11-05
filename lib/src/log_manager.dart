@@ -40,7 +40,7 @@ class LogManager {
     });
   }
 
-  static Logger _newLogger(category) {
+  static Logger _newLogger(String category) {
     var p = _currentLoggerProvider;
     return p == null ? _emptyLogger : p.getLogger(category);
   }
