@@ -16,3 +16,5 @@ doc/
 
 # FVM Version Cache
 .fvm/
+
+.spec/
