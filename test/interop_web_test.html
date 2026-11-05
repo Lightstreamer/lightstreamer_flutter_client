@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+  <head>
+    <title>JavaScript interoperability regression tests</title>
+    <link rel="x-dart-test" href="interop_web_test.dart">
+    <script src="https://unpkg.com/lightstreamer-client-web/lightstreamer-mpn.min.js" data-lightstreamer-ns="lightstreamer"></script>
+    <script>
+      const patch = [{
+        op: "replace",
+        path: "/value",
+        value: {integer: 42, decimal: 1.5, nested: [null, {enabled: true}]}
+      }];
+      globalThis.interopFixture = {
+        update() {
+          return {
+            getItemName: () => "item",
+            getItemPos: () => 2,
+            isSnapshot: () => true,
+            getValue: field => field === "nullable" || field === 2 ? null : "value",
+            isValueChanged: field => field === "field" || field === 1,
+            getValueAsJSONPatchIfAvailable: field =>
+              field === "nullable" || field === 2 ? null : patch,
+            forEachField(callback) {
+              callback("field", 1, "value");
+              callback(null, 2, null);
+            },
+            forEachChangedField(callback) {
+              callback(null, 2, null);
+            }
+          };
+        },
+        notify(source, method, args) {
+          source.getListeners()[0][method](...args);
+        },
+        captureMessages(client) {
+          const messages = [];
+          client.sendMessage = (...args) => messages.push(args);
+          return {
+            count: () => messages.length,
+            args: index => messages[index],
+            sameListener: (a, b) => messages[a][3] === messages[b][3],
+            notify(index, method, args) {
+              messages[index][3][method](...args);
+            }
+          };
+        },
+        subscription() {
+          return {
+            getValue: (item, field) => `${typeof item}:${item}/${typeof field}:${field}`,
+            getCommandValue: (item, key, field) =>
+              `${typeof item}:${item}/${key}/${typeof field}:${field}`
+          };
+        }
+      };
+    </script>
+    <script src="packages/test/dart.js"></script>
+  </head>
+  <body></body>
+</html>

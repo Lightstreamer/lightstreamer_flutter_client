@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 import 'package:test/test.dart';
-import 'package:js/js_util.dart' as js;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'package:lightstreamer_flutter_client/lightstreamer_client_web.dart';
 import './utils.dart';
 
@@ -24,12 +25,16 @@ void main() {
   late BaseClientListener listener;
   late BaseSubscriptionListener subListener;
   late BaseMessageListener msgListener;
-  LightstreamerClient.setLoggerProvider(ConsoleLoggerProvider(ConsoleLogLevel.WARN));
+  LightstreamerClient.setLoggerProvider(
+      ConsoleLoggerProvider(ConsoleLogLevel.WARN));
 
-  for (var transport in ["WS-STREAMING", "HTTP-STREAMING", "HTTP-POLLING", "WS-POLLING"]) { 
-
+  for (var transport in [
+    "WS-STREAMING",
+    "HTTP-STREAMING",
+    "HTTP-POLLING",
+    "WS-POLLING"
+  ]) {
     group(transport, () {
-
       setUp(() {
         exps = Expectations();
         client = LightstreamerClient("http://localhost:8080", "TEST");
@@ -74,7 +79,8 @@ void main() {
       });
 
       test('online server', () async {
-        client.connectionDetails.setServerAddress("https://push.lightstreamer.com");
+        client.connectionDetails
+            .setServerAddress("https://push.lightstreamer.com");
         client.connectionDetails.setAdapterSet("DEMO");
         listener = BaseClientListener();
         client.addListener(listener);
@@ -143,7 +149,8 @@ void main() {
       });
 
       test('subscribe command', () async {
-        var sub = Subscription("COMMAND", ["mult_table"], ["key", "value1", "value2", "command"]);
+        var sub = Subscription(
+            "COMMAND", ["mult_table"], ["key", "value1", "value2", "command"]);
         sub.setDataAdapter("MULT_TABLE");
         sub.addListener(subListener);
         subListener.fSubscription = () {
@@ -158,7 +165,8 @@ void main() {
       });
 
       test('subscribe command 2 levels', () async {
-        var sub = Subscription("COMMAND", ["two_level_command_count$transport"], ["key", "command"]);
+        var sub = Subscription("COMMAND", ["two_level_command_count$transport"],
+            ["key", "command"]);
         sub.setDataAdapter("TWO_LEVEL_COMMAND");
         sub.setCommandSecondLevelDataAdapter("COUNT");
         sub.setCommandSecondLevelFields(["count"]);
@@ -201,7 +209,8 @@ void main() {
       });
 
       test('subscribe non-ascii', () async {
-        var sub = Subscription("MERGE", ["strange:àìùòlè"], ["value🌐-", "value&+=\r\n%"]);
+        var sub = Subscription(
+            "MERGE", ["strange:àìùòlè"], ["value🌐-", "value&+=\r\n%"]);
         sub.setDataAdapter("STRANGE_NAMES");
         sub.addListener(subListener);
         subListener.fSubscription = () {
@@ -216,12 +225,15 @@ void main() {
         listener.fPropertyChange = (prop) {
           switch (prop) {
             case "realMaxBandwidth":
-              exps.signal("realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth() ?? ""}");
+              exps.signal(
+                  "realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth() ?? ""}");
           }
         };
-        assertEqual("unlimited", client.connectionOptions.getRequestedMaxBandwidth());
+        assertEqual(
+            "unlimited", client.connectionOptions.getRequestedMaxBandwidth());
         client.connect();
-        await exps.value("realMaxBandwidth=40"); // after the connection, the server sends the default bandwidth
+        await exps.value(
+            "realMaxBandwidth=40"); // after the connection, the server sends the default bandwidth
         // request a bandwidth equal to 20.1: the request is accepted
         client.connectionOptions.setRequestedMaxBandwidth("20.1");
         await exps.value("realMaxBandwidth=20.1");
@@ -248,10 +260,12 @@ void main() {
 
       test('roundtrip', () async {
         assertEqual("TEST", client.connectionDetails.getAdapterSet());
-        assertEqual("http://localhost:8080", client.connectionDetails.getServerAddress());
+        assertEqual("http://localhost:8080",
+            client.connectionDetails.getServerAddress());
         assertEqual(50000000, client.connectionOptions.getContentLength());
         assertEqual(4000, client.connectionOptions.getRetryDelay());
-        assertEqual(15000, client.connectionOptions.getSessionRecoveryTimeout());
+        assertEqual(
+            15000, client.connectionOptions.getSessionRecoveryTimeout());
         var sub = Subscription("MERGE", ["count"], ["count"]);
         sub.setDataAdapter("COUNT");
         assertEqual("COUNT", sub.getDataAdapter());
@@ -260,20 +274,26 @@ void main() {
         subListener.fSubscription = () => exps.signal("onSubscription");
         subListener.fItemUpdate = (_) => exps.signal("onItemUpdate");
         subListener.fUnsubscription = () => exps.signal("onUnsubscription");
-        subListener.fRealMaxFrequency = (freq) => exps.signal('onRealMaxFrequency $freq');
+        subListener.fRealMaxFrequency =
+            (freq) => exps.signal('onRealMaxFrequency $freq');
         if (transport == "WS-STREAMING") {
           listener.fPropertyChange = (prop) {
             switch (prop) {
-            case "clientIp":
-              exps.signal("clientIp=${client.connectionDetails.getClientIp()!}");
-            case "serverSocketName":
-              exps.signal("serverSocketName=${client.connectionDetails.getServerSocketName()!}");
-            case "sessionId":
-              exps.signal("sessionId ${client.connectionDetails.getSessionId() == null ? "is null" : "is not null"}");
-            case "keepaliveInterval":
-              exps.signal("keepaliveInterval=${client.connectionOptions.getKeepaliveInterval()}");
-            case "realMaxBandwidth":
-              exps.signal("realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth()}");
+              case "clientIp":
+                exps.signal(
+                    "clientIp=${client.connectionDetails.getClientIp()!}");
+              case "serverSocketName":
+                exps.signal(
+                    "serverSocketName=${client.connectionDetails.getServerSocketName()!}");
+              case "sessionId":
+                exps.signal(
+                    "sessionId ${client.connectionDetails.getSessionId() == null ? "is null" : "is not null"}");
+              case "keepaliveInterval":
+                exps.signal(
+                    "keepaliveInterval=${client.connectionOptions.getKeepaliveInterval()}");
+              case "realMaxBandwidth":
+                exps.signal(
+                    "realMaxBandwidth=${client.connectionOptions.getRealMaxBandwidth()}");
             }
           };
         }
@@ -297,28 +317,33 @@ void main() {
         client.connect();
         client.sendMessage("test message ()", null, 0, null, true);
         // no outcome expected
-        client.sendMessage("test message (sequence)", "test_seq", 0, null, true);
+        client.sendMessage(
+            "test message (sequence)", "test_seq", 0, null, true);
         // no outcome expected
         msgListener = BaseMessageListener();
-        msgListener.fProcessed = (msg,_) => exps.signal("onProcessed $msg");
-        client.sendMessage("test message (listener)", null, -1, msgListener, true);
+        msgListener.fProcessed = (msg, _) => exps.signal("onProcessed $msg");
+        client.sendMessage(
+            "test message (listener)", null, -1, msgListener, true);
         await exps.value("onProcessed test message (listener)");
         msgListener = BaseMessageListener();
-        msgListener.fProcessed = (msg,_) => exps.signal("onProcessed $msg");
-        client.sendMessage("test message (sequence+listener)", "test_seq", -1, msgListener, true);
+        msgListener.fProcessed = (msg, _) => exps.signal("onProcessed $msg");
+        client.sendMessage("test message (sequence+listener)", "test_seq", -1,
+            msgListener, true);
         await exps.value("onProcessed test message (sequence+listener)");
       });
 
       test('message with return value', () async {
         client.connect();
         msgListener = BaseMessageListener();
-        msgListener.fProcessed = (msg,resp) => exps.signal('onProcessed `$msg` `$resp`');
-        client.sendMessage("give me a result", "test_seq", -1, msgListener, true);
+        msgListener.fProcessed =
+            (msg, resp) => exps.signal('onProcessed `$msg` `$resp`');
+        client.sendMessage(
+            "give me a result", "test_seq", -1, msgListener, true);
         await exps.value("onProcessed `give me a result` `result:ok`");
       });
 
       test('message with special chars', () async {
-        msgListener.fProcessed = (msg,_) {
+        msgListener.fProcessed = (msg, _) {
           exps.signal(msg);
         };
         client.connect();
@@ -327,11 +352,12 @@ void main() {
       });
 
       test('unordered messages', () async {
-        msgListener.fProcessed = (msg,_) {
+        msgListener.fProcessed = (msg, _) {
           exps.signal(msg);
         };
         client.connect();
-        client.sendMessage("test message", "UNORDERED_MESSAGES", -1, msgListener, false);
+        client.sendMessage(
+            "test message", "UNORDERED_MESSAGES", -1, msgListener, false);
         await exps.value("test message");
       });
 
@@ -340,13 +366,15 @@ void main() {
           exps.signal('$msg $code $error');
         };
         client.connect();
-        client.sendMessage("throw me an error", "test_seq", -1, msgListener, false);
+        client.sendMessage(
+            "throw me an error", "test_seq", -1, msgListener, false);
         await exps.value("throw me an error -123 test error");
       });
 
       test('long message', () async {
-        var msg = "{\"n\":\"MESSAGE_SEND\",\"c\":{\"u\":\"GEiIxthxD-1gf5Tk5O1NTw\",\"s\":\"S29120e92e162c244T2004863\",\"p\":\"localhost:3000/html/widget-responsive.html\",\"t\":\"2017-08-08T10:20:05.665Z\"},\"d\":\"{\\\"p\\\":\\\"🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐\\\"}\"}";
-        msgListener.fProcessed = (_,__) => exps.signal();
+        var msg =
+            "{\"n\":\"MESSAGE_SEND\",\"c\":{\"u\":\"GEiIxthxD-1gf5Tk5O1NTw\",\"s\":\"S29120e92e162c244T2004863\",\"p\":\"localhost:3000/html/widget-responsive.html\",\"t\":\"2017-08-08T10:20:05.665Z\"},\"d\":\"{\\\"p\\\":\\\"🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐🌐\\\"}\"}";
+        msgListener.fProcessed = (_, __) => exps.signal();
         client.connect();
         client.sendMessage(msg, "test_seq", -1, msgListener, false);
         await exps.value();
@@ -425,7 +453,7 @@ void main() {
       });
 
       test('headers', () async {
-        client.connectionOptions.setHttpExtraHeaders({"hello" : "header"});
+        client.connectionOptions.setHttpExtraHeaders({"hello": "header"});
         var hs = client.connectionOptions.getHttpExtraHeaders()!;
         assertEqual("header", hs["hello"]);
 
@@ -434,7 +462,7 @@ void main() {
           if (status == expected) exps.signal();
         };
         client.connect();
-        if (transport.startsWith("WS")){
+        if (transport.startsWith("WS")) {
           // ws doesn't support extra headers
           assertEqual("DISCONNECTED", client.getStatus());
         } else {
@@ -457,11 +485,12 @@ void main() {
         await exps.value("onItemUpdate");
         await exps.value("onItemUpdate");
         var u = updates[1];
-        var patch = u.getValueAsJSONPatchIfAvailable(1)!;
-        patch = js.getProperty(patch, "0");
-        assertEqual("replace", js.getProperty(patch, "op"));
-        assertEqual("/value", js.getProperty(patch, "path"));
-        expect(js.getProperty(patch, "value"), isA<int>());
+        final patches =
+            u.getValueAsJSONPatchIfAvailable(1)! as JSArray<JSObject>;
+        final patch = patches.toDart[0];
+        assertEqual("replace", patch.getProperty<JSString>("op".toJS).toDart);
+        assertEqual("/value", patch.getProperty<JSString>("path".toJS).toDart);
+        expect(patch.getProperty<JSNumber>("value".toJS).dartify(), isA<int>());
         expect(u.getValue(1), isNotNull);
       });
 
@@ -500,7 +529,6 @@ void main() {
         expect(u.getValue(1), isNull);
         expect(u.getValue("null_field"), isNull);
       });
-
     }); // group
   } // for each group
 } // main
