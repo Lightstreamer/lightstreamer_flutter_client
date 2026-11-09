@@ -78,6 +78,26 @@ void main() {
         assertEqual(expected, client.getStatus());
       });
 
+      test('Data Adapter state', () async {
+        var exps = Expectations();
+        listener.fDataAdapterStateChange = (state, adapter) {
+          if (adapter == "COUNT") {
+            exps.signal('onDataAdapterStateChange $state $adapter');
+          }
+        };
+        client.connect();
+        await exps.value("onDataAdapterStateChange started COUNT");
+      });
+
+      test('Metadata Adapter state', () async {
+        var exps = Expectations();
+        listener.fMetadataAdapterStateChange = (state) {
+          exps.signal(state);
+        };
+        client.connect();
+        await exps.value("started");
+      });
+
       test('online server', () async {
         client.connectionDetails
             .setServerAddress("https://push.lightstreamer.com");
