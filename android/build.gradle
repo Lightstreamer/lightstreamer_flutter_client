@@ -53,7 +53,8 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.8.2'
-    implementation 'com.lightstreamer:ls-android-client:5.3.3'
+    // TODO: Upgrade to version for Server 8.0-alpha when it becomes available.
+    implementation 'com.lightstreamer:ls-android-client:6.0.0-snapshot.1'
 
     implementation platform('com.google.firebase:firebase-bom:33.3.0')
     implementation 'com.google.firebase:firebase-messaging'

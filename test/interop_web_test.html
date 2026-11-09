@@ -3,7 +3,8 @@
   <head>
     <title>JavaScript interoperability regression tests</title>
     <link rel="x-dart-test" href="interop_web_test.dart">
-    <script src="https://unpkg.com/lightstreamer-client-web/lightstreamer-mpn.min.js" data-lightstreamer-ns="lightstreamer"></script>
+    <!-- TODO: Upgrade to version for Server 8.0-alpha when it becomes available. -->
+    <script src="../example/web/lightstreamer-mpn.min.js" data-lightstreamer-ns="lightstreamer"></script>
     <script>
       const patch = [{
         op: "replace",
