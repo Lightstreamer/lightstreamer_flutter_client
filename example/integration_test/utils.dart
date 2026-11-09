@@ -180,6 +180,14 @@ class Expectations {
 }
 
 class BaseClientListener extends ClientListener {
+  void Function(String, String)? fDataAdapterStateChange;
+  @override
+  void onDataAdapterStateChange(String state, String dataAdapterName) =>
+      fDataAdapterStateChange?.call(state, dataAdapterName);
+  void Function(String)? fMetadataAdapterStateChange;
+  @override
+  void onMetadataAdapterStateChange(String state) =>
+      fMetadataAdapterStateChange?.call(state);
   void Function(String)? fStatusChange;
   @override
   void onStatusChange(String status) => fStatusChange?.call(status);
@@ -219,9 +227,16 @@ class BaseSubscriptionListener extends SubscriptionListener {
   void Function(String, int)? fEndOfSnapshot;
   @override
   void onEndOfSnapshot(String name, int pos) => fEndOfSnapshot?.call(name, pos);
-  void Function(String, int, int)? fItemLostUpdates;
+  void Function(String?, int)? fItemStale;
   @override
-  void onItemLostUpdates(String name, int pos, int lost) => fItemLostUpdates?.call(name, pos, lost);
+  void onItemStale(String? name, int pos) => fItemStale?.call(name, pos);
+  void Function(String?, int)? fItemResume;
+  @override
+  void onItemResume(String? name, int pos) => fItemResume?.call(name, pos);
+  void Function(String, int, int, bool)? fItemLostUpdates;
+  @override
+  void onItemLostUpdates(String name, int pos, int lost, bool isOverflow) =>
+      fItemLostUpdates?.call(name, pos, lost, isOverflow);
   void Function()? fListenStart;
   @override
   void onListenStart() => fListenStart?.call();

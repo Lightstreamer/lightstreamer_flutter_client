@@ -64,6 +64,8 @@ namespace lightstreamer_flutter_client {
     void onServerError(int errorCode, const std::string& errorMessage);
     void onStatusChange(const std::string& status);
     void onPropertyChange(const std::string& property);
+    void onDataAdapterStateChange(const std::string& state, const std::string& dataAdapterName) override;
+    void onMetadataAdapterStateChange(const std::string& state) override;
   };
 
   class MySubscriptionListener : public LS::SubscriptionListener {
@@ -81,7 +83,9 @@ namespace lightstreamer_flutter_client {
     void onCommandSecondLevelItemLostUpdates(int lostUpdates, const std::string& key);
     void onCommandSecondLevelSubscriptionError(int code, const std::string& message, const std::string& key);
     void onEndOfSnapshot(const std::string& itemName, int itemPos);
-    void onItemLostUpdates(const std::string& itemName, int itemPos, int lostUpdates);
+    void onItemLostUpdates(const std::string& itemName, int itemPos, int lostUpdates, bool isOverflow) override;
+    void onItemStale(const std::string& itemName, int itemPos) override;
+    void onItemResume(const std::string& itemName, int itemPos) override;
     void onItemUpdate(LS::ItemUpdate& update);
     void onSubscription();
     void onSubscriptionError(int code, const std::string& message);
@@ -623,8 +627,6 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
   auto mode = getString(options, "mode");
   auto items = getStringList(options, "items");
   auto fields = getStringList(options, "fields");
-  auto group = getString(options, "group");
-  auto schema = getString(options, "schema");
   auto dataAdapter = getString(options, "dataAdapter");
   auto bufferSize = getString(options, "bufferSize");
   auto snapshot = getString(options, "snapshot");
@@ -632,7 +634,6 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
   auto selector = getString(options, "selector");
   auto dataAdapter2 = getString(options, "dataAdapter2");
   auto fields2 = getStringList(options, "fields2");
-  auto schema2 = getString(options, "schema2");
   auto sub = getValue(_subMap, subId);
   if (sub == nullptr) {
     sub = std::make_shared<LS::Subscription>(mode, std::vector<std::string>(), std::vector<std::string>());
@@ -647,12 +648,6 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
   }
   if (!fields.empty()) {
     sub->setFields(fields);
-  }
-  if (!group.empty()) {
-    sub->setItemGroup(group);
-  }
-  if (!schema.empty()) {
-    sub->setFieldSchema(schema);
   }
   if (!dataAdapter.empty()) {
     sub->setDataAdapter(dataAdapter);
@@ -674,9 +669,6 @@ void LightstreamerFlutterClientPlugin::Client_subscribe(const flutter::MethodCal
   }
   if (!fields2.empty()) {
     sub->setCommandSecondLevelFields(fields2);
-  }
-  if (!schema2.empty()) {
-    sub->setCommandSecondLevelFieldSchema(schema2);
   }
   // TODO dangling pointer?
   // if `sub` is removed from `_subMap` while the object is still subscribed, it can result in a possible dangling pointer
@@ -953,6 +945,21 @@ void MyClientListener::invoke(const std::string& method, EncodableMap& arguments
   invokeMethod(plugin, "ClientListener." + method, arguments);
 }
 
+void MyClientListener::onDataAdapterStateChange(const std::string& state, const std::string& dataAdapterName) {
+  EncodableMap arguments{
+    { EncodableValue("state"), EncodableValue(state) },
+    { EncodableValue("dataAdapterName"), EncodableValue(dataAdapterName) },
+  };
+  invoke("onDataAdapterStateChange", arguments);
+}
+
+void MyClientListener::onMetadataAdapterStateChange(const std::string& state) {
+  EncodableMap arguments{
+    { EncodableValue("state"), EncodableValue(state) },
+  };
+  invoke("onMetadataAdapterStateChange", arguments);
+}
+
 // ********** MySubscriptionListener implementation **********
 
 void MySubscriptionListener::onClearSnapshot(const std::string& itemName, int itemPos) {
@@ -988,13 +995,30 @@ void MySubscriptionListener::onEndOfSnapshot(const std::string& itemName, int it
   invoke("onEndOfSnapshot", arguments);
 }
 
-void MySubscriptionListener::onItemLostUpdates(const std::string& itemName, int itemPos, int lostUpdates) {
+void MySubscriptionListener::onItemLostUpdates(const std::string& itemName, int itemPos, int lostUpdates, bool isOverflow) {
   EncodableMap arguments{
     { EncodableValue("itemName"), EncodableValue(itemName) },
     { EncodableValue("itemPos"), EncodableValue(itemPos) },
     { EncodableValue("lostUpdates"), EncodableValue(lostUpdates) },
+    { EncodableValue("isOverflow"), EncodableValue(isOverflow) },
   };
   invoke("onItemLostUpdates", arguments);
+}
+
+void MySubscriptionListener::onItemStale(const std::string& itemName, int itemPos) {
+  EncodableMap arguments{
+    { EncodableValue("itemName"), EncodableValue(itemName) },
+    { EncodableValue("itemPos"), EncodableValue(itemPos) },
+  };
+  invoke("onItemStale", arguments);
+}
+
+void MySubscriptionListener::onItemResume(const std::string& itemName, int itemPos) {
+  EncodableMap arguments{
+    { EncodableValue("itemName"), EncodableValue(itemName) },
+    { EncodableValue("itemPos"), EncodableValue(itemPos) },
+  };
+  invoke("onItemResume", arguments);
 }
 
 void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
@@ -1003,30 +1027,22 @@ void MySubscriptionListener::onItemUpdate(LS::ItemUpdate& update) {
     { EncodableValue("itemPos"), EncodableValue(update.getItemPos()) },
     { EncodableValue("isSnapshot"), EncodableValue(update.isSnapshot()) },
   };
-  if (!_sub->getFields().empty() || !_sub->getCommandSecondLevelFields().empty()) {
-    try {
-      auto changedFields = update.getChangedFields();
-      auto fields = update.getFields();
+  auto changedFields = update.getChangedFields();
+  auto fields = update.getFields();
 
-      EncodableMap changedFields_;
-      for (auto& p : changedFields) {
-        changedFields_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
-      }
-      EncodableMap fields_;
-      for (auto& p : fields) {
-        fields_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
-      }
-
-      arguments.insert({ EncodableValue("changedFields"), EncodableValue(changedFields_) });
-      arguments.insert({ EncodableValue("fields"), EncodableValue(fields_) });
-      // NB json fields are not supported by the C++ client library
-      arguments.insert({ EncodableValue("jsonFields"), EncodableValue(EncodableMap()) });
-    }
-    catch(...) {
-      // if the subscription doesn't have field names, the methods getChangedFields and
-      // getFields may throw exceptions
-    }
+  EncodableMap changedFields_;
+  for (auto& p : changedFields) {
+    changedFields_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
   }
+  EncodableMap fields_;
+  for (auto& p : fields) {
+    fields_.insert({ EncodableValue(p.first), update.isNull(p.first) ? EncodableValue(std::monostate{}) : EncodableValue(p.second) });
+  }
+
+  arguments.insert({ EncodableValue("changedFields"), EncodableValue(changedFields_) });
+  arguments.insert({ EncodableValue("fields"), EncodableValue(fields_) });
+  // NB json fields are not supported by the C++ client library
+  arguments.insert({ EncodableValue("jsonFields"), EncodableValue(EncodableMap()) });
   auto changedFieldsByPosition = update.getChangedFieldsByPosition();
   auto fieldsByPosition = update.getFieldsByPosition();
 

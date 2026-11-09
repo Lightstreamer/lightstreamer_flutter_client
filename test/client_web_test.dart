@@ -407,8 +407,8 @@ void main() {
         sub.setRequestedSnapshot("yes");
         sub.setDataAdapter("OVERFLOW");
         sub.setRequestedMaxFrequency("unfiltered");
-        subListener.fItemLostUpdates = (name, pos, lost) {
-          exps.signal('$name $pos');
+        subListener.fItemLostUpdates = (name, pos, lost, isOverflow) {
+          exps.signal('$name $pos $isOverflow');
           client.unsubscribe(sub);
         };
         subListener.fUnsubscription = () {
@@ -419,7 +419,7 @@ void main() {
         // NB the bandwidth must not be too low otherwise the server can't write the response
         client.connectionOptions.setRequestedMaxBandwidth("10");
         client.connect();
-        await exps.value("overflow 1");
+        await exps.value("overflow 1 true");
         await exps.value("onUnsubscription");
       });
 

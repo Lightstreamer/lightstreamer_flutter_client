@@ -32,6 +32,32 @@ void _event(Object source, String method, List<Object?> arguments) =>
     _notify(source as JSObject, method, arguments.jsify()! as JSArray<JSAny?>);
 
 void main() {
+  test('literal names and MPN copies preserve explicit lists', () {
+    final names = [
+      'item one',
+      '42',
+      '&=|%',
+      'caff\u00e8',
+      'line\nbreak',
+      'a\u0000b'
+    ];
+    final sub = Subscription('COMMAND', names, ['key', 'command', ...names]);
+    sub.setCommandSecondLevelFields(names);
+    expect(sub.getItems(), names);
+    expect(sub.getFields(), ['key', 'command', ...names]);
+    expect(sub.getCommandSecondLevelFields(), names);
+    final source = Subscription('MERGE', names, names);
+    final mpn = MpnSubscription.fromSubscription(source);
+    final copy = MpnSubscription.fromMpnSubscription(mpn);
+    expect(mpn.getItems(), names);
+    expect(copy.getFields(), names);
+    expect(() => Subscription('MERGE', names), throwsA(anything));
+    expect(() => mpn.setItems(['']), throwsA(anything));
+    expect(() => copy.setFields([]), throwsA(anything));
+    sub.setCommandSecondLevelFields(null);
+    expect(sub.getCommandSecondLevelFields(), isNull);
+  });
+
   test('Dart string collections cross constructors and setters', () {
     final sub = Subscription('COMMAND');
     expect(SubscriptionExt(sub).getItems(), isNull);
@@ -193,11 +219,15 @@ void main() {
     _event(a, 'onServerError', [42, 'error']);
     _event(a, 'onPropertyChange', ['user']);
     _event(a, 'onServerKeepalive', []);
+    _event(a, 'onDataAdapterStateChange', ['DISABLED', 'data adapter']);
+    _event(a, 'onMetadataAdapterStateChange', ['ACTIVE']);
     expect(listener.events, [
       ['CONNECTED:WS-STREAMING'],
       [42, 'error'],
       ['user'],
-      []
+      [],
+      ['DISABLED', 'data adapter'],
+      ['ACTIVE']
     ]);
     a.removeListener(listener);
     a.removeListener(listener);
@@ -224,7 +254,11 @@ void main() {
     _notify(a as JSObject, 'onItemUpdate', <JSAny?>[update as JSObject].toJS);
     _event(a, 'onClearSnapshot', ['one', 2]);
     _event(a, 'onEndOfSnapshot', ['one', 2]);
-    _event(a, 'onItemLostUpdates', ['one', 2, 3]);
+    _event(a, 'onItemStale', ['one', 2]);
+    _event(a, 'onItemResume', ['one', 2]);
+    _event(a, 'onItemLostUpdates', ['one', 2, 3, true]);
+    _event(a, 'onItemLostUpdates', ['one', 2, 7, false]);
+    _event(a, 'onItemLostUpdates', ['one', 2, -1, false]);
     _event(a, 'onCommandSecondLevelItemLostUpdates', [4, 'key']);
     _event(a, 'onCommandSecondLevelSubscriptionError', [5, 'error', 'key']);
     _event(a, 'onRealMaxFrequency', [null]);
@@ -237,7 +271,11 @@ void main() {
     expect(listener.events, [
       ['one', 2],
       ['one', 2],
-      ['one', 2, 3],
+      ['one', 2],
+      ['one', 2],
+      ['one', 2, 3, true],
+      ['one', 2, 7, false],
+      ['one', 2, -1, false],
       [4, 'key'],
       [5, 'error', 'key'],
       [null],
@@ -379,6 +417,11 @@ mixin _Lifecycle {
 
 class _ClientEvents extends ClientListener with _Lifecycle {
   @override
+  void onDataAdapterStateChange(String state, String dataAdapterName) =>
+      events.add([state, dataAdapterName]);
+  @override
+  void onMetadataAdapterStateChange(String state) => events.add([state]);
+  @override
   void onStatusChange(String status) => events.add([status]);
   @override
   void onServerError(int errorCode, String errorMessage) =>
@@ -390,6 +433,12 @@ class _ClientEvents extends ClientListener with _Lifecycle {
 }
 
 class _SubscriptionEvents extends SubscriptionListener with _Lifecycle {
+  @override
+  void onItemStale(String itemName, int itemPos) =>
+      events.add([itemName, itemPos]);
+  @override
+  void onItemResume(String itemName, int itemPos) =>
+      events.add([itemName, itemPos]);
   ItemUpdate? update;
   @override
   void onItemUpdate(ItemUpdate update) => this.update = update;
@@ -400,8 +449,9 @@ class _SubscriptionEvents extends SubscriptionListener with _Lifecycle {
   void onEndOfSnapshot(String itemName, int itemPos) =>
       events.add([itemName, itemPos]);
   @override
-  void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) =>
-      events.add([itemName, itemPos, lostUpdates]);
+  void onItemLostUpdates(
+          String itemName, int itemPos, int lostUpdates, bool isOverflow) =>
+      events.add([itemName, itemPos, lostUpdates, isOverflow]);
   @override
   void onCommandSecondLevelItemLostUpdates(int lostUpdates, String key) =>
       events.add([lostUpdates, key]);

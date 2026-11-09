@@ -533,7 +533,7 @@ the [Firebase Cloud Messaging docs](https://firebase.google.com/docs/cloud-messa
 ## Compatibility
 
 * Dart 3.3.0 or later and Flutter 3.7.0 or later are required.
-* The Plugin requires Lightstreamer Server 7.4.0 or later
+* The Plugin requires Lightstreamer Server 8.0.0 or later
 * On Android devices, Android 8 (API 26) or later is required.
 * On iOS devices, iOS 13.0 or later is required.
 * On macOS desktops, macOS 11 (Big Sur) or later is required.

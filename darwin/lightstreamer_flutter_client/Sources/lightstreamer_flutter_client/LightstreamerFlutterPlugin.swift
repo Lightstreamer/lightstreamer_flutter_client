@@ -505,8 +505,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     let subId = options.get("id") as! String;
     let items = options.get("items") as? [String];
     let fields = options.get("fields") as? [String];
-    let group = options.get("group") as? String;
-    let schema = options.get("schema") as? String;
     let dataAdapter = options.get("dataAdapter") as? String;
     let bufferSize = options.get("bufferSize") as? String;
     let snapshot = options.get("snapshot") as? String;
@@ -514,7 +512,8 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     let selector = options.get("selector") as? String;
     let dataAdapter2 = options.get("dataAdapter2") as? String;
     let fields2 = options.get("fields2") as? [String];
-    let schema2 = options.get("schema2") as? String;
+    let mode = options.get("mode") as? String;
+    try validateLists(mode, items, fields, fields2);
     var sub: Subscription! = _subMap.get(subId);
     if (sub == nil) {
       let mode = options.get("mode") as! String
@@ -530,12 +529,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
     if (fields != nil) {
       sub.fields = fields;
-    }
-    if (group != nil) {
-      sub.itemGroup = group;
-    }
-    if (schema != nil) {
-      sub.fieldSchema = schema;
     }
     if (dataAdapter != nil) {
       sub.dataAdapter = dataAdapter;
@@ -557,9 +550,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
     if (fields2 != nil) {
       sub.commandSecondLevelFields = fields2;
-    }
-    if (schema2 != nil) {
-      sub.commandSecondLevelFieldSchema = schema2;
     }
     client.subscribe(sub);
     result(nil);
@@ -687,14 +677,13 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     let mode = options.get("mode") as! String;
     let items = options.get("items") as? [String];
     let fields = options.get("fields") as? [String];
-    let group = options.get("group") as? String;
-    let schema = options.get("schema") as? String;
     let dataAdapter = options.get("dataAdapter") as? String;
     let bufferSize = options.get("bufferSize") as? String;
     let requestedMaxFrequency = options.get("requestedMaxFrequency") as? String;
     let trigger = options.get("trigger") as? String;
     let format = options.get("notificationFormat") as? String;
     let coalescing: Bool = call.argument("coalescing");
+    try validateLists(mode, items, fields, nil, mpn: true);
     var mySub: MyMpnSubscription! = _mpnSubMap.get(mpnSubId);
     if (mySub == nil) {
       let sub = MPNSubscription(subscriptionMode: MPNSubscription.Mode(rawValue: mode)!);
@@ -717,12 +706,6 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
     if (fields != nil) {
       sub.fields = fields;
-    }
-    if (group != nil) {
-      sub.itemGroup = group;
-    }
-    if (schema != nil) {
-      sub.fieldSchema = schema;
     }
     if (dataAdapter != nil) {
       sub.dataAdapter = dataAdapter;
@@ -1100,6 +1083,22 @@ public class LightstreamerFlutterPlugin: NSObject, FlutterPlugin {
     }
   }
   
+  func validateLists(_ mode: String?, _ items: [String]?, _ fields: [String]?,
+                     _ fields2: [String]?, mpn: Bool = false) throws {
+    let modes = mpn ? ["MERGE", "DISTINCT"] : ["MERGE", "DISTINCT", "RAW", "COMMAND"];
+    guard let mode, modes.contains(mode),
+          let items, !items.isEmpty, items.allSatisfy({ !$0.isEmpty }),
+          let fields, !fields.isEmpty, fields.allSatisfy({ !$0.isEmpty }) else {
+      throw IllegalStateException("A valid mode and non-empty item and field lists are required");
+    }
+    if let fields2, (mode != "COMMAND" || fields2.isEmpty || fields2.contains("")) {
+      throw IllegalStateException("Second-level fields require COMMAND mode and non-empty names");
+    }
+    if mode == "COMMAND" && (!fields.contains("key") || !fields.contains("command")) {
+      throw IllegalStateException("COMMAND fields must include key and command");
+    }
+  }
+
   func toTransportSelection(_ ft: String?) -> TransportSelection? {
     return ft == nil ? nil : TransportSelection(rawValue: ft!)!
   }
@@ -1198,6 +1197,14 @@ fileprivate class MyClientListener_ : ClientDelegate {
   func clientDidRemoveDelegate(_ client: LightstreamerClient) {}
   
   func clientDidAddDelegate(_ client: LightstreamerClient) {}
+
+  func client(_ client: LightstreamerClient, didChangeDataAdapterState state: String, forDataAdapter dataAdapterName: String) {
+    invoke("onDataAdapterStateChange", ["state": state, "dataAdapterName": dataAdapterName]);
+  }
+
+  func client(_ client: LightstreamerClient, didChangeMetadataAdapterState state: String) {
+    invoke("onMetadataAdapterStateChange", ["state": state]);
+  }
   
   func client(_ client: LightstreamerClient, didReceiveServerError errorCode: Int, withMessage errorMessage: String) {
     var arguments = [String:Any]();
@@ -1345,12 +1352,21 @@ class MySubscriptionListener : SubscriptionDelegate {
     invoke("onEndOfSnapshot", arguments);
   }
   
-  func subscription(_ subscription: Subscription, didLoseUpdates lostUpdates: UInt, forItemName itemName: String?, itemPos: UInt) {
+  func subscription(_ subscription: Subscription, didLoseUpdates lostUpdates: Int, forItemName itemName: String?, itemPos: UInt, isOverflow: Bool) {
     var arguments = [String:Any?]();
     arguments.put("itemName", itemName);
     arguments.put("itemPos", itemPos);
     arguments.put("lostUpdates", lostUpdates);
+    arguments.put("isOverflow", isOverflow);
     invoke("onItemLostUpdates", arguments);
+  }
+
+  func subscription(_ subscription: Subscription, didBecomeStaleForItemName itemName: String?, itemPos: UInt) {
+    invoke("onItemStale", ["itemName": itemName, "itemPos": itemPos]);
+  }
+
+  func subscription(_ subscription: Subscription, didResumeForItemName itemName: String?, itemPos: UInt) {
+    invoke("onItemResume", ["itemName": itemName, "itemPos": itemPos]);
   }
   
   func subscription(_ subscription: Subscription, didUpdateItem update: any ItemUpdate) {
@@ -1359,7 +1375,6 @@ class MySubscriptionListener : SubscriptionDelegate {
     arguments.put("itemPos", update.itemPos);
     arguments.put("isSnapshot", update.isSnapshot);
     if (_sub.fields != nil || _sub.commandSecondLevelFields != nil) {
-      // TODO could the methods `changedFields` and `fields` throw exceptions if the subscription lacks field names?
       let changedFields = update.changedFields;
       let fields = update.fields;
       var jsonFields = [String:String?]();
@@ -1446,8 +1461,6 @@ class MyMpnSubscription {
     dto.put("mode", _sub.mode.rawValue);
     dto.put("items", _sub.items);
     dto.put("fields", _sub.fields);
-    dto.put("group", _sub.itemGroup);
-    dto.put("schema", _sub.fieldSchema);
     dto.put("dataAdapter", _sub.dataAdapter);
     let bs_: String? = switch _sub.requestedBufferSize {
     case nil: nil
@@ -1605,9 +1618,9 @@ class MyMpnSubscriptionListener : MPNSubscriptionDelegate {
     case "adapter":
       arguments.put("value", _sub.dataAdapter);
     case "group":
-      arguments.put("value", _sub.itemGroup);
+      arguments.put("value", _sub.items);
     case "schema":
-      arguments.put("value", _sub.fieldSchema);
+      arguments.put("value", _sub.fields);
     case "notification_format":
       arguments.put("value", _sub.actualNotificationFormat);
     case "trigger":

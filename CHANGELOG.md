@@ -1,5 +1,23 @@
 # Lightstreamer Flutter Plugin Changelog
 
+## Unreleased
+*Requires Lightstreamer Server 8.0.0 or later.*
+
+**Breaking:** Removed item-group, field-schema and COMMAND second-level
+field-schema accessors. Use explicit item and field lists instead, including
+for MPN subscriptions. Lists and names must be non-empty when configured;
+names may contain spaces, numeric-only strings, Unicode and control characters.
+Inactive list setters accept null; both lists are required before subscribing.
+
+**Breaking:** `onItemLostUpdates` now requires `bool isOverflow`. Server
+overflow reports true; Data Adapter loss reports false, with -1 for an unknown
+count. The second-level overflow callback is unchanged.
+
+**Added:** Adapter health callbacks, item stale/resume callbacks and Web MPN
+copy constructors. MPN property events retain the names `group` and `schema`,
+but getters now expose the corresponding explicit lists.
+
+
 ## 2.4.0
 *Compatible with Lightstreamer Server since 7.4.0*<br/>
 *Compatible with Android 8 (API 26)*<br/>

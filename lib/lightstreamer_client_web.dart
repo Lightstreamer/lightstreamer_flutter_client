@@ -582,6 +582,12 @@ extension _ClientListenerExt on _ClientListener {
  * same thread.
  */
 abstract class ClientListener {
+  @JSExport()
+  void onDataAdapterStateChange(String state, String dataAdapterName) {}
+
+  @JSExport()
+  void onMetadataAdapterStateChange(String state) {}
+
   /**
    * Event handler that receives a notification each time the LightstreamerClient status has changed. 
    * 
@@ -894,6 +900,12 @@ extension _SubscriptionListenerExt on _SubscriptionListener {
  * same thread.
  */
 abstract class SubscriptionListener {
+  @JSExport()
+  void onItemStale(String itemName, int itemPos) {}
+
+  @JSExport()
+  void onItemResume(String itemName, int itemPos) {}
+
   /**
    * Event handler that is called by Lightstreamer each time a request to clear the snapshot pertaining to an item 
    * in the Subscription has been received from the Server. 
@@ -1016,7 +1028,8 @@ abstract class SubscriptionListener {
    * - See [Subscription.setRequestedMaxFrequency]
    */
   @JSExport()
-  void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) {}
+  void onItemLostUpdates(
+      String itemName, int itemPos, int lostUpdates, bool isOverflow) {}
   /**
    * Event handler that is called by Lightstreamer each time an update pertaining to an item in the Subscription
    * has been received from the Server.
@@ -1581,54 +1594,6 @@ extension SubscriptionExt on Subscription {
   @JS('setCommandSecondLevelFields')
   external void _setCommandSecondLevelFields(JSArray<JSString>? fields);
   /**
-   * Inquiry method that can be used to read the "Field Schema" specified for second-level 
-   * Subscriptions.
-   *
-   * **Lifecycle** This method can only be called if the second-level of this Subscription has 
-   * been initialized using a "Field Schema".
-   * 
-   * **Throws** IllegalStateException if the Subscription mode is not COMMAND
-   * 
-   * **Returns** the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
-   * - See [Subscription.setCommandSecondLevelFieldSchema]
-   */
-  external String? getCommandSecondLevelFieldSchema();
-  /**
-   * Setter method that sets the "Field Schema" to be subscribed to through 
-   * Lightstreamer Server for the second-level items. 
-   *
-   * It can only be used on COMMAND Subscriptions. <BR>
-   * Any call to this method will override any "Field List" or "Field Schema"
-   * previously specified for the second-level. <BR>
-   * Calling this method enables the two-level behavior:<BR>
-   * in synthesis, each time a new key is received on the COMMAND Subscription, 
-   * the key value is treated as an Item name and an underlying Subscription for
-   * this Item is created and subscribed to automatically, to feed fields specified
-   * by this method. This mono-item Subscription is specified through an "Item List"
-   * containing only the Item name received. As a consequence, all the conditions
-   * provided for subscriptions through Item Lists have to be satisfied. The item is 
-   * subscribed to in "MERGE" mode, with snapshot request and with the same maximum
-   * frequency setting as for the first-level items (including the "unfiltered" 
-   * case). All other Subscription properties are left as the default. When the 
-   * key is deleted by a DELETE command on the first-level Subscription, the 
-   * associated second-level Subscription is also unsubscribed from. <BR>
-   * Specify null as parameter will disable the two-level behavior.
-   * 
-   * **Lifecycle** This method can only be called while the Subscription
-   * instance is in its "inactive" state.
-   * 
-   * **Throws** IllegalStateException if the Subscription is currently 
-   * "active".
-   * 
-   * **Throws** IllegalStateException if the Subscription mode is not "COMMAND".
-   * 
-   * - [schemaName] A String to be expanded into a field list by the
-   * Metadata Adapter. 
-   * 
-   * - See [Subscription.setCommandSecondLevelFields]
-   */
-  external void setCommandSecondLevelFieldSchema(String? schemaName);
-  /**
    * Inquiry method that can be used to read the name of the Data Adapter specified for this 
    * Subscription through [setDataAdapter].
    
@@ -1690,58 +1655,6 @@ extension SubscriptionExt on Subscription {
   void setFields(List<String>? fields) => _setFields(_stringArray(fields));
   @JS('setFields')
   external void _setFields(JSArray<JSString>? fields);
-  /**
-   * Inquiry method that can be used to read the field schema specified for this Subscription.
-   *
-   * **Lifecycle** This method can only be called if the Subscription has been initialized 
-   * using a "Field Schema"
-   * 
-   * **Returns** the "Field Schema" to be subscribed to through the server, or null if the Subscription was initialized with a "Field List" or was not initialized at all.
-   */
-  external String? getFieldSchema();
-  /**
-   * Setter method that sets the "Field Schema" to be subscribed to through 
-   * Lightstreamer Server.
-   *
-   * Any call to this method will override any "Field List" or "Field Schema"
-   * previously specified.
-   * 
-   * **Lifecycle** This method can only be called while the Subscription
-   * instance is in its "inactive" state.
-   * 
-   * **Throws** IllegalStateException if the Subscription is currently 
-   * "active".
-   * 
-   * - [schemaName] A String to be expanded into a field list by the
-   * Metadata Adapter. 
-   */
-  external void setFieldSchema(String? schemaName);
-  /**
-   * Inquiry method that can be used to read the item group specified for this Subscription.
-   *
-   * **Lifecycle** This method can only be called if the Subscription has been initialized
-   * using an "Item Group"
-   * 
-   * **Returns** the "Item Group" to be subscribed to through the server, or null if the Subscription was initialized with an "Item List" or was not initialized at all.
-   */
-  external String? getItemGroup();
-  /**
-   * Setter method that sets the "Item Group" to be subscribed to through 
-   * Lightstreamer Server.
-   *
-   * Any call to this method will override any "Item List" or "Item Group"
-   * previously specified.
-   * 
-   * **Lifecycle** This method can only be called while the Subscription
-   * instance is in its "inactive" state.
-   * 
-   * **Throws** IllegalStateException if the Subscription is currently 
-   * "active".
-   * 
-   * - [groupName] A String to be expanded into an item list by the
-   * Metadata Adapter. 
-   */
-  external void setItemGroup(String? groupName);
   @JS('getItems')
   external JSArray<JSString>? _getItems();
   /**
@@ -3534,6 +3447,10 @@ class MpnSubscription {
       MpnSubscription._(mode, _stringArray(items), _stringArray(fields));
   external factory MpnSubscription._(
       String mode, JSArray<JSString>? items, JSArray<JSString>? fields);
+
+  external factory MpnSubscription.fromSubscription(Subscription subscription);
+
+  external factory MpnSubscription.fromMpnSubscription(MpnSubscription subscription);
 }
 
 extension MpnSubscriptionExt on MpnSubscription {
@@ -3611,70 +3528,6 @@ extension MpnSubscriptionExt on MpnSubscription {
   void setFields(List<String>? fields) => _setFields(_stringArray(fields));
   @JS('setFields')
   external void _setFields(JSArray<JSString>? fields);
-  /**
-   * Inquiry method that can be used to read the field schema specified for this MpnSubscription.
-   * 
-   * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
-   * fields are always expressed with a "Field Schema"", even if originally the MPN subscription used a "Field List".
-   *
-   * **Lifecycle** This method can only be called if the MpnSubscription has been initialized 
-   * using a "Field Schema"
-   * 
-   * **Returns** the "Field Schema" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field List" or was not initialized at all.
-   */
-  external String? getFieldSchema();
-  /**
-   * Setter method that sets the "Field Schema" to be subscribed to through 
-   * Lightstreamer Server.
-   * 
-   * Any call to this method will override any "Field List" or "Field Schema"
-   * previously specified.
-   * 
-   * **Lifecycle** This method can only be called while the MpnSubscription
-   * instance is in its "inactive" state.
-   * 
-   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
-   * with argument <code>schema</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
-   * 
-   * - [schemaName] A String to be expanded into a field list by the
-   * Metadata Adapter. 
-   * 
-   * **Throws** IllegalStateException if the MpnSubscription is currently 
-   * "active".
-   */
-  external void setFieldSchema(String? schemaName);
-  /**
-   * Inquiry method that can be used to read the item group specified for this MpnSubscription.
-   * 
-   * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
-   * items are always expressed with an "Item Group"", even if originally the MPN subscription used an "Item List".
-   *
-   * **Lifecycle** This method can only be called if the MpnSubscription has been initialized
-   * using an "Item Group"
-   * 
-   * **Returns** the "Item Group" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item List" or was not initialized at all.
-   */
-  external String? getItemGroup();
-  /**
-   * Setter method that sets the "Item Group" to be subscribed to through 
-   * Lightstreamer Server.
-   * 
-   * Any call to this method will override any "Item List" or "Item Group"
-   * previously specified.
-   * 
-   * **Lifecycle** This method can only be called while the MpnSubscription
-   * instance is in its "inactive" state.
-   * 
-   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
-   * with argument <code>group</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
-   * 
-   * - [groupName] A String to be expanded into an item list by the
-   * Metadata Adapter. 
-   * 
-   * **Throws** IllegalStateException if the MpnSubscription is currently 
-   * "active".
-   */
-  external void setItemGroup(String? groupName);
   @JS('getItems')
   external JSArray<JSString>? _getItems();
   /**

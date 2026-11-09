@@ -475,8 +475,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String subId = (String) options.get("id");
         List<String> items = (List<String>) options.get("items");
         List<String> fields = (List<String>) options.get("fields");
-        String group = (String) options.get("group");
-        String schema = (String) options.get("schema");
         String dataAdapter = (String) options.get("dataAdapter");
         String bufferSize = (String) options.get("bufferSize");
         String snapshot = (String) options.get("snapshot");
@@ -484,7 +482,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String selector = (String) options.get("selector");
         String dataAdapter2 = (String) options.get("dataAdapter2");
         List<String> fields2 = (List<String>) options.get("fields2");
-        String schema2 = (String) options.get("schema2");
         Subscription sub = _subMap.get(subId);
         if (sub == null) {
             sub = new Subscription((String) options.get("mode"));
@@ -499,12 +496,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         }
         if (fields != null) {
             sub.setFields(fields.toArray(new String[0]));
-        }
-        if (group != null) {
-            sub.setItemGroup(group);
-        }
-        if (schema != null) {
-            sub.setFieldSchema(schema);
         }
         if (dataAdapter != null) {
             sub.setDataAdapter(dataAdapter);
@@ -526,9 +517,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         }
         if (fields2 != null) {
             sub.setCommandSecondLevelFields(fields2.toArray(new String[0]));
-        }
-        if (schema2 != null) {
-            sub.setCommandSecondLevelFieldSchema(schema2);
         }
         client.subscribe(sub);
         result.success(null);
@@ -625,8 +613,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         String mode = (String) options.get("mode");
         List<String> items = (List<String>) options.get("items");
         List<String> fields = (List<String>) options.get("fields");
-        String group = (String) options.get("group");
-        String schema = (String) options.get("schema");
         String dataAdapter = (String) options.get("dataAdapter");
         String bufferSize = (String) options.get("bufferSize");
         String requestedMaxFrequency = (String) options.get("requestedMaxFrequency");
@@ -655,12 +641,6 @@ public class LightstreamerFlutterPlugin implements FlutterPlugin, MethodChannel.
         }
         if (fields != null) {
             sub.setFields(fields.toArray(new String[0]));
-        }
-        if (group != null) {
-            sub.setItemGroup(group);
-        }
-        if (schema != null) {
-            sub.setFieldSchema(schema);
         }
         if (dataAdapter != null) {
             sub.setDataAdapter(dataAdapter);
@@ -1072,6 +1052,21 @@ class MyClientListener implements ClientListener {
     public void onListenStart() {}
 
     @Override
+    public void onDataAdapterStateChange(@NonNull String state, @NonNull String dataAdapterName) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("state", state);
+        arguments.put("dataAdapterName", dataAdapterName);
+        invoke("onDataAdapterStateChange", arguments);
+    }
+
+    @Override
+    public void onMetadataAdapterStateChange(@NonNull String state) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("state", state);
+        invoke("onMetadataAdapterStateChange", arguments);
+    }
+
+    @Override
     public void onServerError(int errorCode, @NonNull String errorMessage) {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("errorCode", errorCode);
@@ -1176,12 +1171,29 @@ class MySubscriptionListener implements SubscriptionListener {
     }
 
     @Override
-    public void onItemLostUpdates(@Nullable String itemName, int itemPos, int lostUpdates) {
+    public void onItemLostUpdates(@Nullable String itemName, int itemPos, int lostUpdates, boolean isOverflow) {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("itemName", itemName);
         arguments.put("itemPos", itemPos);
         arguments.put("lostUpdates", lostUpdates);
+        arguments.put("isOverflow", isOverflow);
         invoke("onItemLostUpdates", arguments);
+    }
+
+    @Override
+    public void onItemStale(@Nullable String itemName, int itemPos) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("itemName", itemName);
+        arguments.put("itemPos", itemPos);
+        invoke("onItemStale", arguments);
+    }
+
+    @Override
+    public void onItemResume(@Nullable String itemName, int itemPos) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("itemName", itemName);
+        arguments.put("itemPos", itemPos);
+        invoke("onItemResume", arguments);
     }
 
     @Override
@@ -1190,25 +1202,18 @@ class MySubscriptionListener implements SubscriptionListener {
         arguments.put("itemName", update.getItemName());
         arguments.put("itemPos", update.getItemPos());
         arguments.put("isSnapshot", update.isSnapshot());
-        if (_sub.getFields() != null || _sub.getCommandSecondLevelFields() != null) {
-            try {
-                Map<String, String> changedFields = update.getChangedFields();
-                Map<String, String> fields = update.getFields();
-                Map<String, String> jsonFields = new HashMap<>();
-                for (String fld : fields.keySet()) {
-                    String json = update.getValueAsJSONPatchIfAvailable(fld);
-                    if (json != null) {
-                        jsonFields.put(fld, json);
-                    }
-                }
-                arguments.put("changedFields", changedFields);
-                arguments.put("fields", fields);
-                arguments.put("jsonFields", jsonFields);
-            } catch (Exception e) {
-                // if the subscription doesn't have field names, the methods getChangedFields and
-                // getFields may throw exceptions
+        Map<String, String> changedFields = update.getChangedFields();
+        Map<String, String> fields = update.getFields();
+        Map<String, String> jsonFields = new HashMap<>();
+        for (String fld : fields.keySet()) {
+            String json = update.getValueAsJSONPatchIfAvailable(fld);
+            if (json != null) {
+                jsonFields.put(fld, json);
             }
         }
+        arguments.put("changedFields", changedFields);
+        arguments.put("fields", fields);
+        arguments.put("jsonFields", jsonFields);
         Map<Integer, String> changedFieldsByPosition = update.getChangedFieldsByPosition();
         Map<Integer, String> fieldsByPosition = update.getFieldsByPosition();
         Map<Integer, String> jsonFieldsByPosition = new HashMap<>();
@@ -1332,8 +1337,6 @@ class MyMpnSubscription {
         dto.put("mode", _sub.getMode());
         dto.put("items", _sub.getItems());
         dto.put("fields", _sub.getFields());
-        dto.put("group", _sub.getItemGroup());
-        dto.put("schema", _sub.getFieldSchema());
         dto.put("dataAdapter", _sub.getDataAdapter());
         dto.put("bufferSize", _sub.getRequestedBufferSize());
         dto.put("requestedMaxFrequency", _sub.getRequestedMaxFrequency());
@@ -1492,10 +1495,10 @@ class MyMpnSubscriptionListener implements MpnSubscriptionListener {
                 arguments.put("value", _sub.getDataAdapter());
                 break;
             case "group":
-                arguments.put("value", _sub.getItemGroup());
+                arguments.put("value", _sub.getItems());
                 break;
             case "schema":
-                arguments.put("value", _sub.getFieldSchema());
+                arguments.put("value", _sub.getFields());
                 break;
             case "notification_format":
                 arguments.put("value", _sub.getActualNotificationFormat());

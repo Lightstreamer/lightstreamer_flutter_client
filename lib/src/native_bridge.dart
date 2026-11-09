@@ -263,6 +263,10 @@ class NativeBridge {
 
   void _ClientListener_handle(String method, MethodCall call) {
     switch (method) {
+      case "onDataAdapterStateChange":
+        _ClientListener_onDataAdapterStateChange(call);
+      case "onMetadataAdapterStateChange":
+        _ClientListener_onMetadataAdapterStateChange(call);
       case "onStatusChange":
         _ClientListener_onStatusChange(call);
       case "onPropertyChange":
@@ -274,6 +278,25 @@ class NativeBridge {
           channelLogger.error("Unknown method ${call.method}", null);
         }
     }
+  }
+
+  void _ClientListener_onDataAdapterStateChange(MethodCall call) {
+    var arguments = call.arguments;
+    String id = arguments['id'];
+    String state = arguments['state'];
+    String dataAdapterName = arguments['dataAdapterName'];
+    runClientListenersAsync(id,
+        (l) => l.onDataAdapterStateChange(state, dataAdapterName),
+        'onDataAdapterStateChange');
+  }
+
+  void _ClientListener_onMetadataAdapterStateChange(MethodCall call) {
+    var arguments = call.arguments;
+    String id = arguments['id'];
+    String state = arguments['state'];
+    runClientListenersAsync(
+        id, (l) => l.onMetadataAdapterStateChange(state),
+        'onMetadataAdapterStateChange');
   }
 
   void _ClientListener_onStatusChange(MethodCall call) {
@@ -379,6 +402,10 @@ class NativeBridge {
 
   void _SubscriptionListener_handle(String method, MethodCall call) {
     switch (method) {
+      case "onItemStale":
+        _SubscriptionListener_onItemStale(call);
+      case "onItemResume":
+        _SubscriptionListener_onItemResume(call);
       case "onItemUpdate":
         _SubscriptionListener_onItemUpdate(call);
       case "onSubscriptionError":
@@ -404,6 +431,24 @@ class NativeBridge {
           channelLogger.error("Unknown method ${call.method}", null);
         }
     }
+  }
+
+  void _SubscriptionListener_onItemStale(MethodCall call) {
+    var arguments = call.arguments;
+    String subId = arguments['subId'];
+    String? itemName = arguments['itemName'];
+    int itemPos = arguments['itemPos'];
+    runSubscriptionListenersAsync(
+        subId, (l) => l.onItemStale(itemName, itemPos), 'onItemStale');
+  }
+
+  void _SubscriptionListener_onItemResume(MethodCall call) {
+    var arguments = call.arguments;
+    String subId = arguments['subId'];
+    String? itemName = arguments['itemName'];
+    int itemPos = arguments['itemPos'];
+    runSubscriptionListenersAsync(
+        subId, (l) => l.onItemResume(itemName, itemPos), 'onItemResume');
   }
 
   void _SubscriptionListener_onClearSnapshot(MethodCall call) {
@@ -445,7 +490,8 @@ class NativeBridge {
     String itemName = arguments['itemName'];
     int itemPos = arguments['itemPos'];
     int lostUpdates = arguments['lostUpdates'];
-    runSubscriptionListenersAsync(subId, (l) => l.onItemLostUpdates(itemName, itemPos, lostUpdates), 'onItemLostUpdate');
+    bool isOverflow = arguments['isOverflow'];
+    runSubscriptionListenersAsync(subId, (l) => l.onItemLostUpdates(itemName, itemPos, lostUpdates, isOverflow), 'onItemLostUpdates');
   }
 
   void _SubscriptionListener_onItemUpdate(MethodCall call) {
@@ -649,9 +695,9 @@ class NativeBridge {
         case "adapter":
           sub._dataAdapter = arguments['value'];
         case "group":
-          sub._group = arguments['value'];
+          sub._items = (arguments['value'] as List?)?.cast<String>().toList();
         case "schema":
-          sub._schema = arguments['value'];
+          sub._fields = (arguments['value'] as List?)?.cast<String>().toList();
         case "notification_format":
           sub._actualNotificationFormat = arguments['value'];
         case "trigger":

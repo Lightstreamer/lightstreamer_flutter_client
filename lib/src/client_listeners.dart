@@ -26,6 +26,10 @@ import 'package:lightstreamer_flutter_client/src/client.dart';
  * same thread.
  */
 class ClientListener {
+  void onDataAdapterStateChange(String state, String dataAdapterName) {}
+
+  void onMetadataAdapterStateChange(String state) {}
+
   /**
    * Event handler that receives a notification each time the LightstreamerClient status has changed. 
    * 
@@ -220,6 +224,10 @@ class ClientListener {
  * same thread.
  */
 class SubscriptionListener {
+  void onItemStale(String? itemName, int itemPos) {}
+
+  void onItemResume(String? itemName, int itemPos) {}
+
   /**
    * Event handler that is called by Lightstreamer each time a request to clear the snapshot pertaining to an item 
    * in the Subscription has been received from the Server. 
@@ -336,7 +344,8 @@ class SubscriptionListener {
    * 
    * - See [Subscription.setRequestedMaxFrequency]
    */
-  void onItemLostUpdates(String itemName, int itemPos, int lostUpdates) {}
+  void onItemLostUpdates(
+      String itemName, int itemPos, int lostUpdates, bool isOverflow) {}
   /**
    * Event handler that is called by Lightstreamer each time an update pertaining to an item in the Subscription
    * has been received from the Server.

@@ -47,8 +47,8 @@ void main() {
         /* create MPN subscription */
         sub = MpnSubscription("MERGE");
         sub.setDataAdapter("COUNT");
-        sub.setItemGroup("count");
-        sub.setFieldSchema("count");
+        sub.setItems(["count"]);
+        sub.setFields(["count"]);
         sub.setNotificationFormat(descriptor);
         subListener = BaseMpnSubscriptionListener();
         sub.addListener(subListener);
@@ -138,8 +138,8 @@ void main() {
         assertNull(sub.getRequestedBufferSize());
         assertNull(sub.getRequestedMaxFrequency());
         assertEqual("MERGE", sub.getMode());
-        assertEqual("count", sub.getItemGroup());
-        assertEqual("count", sub.getFieldSchema());
+        assertEqual(["count"], sub.getItems());
+        assertEqual(["count"], sub.getFields());
         assertNotNull(sub.getSubscriptionId());
       });
 
@@ -217,8 +217,8 @@ void main() {
         };
         var subCopy = MpnSubscription("MERGE");
         subCopy.setDataAdapter("COUNT");
-        subCopy.setItemGroup("count");
-        subCopy.setFieldSchema("count");
+        subCopy.setItems(["count"]);
+        subCopy.setFields(["count"]);
         subCopy.setNotificationFormat(FirebaseMpnBuilder().setTitle("my_title_2").build());
         var subCopyListener = BaseMpnSubscriptionListener();
         subCopy.addListener(subCopyListener);
@@ -296,8 +296,8 @@ void main() {
 
         var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
-        sub1.setItemGroup("count");
-        sub1.setFieldSchema("count");
+        sub1.setItems(["count"]);
+        sub1.setFields(["count"]);
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
@@ -306,8 +306,8 @@ void main() {
 
         var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
-        sub2.setItemGroup("count");
-        sub2.setFieldSchema("count");
+        sub2.setItems(["count"]);
+        sub2.setFields(["count"]);
         sub2.setNotificationFormat(descriptor);
         // this expression is always true because the counter is >= 0
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
@@ -363,8 +363,8 @@ void main() {
 
         var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
-        sub1.setItemGroup("count");
-        sub1.setFieldSchema("count");
+        sub1.setItems(["count"]);
+        sub1.setFields(["count"]);
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
@@ -373,8 +373,8 @@ void main() {
 
         var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
-        sub2.setItemGroup("count");
-        sub2.setFieldSchema("count");
+        sub2.setItems(["count"]);
+        sub2.setFields(["count"]);
         sub2.setNotificationFormat(descriptor);
         // this expression is always true because the counter is >= 0
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
@@ -431,8 +431,8 @@ void main() {
 
         var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
-        sub1.setItemGroup("count");
-        sub1.setFieldSchema("count");
+        sub1.setItems(["count"]);
+        sub1.setFields(["count"]);
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
@@ -441,8 +441,8 @@ void main() {
 
         var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
-        sub2.setItemGroup("count");
-        sub2.setFieldSchema("count");
+        sub2.setItems(["count"]);
+        sub2.setFields(["count"]);
         sub2.setNotificationFormat(descriptor);
         // this expression is always true because the counter is >= 0
         sub2.setTriggerExpression("Integer.parseInt(\${count}) > -1");
@@ -544,8 +544,8 @@ void main() {
 
         var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
-        sub1.setItemGroup("count");
-        sub1.setFieldSchema("count");
+        sub1.setItems(["count"]);
+        sub1.setFields(["count"]);
         sub1.setNotificationFormat(descriptor);
         var sub1Listener = BaseMpnSubscriptionListener();
         sub1.addListener(sub1Listener);
@@ -553,8 +553,8 @@ void main() {
 
         var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
-        sub2.setItemGroup("count");
-        sub2.setFieldSchema("count");
+        sub2.setItems(["count"]);
+        sub2.setFields(["count"]);
         sub2.setNotificationFormat(descriptor);
         var sub2Listener = BaseMpnSubscriptionListener();
         sub2.addListener(sub2Listener);
@@ -595,15 +595,15 @@ void main() {
         */
         var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
-        sub1.setItemGroup("count");
-        sub1.setFieldSchema("count");
+        sub1.setItems(["count"]);
+        sub1.setFields(["count"]);
         sub1.setNotificationFormat(descriptor);
         sub1.setTriggerExpression("Integer.parseInt(\${count}) < -1");
 
         var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
-        sub2.setItemGroup("count");
-        sub2.setFieldSchema("count");
+        sub2.setItems(["count"]);
+        sub2.setFields(["count"]);
         sub2.setNotificationFormat(descriptor);
         sub2.setTriggerExpression("Integer.parseInt(\${count}) < -2");
 
@@ -684,15 +684,15 @@ void main() {
         */
         var sub1 = MpnSubscription("MERGE");
         sub1.setDataAdapter("COUNT");
-        sub1.setItemGroup("count");
-        sub1.setFieldSchema("count");
+        sub1.setItems(["count"]);
+        sub1.setFields(["count"]);
         sub1.setNotificationFormat(descriptor);
         sub1.setTriggerExpression("Integer.parseInt(\${count}) < -1");
 
         var sub2 = MpnSubscription("MERGE");
         sub2.setDataAdapter("COUNT");
-        sub2.setItemGroup("count");
-        sub2.setFieldSchema("count");
+        sub2.setItems(["count"]);
+        sub2.setFields(["count"]);
         sub2.setNotificationFormat(descriptor);
         sub2.setTriggerExpression("Integer.parseInt(\${count}) < -2");
 
