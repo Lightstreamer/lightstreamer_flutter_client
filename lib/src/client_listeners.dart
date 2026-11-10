@@ -26,8 +26,19 @@ import 'package:lightstreamer_flutter_client/src/client.dart';
  * same thread.
  */
 class ClientListener {
+  /**
+   * Event handler called when the state of a Data Adapter changes.
+   *
+   * - [state] the state received from the Server.
+   * - [dataAdapterName] the name of the Data Adapter within the session's Adapter Set.
+   */
   void onDataAdapterStateChange(String state, String dataAdapterName) {}
 
+  /**
+   * Event handler called when the state of the Metadata Adapter changes.
+   *
+   * - [state] the state received from the Server.
+   */
   void onMetadataAdapterStateChange(String state) {}
 
   /**
@@ -168,6 +179,7 @@ class ClientListener {
    *   <li>9 - configured maximum server load reached</li>
    *   <li>10 - new sessions temporarily blocked</li>
    *   <li>11 - streaming is not available because of Server license restrictions (this can only happen with special licenses).</li>
+   *   <li>12 - The Metadata Adapter mounted in the specified Adapter Set is incompatible with this protocol version because it uses the older callback-based Java In-Process Adapter SDK.</li>
    *   <li>21 - a request for this session has unexpectedly reached a wrong Server instance, which suggests that a routing issue may be in place.</li>
    *   <li>30-41 - the current connection or the whole session has been closed by external agents; the possible cause may be:
    *     <ul>
@@ -224,8 +236,30 @@ class ClientListener {
  * same thread.
  */
 class SubscriptionListener {
+  /**
+   * Event handler called when problems obtaining updates block an item's
+   * update event flow.
+   *
+   * For two-level COMMAND Subscriptions, this notification refers to
+   * first-level items; stale notifications for internal second-level items
+   * are not propagated to this listener.
+   *
+   * - [itemName] the name of the item in the explicit item list; it may be null.
+   * - [itemPos] the 1-based position of the item in the explicit item list.
+   */
   void onItemStale(String? itemName, int itemPos) {}
 
+  /**
+   * Event handler called when an item's update event flow, previously
+   * reported as blocked, is no longer blocked.
+   *
+   * For two-level COMMAND Subscriptions, this notification refers to
+   * first-level items; resume notifications for internal second-level items
+   * are not propagated to this listener.
+   *
+   * - [itemName] the name of the item in the explicit item list; it may be null.
+   * - [itemPos] the 1-based position of the item in the explicit item list.
+   */
   void onItemResume(String? itemName, int itemPos) {}
 
   /**
@@ -241,14 +275,13 @@ class SubscriptionListener {
    *       should clear the list in order to keep a coherent view.</li>
    * </ul>
    * Note that, if the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , the notification refers to the first-level item (which is in COMMAND mode).
    * This kind of notification is not possible for second-level items (which are in MERGE 
    * mode).
    * 
-   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
-   *        null value is supplied.
-   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
+   * - [itemName] the name of the involved item in the explicit item list.
+   * - [itemPos] the 1-based position of the item within the explicit item list.
    */
   void onClearSnapshot(String itemName, int itemPos) {}
   /**
@@ -264,7 +297,6 @@ class SubscriptionListener {
    * 
    * - See [Subscription.setRequestedMaxFrequency]
    * - See [Subscription.setCommandSecondLevelFields]
-   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   void onCommandSecondLevelItemLostUpdates(int lostUpdates, String key) {}
   /**
@@ -298,7 +330,6 @@ class SubscriptionListener {
    * 
    * - See [ConnectionDetails.setAdapterSet]
    * - See [Subscription.setCommandSecondLevelFields]
-   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   void onCommandSecondLevelSubscriptionError(int errorCode, String errorMessage, String key) {}
   /**
@@ -309,25 +340,22 @@ class SubscriptionListener {
    * subscription mode and snapshot information was indeed requested for the items. By implementing this 
    * method it is possible to perform actions which require that all the initial values have been received. <BR>
    * Note that, if the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , the notification refers to the first-level item (which is in COMMAND mode).
    * Snapshot-related updates for the second-level items 
    * (which are in MERGE mode) can be received both before and after this notification.
    * 
-   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
-   *        null value is supplied.
-   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
+   * - [itemName] the name of the involved item in the explicit item list.
+   * - [itemPos] the 1-based position of the item within the explicit item list.
    * 
    * - See [Subscription.setRequestedSnapshot]
    * - See [ItemUpdate.isSnapshot]
    */
   void onEndOfSnapshot(String itemName, int itemPos) {}
   /**
-   * Event handler that is called by Lightstreamer to notify that, due to internal resource limitations, 
-   * Lightstreamer Server dropped one or more updates for an item in the Subscription. 
-   * 
-   * Such notifications are sent only if the items are delivered in an unfiltered mode; this occurs if the 
-   * subscription mode is:
+   * Event handler called when updates are lost for an item in the Subscription.
+   * Server buffer overflows (`OV`) are reported with [isOverflow] true and are
+   * sent only in the following cases:
    * <ul>
    *   <li>RAW</li>
    *   <li>MERGE or DISTINCT, with unfiltered dispatching specified</li>
@@ -335,12 +363,21 @@ class SubscriptionListener {
    *   <li>COMMAND, without unfiltered dispatching specified (in this case, notifications apply to ADD 
    *       and DELETE events only)</li>
    * </ul>
+   * Data Adapter loss notifications (`LOST`) are reported with [isOverflow]
+   * false. They are delivered in RAW or COMMAND mode regardless of unfiltered
+   * dispatching, and in MERGE or DISTINCT mode only when unfiltered dispatching
+   * is requested. For second-level COMMAND items, LOST notifications are not
+   * propagated to this listener; second-level Server overflows use
+   * [onCommandSecondLevelItemLostUpdates].
+   *
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
-   *        null value is supplied.
-   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
-   * - [lostUpdates] The number of consecutive updates dropped for the item.
+   * - [itemName] the name of the involved item in the explicit item list.
+   * - [itemPos] the 1-based position of the item within the explicit item list.
+   * - [lostUpdates] the number of lost updates, or `-1` when the Data Adapter
+   *   does not provide a count.
+   * - [isOverflow] true for Server buffer overflow (`OV`); false for Data
+   *   Adapter-reported loss (`LOST`).
    * 
    * - See [Subscription.setRequestedMaxFrequency]
    */
@@ -375,7 +412,7 @@ class SubscriptionListener {
    * (see [Subscription.setRequestedMaxFrequency]).
    * Since the frequency limit is applied on an item basis and a Subscription can involve multiple items,
    * this is actually the maximum frequency among all items. For Subscriptions with two-level behavior
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , the reported frequency limit applies to both first-level and second-level items. <BR>
    * The value may differ from the requested one because of restrictions operated on the server side,
    * but also because of number rounding. <BR>
@@ -400,7 +437,7 @@ class SubscriptionListener {
    * Note that two consecutive calls to this method are not possible, as before a second onSubscription event is 
    * fired an [onUnsubscription] event is eventually fired. <BR> 
    * If the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , second-level subscriptions are not notified.
    */
   void onSubscription() {}
@@ -414,8 +451,9 @@ class SubscriptionListener {
    *
    * - [errorCode] The error code sent by the Server. It can be one of the following:
    *        <ul>
-   *          <li>15 - "key" field not specified in the schema for a COMMAND mode subscription</li>
-   *          <li>16 - "command" field not specified in the schema for a COMMAND mode subscription</li>
+   *          <li>6 - the request cannot be evaluated because the Data Adapter is disabled (Data Adapter interface version 9 or later)</li>
+   *          <li>15 - "key" field not specified in a COMMAND mode field list</li>
+   *          <li>16 - "command" field not specified in a COMMAND mode field list</li>
    *          <li>17 - bad Data Adapter name or default Data Adapter not defined for the current Adapter Set</li>
    *          <li>21 - bad Group name</li>
    *          <li>22 - bad Group name for this Schema</li>
@@ -431,6 +469,8 @@ class SubscriptionListener {
    *          <li>29 - RAW mode is not allowed by the current license terms (for special licenses only)</li>
    *          <li>30 - subscriptions are not allowed by the current license terms (for special licenses only)</li>
    *          <li>61 - there was an error in the parsing of the server response</li>
+   *          <li>63 - the Data Adapter refused the subscription (Data Adapter interface version 9 or later)</li>
+   *          <li>64 - the Data Adapter threw an unchecked exception while managing the request (Data Adapter interface version 9 or later)</li>
    *          <li>66 - an unexpected exception was thrown by the Metadata Adapter while authorizing the connection</li>
    *          <li>68 - the Server could not fulfill the request because of an internal error.</li>
    *          <li>&lt;= 0 - the Metadata Adapter has refused the subscription or unsubscription request; the 
@@ -454,7 +494,7 @@ class SubscriptionListener {
    * Note that two consecutive calls to this method are not possible, as before a second onUnsubscription event 
    * is fired an [onSubscription] event is eventually fired. <BR> 
    * If the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , second-level unsubscriptions are not notified.
    */
   void onUnsubscription() {}

@@ -413,10 +413,10 @@ extension LightstreamerClientExt on LightstreamerClient {
    * This operation adds the [MpnSubscription] to the list of "active" subscriptions. MPN subscriptions are activated on the server as soon as possible
    * (i.e. as soon as there is a session available and subsequently as soon as the MPN device registration succeeds). Differently than real-time subscriptions,
    * MPN subscriptions are persisted on the server's MPN Module database and survive the session they were created on.<BR>
-   * If the <code>coalescing</code> flag is <i>set</i>, the activation of two MPN subscriptions with the same Adapter Set, Data Adapter, Group, Schema and trigger expression will be
+   * If the <code>coalescing</code> flag is <i>set</i>, the activation of two MPN subscriptions with the same Adapter Set, Data Adapter, item list, field list and trigger expression will be
    * considered the same MPN subscription. Activating two such subscriptions will result in the second activation modifying the first MpnSubscription (that
    * could have been issued within a previous session). If the <code>coalescing</code> flag is <i>not set</i>, two activations are always considered different MPN subscriptions,
-   * whatever the Adapter Set, Data Adapter, Group, Schema and trigger expression are set.<BR>
+   * whatever the Adapter Set, Data Adapter, item list, field list and trigger expression are set.<BR>
    * The rationale behind the <code>coalescing</code> flag is to allow simple apps to always activate their MPN subscriptions when the app starts, without worrying if
    * the same subscriptions have been activated before or not. In fact, since MPN subscriptions are persistent, if they are activated every time the app starts and
    * the <code>coalescing</code> flag is not set, every activation is a <i>new</i> MPN subscription, leading to multiple push notifications for the same event.
@@ -434,11 +434,10 @@ extension LightstreamerClientExt on LightstreamerClient {
    * 
    * - [sub] An MpnSubscription object, carrying all the information to route real-time data via push notifications.
    * - [coalescing] A flag that specifies if the MPN subscription must coalesce with any pre-existing MPN subscription with the same Adapter Set, Data Adapter,
-   * Group, Schema and trigger expression.
+   * item list, field list and trigger expression.
    * 
-   * **Throws** IllegalStateException if the given MPN subscription does not contain a field list/field schema.
-   * 
-   * **Throws** IllegalStateException if the given MPN subscription does not contain a item list/item group.
+   * **Throws** IllegalArgumentException if the given MPN subscription does not
+   * contain both an item list and a field list.
    * 
    * **Throws** IllegalStateException if there is no MPN device registered.
    * 
@@ -582,9 +581,20 @@ extension _ClientListenerExt on _ClientListener {
  * same thread.
  */
 abstract class ClientListener {
+  /**
+   * Event handler called when the state of a Data Adapter changes.
+   *
+   * - [state] the state received from the Server.
+   * - [dataAdapterName] the Data Adapter name within the session's Adapter Set.
+   */
   @JSExport()
   void onDataAdapterStateChange(String state, String dataAdapterName) {}
 
+  /**
+   * Event handler called when the state of the Metadata Adapter changes.
+   *
+   * - [state] the state received from the Server.
+   */
   @JSExport()
   void onMetadataAdapterStateChange(String state) {}
 
@@ -750,6 +760,7 @@ abstract class ClientListener {
    *   <li>9 - configured maximum server load reached</li>
    *   <li>10 - new sessions temporarily blocked</li>
    *   <li>11 - streaming is not available because of Server license restrictions (this can only happen with special licenses).</li>
+   * <li>12 - The Metadata Adapter mounted in the specified Adapter Set is incompatible with this protocol version because it uses the older callback-based Java In-Process Adapter SDK.</li>
    *   <li>21 - a request for this session has unexpectedly reached a wrong Server instance, which suggests that a routing issue may be in place.</li>
    *   <li>30-41 - the current connection or the whole session has been closed by external agents; the possible cause may be:
    *     <ul>
@@ -900,9 +911,31 @@ extension _SubscriptionListenerExt on _SubscriptionListener {
  * same thread.
  */
 abstract class SubscriptionListener {
+  /**
+   * Event handler called when problems obtaining updates block an item's
+   * update event flow.
+   *
+   * For two-level COMMAND Subscriptions, this notification refers only to
+   * first-level items. Stale notifications for internal second-level items
+   * are not propagated to this listener.
+   *
+   * - [itemName] the item name from the explicit item list.
+   * - [itemPos] the 1-based position of the item in that list.
+   */
   @JSExport()
   void onItemStale(String itemName, int itemPos) {}
 
+  /**
+   * Event handler called when an item's update event flow, previously
+   * reported as blocked, is no longer blocked.
+   *
+   * For two-level COMMAND Subscriptions, this notification refers only to
+   * first-level items. Resume notifications for internal second-level items
+   * are not propagated to this listener.
+   *
+   * - [itemName] the item name from the explicit item list.
+   * - [itemPos] the 1-based position of the item in that list.
+   */
   @JSExport()
   void onItemResume(String itemName, int itemPos) {}
 
@@ -919,14 +952,13 @@ abstract class SubscriptionListener {
    *       should clear the list in order to keep a coherent view.</li>
    * </ul>
    * Note that, if the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , the notification refers to the first-level item (which is in COMMAND mode).
    * This kind of notification is not possible for second-level items (which are in MERGE 
    * mode).
    * 
-   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
-   *        null value is supplied.
-   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
+   * - [itemName] the name of the involved item in the explicit item list.
+   * - [itemPos] the 1-based position of the item within that list.
    */
   @JSExport()
   void onClearSnapshot(String itemName, int itemPos) {}
@@ -943,13 +975,11 @@ abstract class SubscriptionListener {
    * 
    * - See [Subscription.setRequestedMaxFrequency]
    * - See [Subscription.setCommandSecondLevelFields]
-   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   @JSExport()
   void onCommandSecondLevelItemLostUpdates(int lostUpdates, String key) {}
   /**
    * Event handler that is called when the Server notifies an error on a second-level subscription.
-   * 
    * By implementing this method it is possible to perform recovery actions.
    * 
    * - [errorCode] The error code sent by the Server. It can be one of the following:
@@ -978,7 +1008,6 @@ abstract class SubscriptionListener {
    * 
    * - See [ConnectionDetails.setAdapterSet]
    * - See [Subscription.setCommandSecondLevelFields]
-   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   @JSExport()
   void onCommandSecondLevelSubscriptionError(
@@ -991,14 +1020,13 @@ abstract class SubscriptionListener {
    * subscription mode and snapshot information was indeed requested for the items. By implementing this 
    * method it is possible to perform actions which require that all the initial values have been received. <BR>
    * Note that, if the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , the notification refers to the first-level item (which is in COMMAND mode).
    * Snapshot-related updates for the second-level items 
    * (which are in MERGE mode) can be received both before and after this notification.
    * 
-   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
-   *        null value is supplied.
-   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
+   * - [itemName] the name of the involved item in the explicit item list.
+   * - [itemPos] the 1-based position of the item within that list.
    * 
    * - See [Subscription.setRequestedSnapshot]
    * - See [ItemUpdate.isSnapshot]
@@ -1006,11 +1034,13 @@ abstract class SubscriptionListener {
   @JSExport()
   void onEndOfSnapshot(String itemName, int itemPos) {}
   /**
-   * Event handler that is called by Lightstreamer to notify that, due to internal resource limitations, 
-   * Lightstreamer Server dropped one or more updates for an item in the Subscription. 
+   * Event handler called when updates are lost for an item in the Subscription.
    * 
-   * Such notifications are sent only if the items are delivered in an unfiltered mode; this occurs if the 
-   * subscription mode is:
+   * Server buffer overflows (`OV`) are reported with [isOverflow] true. Data
+   * Adapter loss notifications (`LOST`) are reported with [isOverflow] false;
+   * [lostUpdates] is `-1` when the Data Adapter does not provide a count.
+   * Overflow notifications are sent only if the items are delivered in an
+   * unfiltered mode; this occurs if the subscription mode is:
    * <ul>
    *   <li>RAW</li>
    *   <li>MERGE or DISTINCT, with unfiltered dispatching specified</li>
@@ -1018,12 +1048,22 @@ abstract class SubscriptionListener {
    *   <li>COMMAND, without unfiltered dispatching specified (in this case, notifications apply to ADD 
    *       and DELETE events only)</li>
    * </ul>
+   * Data Adapter loss notifications are delivered in RAW or COMMAND mode
+   * regardless of unfiltered dispatching, and in MERGE or DISTINCT mode only
+   * when unfiltered dispatching is requested. For second-level COMMAND items,
+   * LOST notifications are not propagated to this listener; second-level
+   * Server overflows use [onCommandSecondLevelItemLostUpdates].
+   *
+   * JavaScript callback functions that still declare only the former three
+   * parameters can continue to run, because extra arguments are accepted, but
+   * they must account for Data Adapter losses and `lostUpdates == -1`.
    * By implementing this method it is possible to perform recovery actions.
    * 
-   * - [itemName] name of the involved item. If the Subscription was initialized using an "Item Group" then a 
-   *        null value is supplied.
-   * - [itemPos] 1-based position of the item within the "Item List" or "Item Group".
-   * - [lostUpdates] The number of consecutive updates dropped for the item.
+   * - [itemName] the name of the involved item in the explicit item list.
+   * - [itemPos] the 1-based position of the item within that list.
+   * - [lostUpdates] the number of lost updates, or `-1` when unavailable.
+   * - [isOverflow] true for Server buffer overflow (`OV`); false for Data
+   *   Adapter-reported loss (`LOST`).
    * 
    * - See [Subscription.setRequestedMaxFrequency]
    */
@@ -1068,7 +1108,7 @@ abstract class SubscriptionListener {
    * (see [Subscription.setRequestedMaxFrequency]).
    * Since the frequency limit is applied on an item basis and a Subscription can involve multiple items,
    * this is actually the maximum frequency among all items. For Subscriptions with two-level behavior
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , the reported frequency limit applies to both first-level and second-level items. <BR>
    * The value may differ from the requested one because of restrictions operated on the server side,
    * but also because of number rounding. <BR>
@@ -1094,7 +1134,7 @@ abstract class SubscriptionListener {
    * Note that two consecutive calls to this method are not possible, as before a second onSubscription event is 
    * fired an [onUnsubscription] event is eventually fired. <BR> 
    * If the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , second-level subscriptions are not notified.
    */
   @JSExport()
@@ -1109,6 +1149,7 @@ abstract class SubscriptionListener {
    *
    * - [errorCode] The error code sent by the Server. It can be one of the following:
    *        <ul>
+   *          <li>6 - Cannot evaluate a subscription request because the Data Adapter is disabled (only raised with Data Adapter interface version 9 or later).</li>
    *          <li>15 - "key" field not specified in the schema for a COMMAND mode subscription</li>
    *          <li>16 - "command" field not specified in the schema for a COMMAND mode subscription</li>
    *          <li>17 - bad Data Adapter name or default Data Adapter not defined for the current Adapter Set</li>
@@ -1126,6 +1167,8 @@ abstract class SubscriptionListener {
    *          <li>29 - RAW mode is not allowed by the current license terms (for special licenses only)</li>
    *          <li>30 - subscriptions are not allowed by the current license terms (for special licenses only)</li>
    *          <li>61 - there was an error in the parsing of the server response</li>
+   *          <li>63 - the Data Adapter refused the subscription (Data Adapter interface version 9 or later)</li>
+   *          <li>64 - the Data Adapter threw an unchecked exception while managing the request (Data Adapter interface version 9 or later)</li>
    *          <li>66 - an unexpected exception was thrown by the Metadata Adapter while authorizing the connection</li>
    *          <li>68 - the Server could not fulfill the request because of an internal error.</li>
    *          <li>&lt;= 0 - the Metadata Adapter has refused the subscription or unsubscription request; the 
@@ -1150,7 +1193,7 @@ abstract class SubscriptionListener {
    * Note that two consecutive calls to this method are not possible, as before a second onUnsubscription event 
    * is fired an [onSubscription] event is eventually fired. <BR> 
    * If the involved Subscription has a two-level behavior enabled
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , second-level unsubscriptions are not notified.
    */
   @JSExport()
@@ -1168,6 +1211,7 @@ abstract class SubscriptionListener {
 }
 
 /// A String or int value.
+/// A selector for a name ([String]) or its 1-based position ([int]).
 typedef StringOrInt = Object;
 
 /**
@@ -1189,10 +1233,8 @@ typedef StringOrInt = Object;
  * <ul>
  *  <li>The field name can always be used, both for the first-level and the second-level fields. 
  *  In case of name conflict, the first-level field is meant.</li>
- *  <li>The field position can always be used; however, the field positions for the second-level 
- *  fields start at the highest position of the first-level field list + 1. If a field schema had 
- *  been specified for either first-level or second-level Subscriptions, then client-side knowledge 
- *  of the first-level schema length would be required.</li>
+ *  <li>The field position can always be used; second-level field positions start
+ *  at the highest position of the first-level field list + 1.</li>
  *</ul>
  */
 @JS()
@@ -1207,25 +1249,21 @@ extension ItemUpdateExt on ItemUpdate {
   /**
    * Inquiry method that retrieves the name of the item to which this update pertains.
    *  
-   * The name will be null if the related Subscription was initialized using an "Item Group".
-   * 
    * **Returns** The name of the item to which this update pertains.
-   * - See [Subscription.setItemGroup]
    * - See [Subscription.setItems]
    */
   external String? getItemName();
   /**
-   * Inquiry method that retrieves the position in the "Item List" or "Item Group" of the item to which this update pertains.
+   * Inquiry method that retrieves the position of the item in the explicit item list.
    * 
    * **Returns** The 1-based position of the item to which this update pertains.
-   * - See [Subscription.setItemGroup]
    * - See [Subscription.setItems]
    */
   external int getItemPos();
   /**
    * Returns the current value for the specified field.
    * 
-   * - [fieldNameOrPosition] The field name as specified within the "Field List" or the 1-based position of the field within the "Field List" or "Field Schema".
+   * - [fieldNameOrPosition] a field name (String) or a 1-based field position (number) within the configured field list.
    * 
    * **Throws** IllegalArgumentException if the specified field is not part of the Subscription.
    * 
@@ -1268,7 +1306,7 @@ extension ItemUpdateExt on ItemUpdate {
    * **Throws** IllegalArgumentException if the specified field is not
    * part of the Subscription.
    * 
-   * - [fieldNameOrPosition] The field name as specified within the "Field List" or the 1-based position of the field within the "Field List" or "Field Schema".
+   * - [fieldNameOrPosition] a field name (String) or a 1-based field position (number) within the configured field list.
    * 
    * **Returns** A JSON Patch structure representing the difference between
    * the new value and the previous one, or null if the difference in JSON Patch format
@@ -1310,7 +1348,7 @@ extension ItemUpdateExt on ItemUpdate {
    * 
    * If the Subscription mode is COMMAND then the change is meant as 
    * relative to the same key.
-   * - [fieldNameOrPosition] The field name as specified within the "Field List" or the 1-based position of the field within the "Field List" or "Field Schema".
+   * - [fieldNameOrPosition] a field name (String) or a 1-based field position (number) within the configured field list.
    * 
    * **Throws** IllegalArgumentException if the specified field is not part of the Subscription.
    * 
@@ -1382,44 +1420,14 @@ extension ItemUpdateExt on ItemUpdate {
  * [LightstreamerClient.subscribe] method, its state becomes "active". 
  * This means that the client activates a subscription to the required items through 
  * Lightstreamer Server and the Subscription object begins to receive real-time events. <BR>
- * A Subscription can be configured to use either an Item Group or an Item List to specify the 
- * items to be subscribed to and using either a Field Schema or Field List to specify the fields. <BR>
- * "Item Group" and "Item List" are defined as follows:
- * <ul>
- *  <li>"Item Group": an Item Group is a String identifier representing a list of items. 
- *  Such Item Group has to be expanded into a list of items by the getItems method of the 
- *  MetadataProvider of the associated Adapter Set. When using an Item Group, items in the 
- *  subscription are identified by their 1-based index within the group.<BR>
- *  It is possible to configure the Subscription to use an "Item Group" using the 
- *  [setItemGroup] method.</li> 
- *  <li>"Item List": an Item List is an array of Strings each one representing an item. 
- *  For the Item List to be correctly interpreted a LiteralBasedProvider or a MetadataProvider 
- *  with a compatible implementation of getItems has to be configured in the associated 
- *  Adapter Set.<BR>
- *  Note that no item in the list can be empty, can contain spaces or can be a number.<BR>
- *  When using an Item List, items in the subscription are identified by their name or 
- *  by their 1-based index within the list.<BR>
- *  It is possible to configure the Subscription to use an "Item List" using the 
- *  [setItems] method or by specifying it in the constructor.</li>
- * </ul>
- * "Field Schema" and "Field List" are defined as follows:
- * <ul>
- *  <li>"Field Schema": a Field Schema is a String identifier representing a list of fields. 
- *  Such Field Schema has to be expanded into a list of fields by the getFields method of 
- *  the MetadataProvider of the associated Adapter Set. When using a Field Schema, fields 
- *  in the subscription are identified by their 1-based index within the schema.<BR>
- *  It is possible to configure the Subscription to use a "Field Schema" using the 
- *  [setFieldSchema] method.</li>
- *  <li>"Field List": a Field List is an array of Strings each one representing a field. 
- *  For the Field List to be correctly interpreted a LiteralBasedProvider or a MetadataProvider 
- *  with a compatible implementation of getFields has to be configured in the associated 
- *  Adapter Set.<BR>
- *  Note that no field in the list can be empty or can contain spaces.<BR>
- *  When using a Field List, fields in the subscription are identified by their name or 
- *  by their 1-based index within the list.<BR>
- *  It is possible to configure the Subscription to use a "Field List" using the 
- *  [setFields] method or by specifying it in the constructor.</li>
- * </ul>
+ * A Subscription uses explicit item and field lists. Each name may contain any
+ * characters, including spaces, numeric-only names, reserved characters,
+ * control characters, and Unicode; names cannot be empty and a configured list
+ * cannot be empty. Items and fields can be addressed by name or by their
+ * 1-based position in the corresponding list. Both lists may initially be
+ * unconfigured and supplied later with [setItems] and [setFields], but both
+ * must be configured before subscribing. Group- and schema-based
+ * configuration is not supported.
  */
 @JS()
 @staticInterop
@@ -1444,19 +1452,19 @@ class Subscription {
    *  <li>RAW</li>
    *  <li>COMMAND</li>
    * </ul>
-   * - [items] an array of items to be subscribed to through Lightstreamer server. <BR>
-   * It is also possible specify the "Item List" or "Item Group" later through 
-   * [Subscription.setItems] and [setItemGroup].
-   * - [fields] an array of fields for the items to be subscribed to through Lightstreamer Server. <BR>
-   * It is also possible to specify the "Field List" or "Field Schema" later through 
-   * [Subscription.setFields] and [setFieldSchema].
+   * - [items] the item names to subscribe to. It is also possible to configure
+   *   the list later through [Subscription.setItems].
+   * - [fields] the field names to subscribe to. It is also possible to configure
+   *   the list later through [Subscription.setFields].
    * 
    * **Throws** IllegalArgumentException If no or invalid subscription mode is passed.
    * 
-   * **Throws** IllegalArgumentException If either the items or the fields array is left null.
+   * **Throws** IllegalArgumentException if exactly one list is null, either
+   * configured list is empty, or a name in a list is empty. Both lists may be
+   * null initially; configure both before subscribing.
    * 
-   * **Throws** IllegalArgumentException If the specified "Item List" or "Field List" is not valid; 
-   * see [Subscription.setItems] and [Subscription.setFields] for details.
+   * **Throws** IllegalArgumentException if COMMAND mode is used without the
+   * `key` and `command` fields.
    */
   factory Subscription(String mode,
           [List<String>? items, List<String>? fields]) =>
@@ -1475,8 +1483,7 @@ extension SubscriptionExt on Subscription {
   /**
    * Returns the position of the "command" field in a COMMAND Subscription.
    * 
-   * This method can only be used if the Subscription mode is COMMAND and the Subscription 
-   * was initialized using a "Field Schema".
+   * This method can only be used if the Subscription mode is COMMAND.
    *
    * **Lifecycle** This method can be called at any time after the first 
    * [SubscriptionListener.onSubscription] event.
@@ -1485,16 +1492,15 @@ extension SubscriptionExt on Subscription {
    * [SubscriptionListener.onSubscription] event for this Subscription was not 
    * yet fired.
    * 
-   * **Throws** IllegalStateException if a "Field List" was specified.
-   * 
-   * **Returns** the 1-based position of the "command" field within the "Field Schema".
+   *
+   * **Returns** the 1-based position of the "command" field within the
+   * configured field list.
    */
   external int getCommandPosition();
   /**
    * Returns the position of the "key" field in a COMMAND Subscription.
    * 
-   * This method can only be used if the Subscription mode is COMMAND
-   * and the Subscription was initialized using a "Field Schema".
+   * This method can only be used if the Subscription mode is COMMAND.
    *  
    * **Lifecycle** This method can be called at any time.
    * 
@@ -1502,7 +1508,8 @@ extension SubscriptionExt on Subscription {
    * COMMAND or if the [SubscriptionListener.onSubscription] event for this Subscription
    * was not yet fired.
    * 
-   * **Returns** the 1-based position of the "key" field within the "Field Schema".
+   * **Returns** the 1-based position of the "key" field within the configured
+   * field list.
    */
   external int getKeyPosition();
   /**
@@ -1544,50 +1551,43 @@ extension SubscriptionExt on Subscription {
    * is equivalent to the "DEFAULT" name.
    *  
    * - See [Subscription.setCommandSecondLevelFields]
-   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   external void setCommandSecondLevelDataAdapter(String? dataAdapter);
   @JS('getCommandSecondLevelFields')
   external JSArray<JSString>? _getCommandSecondLevelFields();
   /**
-   * Setter method that sets the "Field List" to be subscribed to through 
-   * Lightstreamer Server for the second-level items. 
+   * Sets the field list to subscribe to for second-level items.
    *
    * It can only be used on COMMAND Subscriptions. <BR>
-   * Any call to this method will override any "Field List" or "Field Schema"
-   * previously specified for the second-level. <BR>
+   * Passing null disables the two-level behavior. <BR>
    * Calling this method enables the two-level behavior:<BR>
    * in synthesis, each time a new key is received on the COMMAND Subscription, 
    * the key value is treated as an Item name and an underlying Subscription for
    * this Item is created and subscribed to automatically, to feed fields specified
-   * by this method. This mono-item Subscription is specified through an "Item List"
-   * containing only the Item name received. As a consequence, all the conditions
-   * provided for subscriptions through Item Lists have to be satisfied. The item is 
-   * subscribed to in "MERGE" mode, with snapshot request and with the same maximum
-   * frequency setting as for the first-level items (including the "unfiltered" 
+   * by this method. The received key is used as the name of the one-item
+   * second-level Subscription. The item is subscribed to in "MERGE" mode,
+   * with snapshot request and with the same maximum frequency setting as the
+   * first-level items (including the "unfiltered"
    * case). All other Subscription properties are left as the default. When the 
    * key is deleted by a DELETE command on the first-level Subscription, the 
    * associated second-level Subscription is also unsubscribed from. <BR> 
-   * Specifying null as parameter will disable the two-level behavior.
    *       
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * **Throws** IllegalArgumentException if any of the field names in the "Field List"
-   * contains a space or is empty/null.
+   * **Throws** IllegalArgumentException if the field list is empty or contains
+   * an empty name.
    * 
    * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    * 
    * **Throws** IllegalStateException if the Subscription mode is not "COMMAND".
    * 
-   * - [fields] An array of Strings containing a list of fields to
-   * be subscribed to through the server. <BR>
-   * Ensure that no name conflict is generated between first-level and second-level
-   * fields. In case of conflict, the second-level field will not be accessible
-   * by name, but only by position.
+   * - [fields] the second-level field names, or null to disable two-level
+   * behavior. If a name occurs in both field lists, the first-level field takes
+   * precedence for name-based access; second-level field positions follow the
+   * first-level fields.
    * 
-   * - See [Subscription.setCommandSecondLevelFieldSchema]
    */
   void setCommandSecondLevelFields(List<String>? fields) =>
       _setCommandSecondLevelFields(_stringArray(fields));
@@ -1635,22 +1635,20 @@ extension SubscriptionExt on Subscription {
   @JS('getFields')
   external JSArray<JSString>? _getFields();
   /**
-   * Setter method that sets the "Field List" to be subscribed to through 
-   * Lightstreamer Server.
-   *
-   * Any call to this method will override any "Field List" or "Field Schema"
-   * previously specified.
+   * Sets the field names to be subscribed to through Lightstreamer Server.
+   * Passing null leaves the list unconfigured. Each name must be non-empty,
+   * and the configured list must not be empty.
    * 
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * **Throws** IllegalArgumentException if any of the field names in the list
-   * contains a space or is empty/null.
+   * **Throws** IllegalArgumentException if the list is empty, contains an
+   * empty name, or omits the `key` or `command` field in COMMAND mode.
    * 
    * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    * 
-   * - [fields] an array of fields to be subscribed to through the server. 
+   * - [fields] the field names to subscribe to, or null to leave them unconfigured.
    */
   void setFields(List<String>? fields) => _setFields(_stringArray(fields));
   @JS('setFields')
@@ -1658,22 +1656,20 @@ extension SubscriptionExt on Subscription {
   @JS('getItems')
   external JSArray<JSString>? _getItems();
   /**
-   * Setter method that sets the "Item List" to be subscribed to through 
-   * Lightstreamer Server.
-   *
-   * Any call to this method will override any "Item List" or "Item Group"
-   * previously specified.
+   * Sets the item names to be subscribed to through Lightstreamer Server.
+   * Passing null leaves the list unconfigured. Each name must be non-empty,
+   * and the configured list must not be empty.
    * 
    * **Lifecycle** This method can only be called while the Subscription
    * instance is in its "inactive" state.
    * 
-   * **Throws** IllegalArgumentException if any of the item names in the "Item List"
-   * contains a space or is a number or is empty/null.
+   * **Throws** IllegalArgumentException if the list is empty or contains an
+   * empty name.
    *
    * **Throws** IllegalStateException if the Subscription is currently 
    * "active".
    * 
-   * - [items] an array of items to be subscribed to through the server. 
+   * - [items] the item names to subscribe to, or null to leave them unconfigured.
    */
   void setItems(List<String>? items) => _setItems(_stringArray(items));
   @JS('setItems')
@@ -1750,7 +1746,7 @@ extension SubscriptionExt on Subscription {
    * It can be used only if the Subscription mode is MERGE, DISTINCT or
    * COMMAND (in the latter case, the frequency limitation applies to the
    * UPDATE events for each single key). For Subscriptions with two-level behavior
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * , the specified frequency limit applies to both first-level and second-level items. <BR>
    * Note that frequency limits on the items can also be set on the
    * server side and this request can only be issued in order to further
@@ -1931,8 +1927,8 @@ extension SubscriptionExt on Subscription {
    * to retrieve a value that has not been received yet, then it will return null. 
    * 
    * **Throws** IllegalArgumentException if an invalid item name or field name is specified.
-   * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
-   * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
+   * - [itemNameOrPosition] an item name as a String, or its 1-based position as an int.
+   * - [fieldNameOrPosition] a field name as a String, or its 1-based position as an int. Use a String to select a numeric-only name.
    * 
    * **Returns** the current value for the specified field of the specified item
    * (possibly null), or null if no value has been received yet.
@@ -1949,15 +1945,15 @@ extension SubscriptionExt on Subscription {
    * This method can only be used if the Subscription mode is COMMAND. 
    * Subscriptions with two-level behavior
    * are also supported, hence the specified field 
-   * (see [Subscription.setCommandSecondLevelFields] and [Subscription.setCommandSecondLevelFieldSchema])
+   * (see [Subscription.setCommandSecondLevelFields])
    * can be either a first-level or a second-level one. <BR>
    * It is suggested to consume real-time data by implementing and adding a proper 
    * [SubscriptionListener] rather than probing this method. <BR>
    * Note that internal data is cleared when the Subscription is unsubscribed from.
    *
-   * - [itemNameOrPosition] an item in the configured "Item List" or the 1-based position of an item within the configured "Item Group" or "Item List"
+   * - [itemNameOrPosition] an item name as a String, or its 1-based position as an int. Use a String to select a numeric-only name.
    * - [keyValue] the value of a key received on the COMMAND subscription.
-   * - [fieldNameOrPosition] a item in the configured "Field List" or the 1-based position of a field within the configured "Field Schema" or "Field List"
+   * - [fieldNameOrPosition] a field name as a String, or its 1-based position as an int. Use a String to select a numeric-only name.
    * 
    * **Throws** IllegalArgumentException if an invalid item name or field name is specified.
    * 
@@ -2022,42 +2018,26 @@ extension SubscriptionExt on Subscription {
   }
 
   /**
-   * Inquiry method that can be used to read the "Field List" specified for this Subscription.
-   *
-   * **Lifecycle**  This method can only be called if the Subscription has been initialized 
-   * using a "Field List".
-   * 
-   * **Returns** the "Field List" to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
+   * Returns the configured field list, or null if it has not been configured.
    */
   List<String>? getFields() {
     return _stringList(_getFields());
   }
 
   /**
-   * Inquiry method that can be used to read the "Item List" specified for this Subscription. 
-   *
-   * Note that if the single-item-constructor was used, this method will return an array 
-   * of length 1 containing such item.
-   *
-   * **Lifecycle** This method can only be called if the Subscription has been initialized 
-   * with an "Item List".
-   * 
-   * **Returns** the "Item List" to be subscribed to through the server, or null if the Subscription was initialized with an "Item Group" or was not initialized at all.
+   * Returns the configured item list, or null if it has not been configured.
    */
   List<String>? getItems() {
     return _stringList(_getItems());
   }
 
   /**
-   * Inquiry method that can be used to read the "Field List" specified for second-level 
-   * Subscriptions.
-   *
-   * **Lifecycle** This method can only be called if the second-level of this Subscription 
-   * has been initialized using a "Field List"
+   * Returns the configured field list for second-level items, or null if it
+   * has not been configured.
    * 
    * **Throws** IllegalStateException if the Subscription mode is not COMMAND
    * 
-   * **Returns** the list of fields to be subscribed to through the server, or null if the Subscription was initialized with a "Field Schema" or was not initialized at all.
+   * **Returns** the configured second-level field list.
    * - See [Subscription.setCommandSecondLevelFields]
    */
   List<String>? getCommandSecondLevelFields() {
@@ -3411,8 +3391,9 @@ abstract class MpnDeviceListener {
  * the MPN subscription switches to "triggered" state and a single push notification is sent. Once triggered, no other push notifications are sent.<BR>
  * When an MpnSubscription is subscribed on the server, it acquires a permanent subscription ID that the server later uses to identify the same
  * MPN subscription on subsequent sessions.<BR>
- * An MpnSubscription can be configured to use either an Item Group or an Item List to specify the items to be subscribed to, and using either a Field Schema
- * or Field List to specify the fields. The same rules that apply to [Subscription] apply to MpnSubscription.<BR>
+ * An MpnSubscription uses explicit item and field lists, with the same naming
+ * and validation rules as [Subscription]. Both lists must be configured before
+ * it is submitted to a [LightstreamerClient].<BR>
  * An MpnSubscription object can also be provided by the client to represent a pre-existing MPN subscription on the server. In fact, differently than real-time
  * subscriptions, MPN subscriptions are persisted on the server's MPN Module database and survive the session they were created on.<BR>
  * MPN subscriptions are associated with the MPN device, and after the device has been registered the client retrieves pre-existing MPN subscriptions from the
@@ -3431,16 +3412,18 @@ class MpnSubscription {
    * <li><code>MERGE</code></li>
    * <li><code>DISTINCT</code></li>
    * </ul>
-   * - [items] An array of items to be subscribed to through Lightstreamer Server. It is also possible specify the "Item List" or
-   * "Item Group" later through [MpnSubscription.setItems] and [setItemGroup].
-   * - [fields] An array of fields for the items to be subscribed to through Lightstreamer Server. It is also possible to specify the "Field List" or
-   * "Field Schema" later through [MpnSubscription.setFields] and [setFieldSchema].
+   * - [items] the item names to subscribe to. It is also possible to configure
+   *   the list later through [MpnSubscription.setItems].
+   * - [fields] the field names to subscribe to. It is also possible to configure
+   *   the list later through [MpnSubscription.setFields].
    * 
    * **Throws** IllegalArgumentException If no or invalid subscription mode is passed.
    * 
-   * **Throws** IllegalArgumentException If either the items or the fields array is left null.
+   * **Throws** IllegalArgumentException if exactly one list is null, either
+   * configured list is empty, or a name in a list is empty. Both lists may be
+   * null initially; configure both before subscribing.
    * 
-   * **Throws** IllegalArgumentException If the specified "Item List" or "Field List" is not valid; see [MpnSubscription.setItems] and [MpnSubscription.setFields] for details.
+   * **Throws** IllegalArgumentException if the specified list is invalid.
    */
   factory MpnSubscription(String mode,
           [List<String>? items, List<String>? fields]) =>
@@ -3505,22 +3488,21 @@ extension MpnSubscriptionExt on MpnSubscription {
   @JS('getFields')
   external JSArray<JSString>? _getFields();
   /**
-   * Setter method that sets the "Field List" to be subscribed to through 
-   * Lightstreamer Server.
-   * 
-   * Any call to this method will override any "Field List" or "Field Schema"
-   * previously specified.
+   * Sets the field names to be subscribed to through Lightstreamer Server.
+   * Passing null leaves the list unconfigured. Each name must be non-empty,
+   * and the configured list must not be empty.
    * 
    * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
-   * with argument <code>schema</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
+   * **Notification** A change to this setting is reported with the legacy
+   * <code>schema</code> property name. It signals a change to the explicit
+   * field list; read the current value with [MpnSubscription.getFields].
    * 
    * - [fields] an array of fields to be subscribed to through the server. 
    * 
-   * **Throws** IllegalArgumentException if any of the field names in the list
-   * contains a space or is empty/null.
+   * **Throws** IllegalArgumentException if the list is empty or contains an
+   * empty name.
    * 
    * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
@@ -3531,22 +3513,21 @@ extension MpnSubscriptionExt on MpnSubscription {
   @JS('getItems')
   external JSArray<JSString>? _getItems();
   /**
-   * Setter method that sets the "Item List" to be subscribed to through 
-   * Lightstreamer Server. 
-   * 
-   * Any call to this method will override any "Item List" or "Item Group"
-   * previously specified.
+   * Sets the item names to be subscribed to through Lightstreamer Server.
+   * Passing null leaves the list unconfigured. Each name must be non-empty,
+   * and the configured list must not be empty.
    * 
    * **Lifecycle** This method can only be called while the MpnSubscription
    * instance is in its "inactive" state.
    * 
-   * **Notification** A change to this setting will be notified through a call to [MpnSubscriptionListener.onPropertyChanged]
-   * with argument <code>group</code> on any [MpnSubscriptionListener] listening to the related MpnSubscription.
+   * **Notification** A change to this setting is reported with the legacy
+   * <code>group</code> property name. It signals a change to the explicit item
+   * list; read the current value with [MpnSubscription.getItems].
    * 
    * - [items] an array of items to be subscribed to through the server. 
    * 
-   * **Throws** IllegalArgumentException if any of the item names in the "Item List"
-   * contains a space or is a number or is empty/null.
+   * **Throws** IllegalArgumentException if the list is empty or contains an
+   * empty name.
    * 
    * **Throws** IllegalStateException if the MpnSubscription is currently 
    * "active".
@@ -3779,13 +3760,15 @@ extension MpnSubscriptionExt on MpnSubscription {
    * </ul>
    * Named arguments are available if the Metadata Adapter is a subclass of LiteralBasedProvider or provides equivalent functionality, otherwise only
    * indexed arguments may be used. In both cases common metadata rules apply: field names and indexes are checked against the Metadata Adapter, hence
-   * they must be consistent with the schema and group specified.<BR>
+   * they must correspond to fields in the explicit field list.<BR>
    * A special server-managed argument may also be used:<ul>
    * <li><code>${LS_MPN_subscription_ID}</code>: the ID of the MPN subscription generating the push notification.
    * </ul>
    * The MpnBuilder object provides methods to build an appropriate JSON structure from its defining fields.<BR>
-   * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
-   * named arguments are always mapped to its corresponding indexed argument, even if originally the notification format used a named argument.<BR>
+   * Client-created MPN subscriptions expose their explicit item and field
+   * lists through [MpnSubscription.getItems] and [MpnSubscription.getFields].
+   * Named notification arguments are mapped to the corresponding indexed
+   * argument when their values are retrieved from the Server.<BR>
    * Note: the content of this property may be subject to length restrictions (See the "General Concepts" document for more information).
    * 
    * **Lifecycle** This property can be changed at any time.
@@ -3906,32 +3889,18 @@ extension MpnSubscriptionExt on MpnSubscription {
   }
 
   /**
-   * Inquiry method that can be used to read the "Field List" specified for this MpnSubscription.
-   * 
-   * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
-   * fields are always expressed with a "Field Schema"", even if originally the MPN subscription used a "Field List".
-   *
-   * **Lifecycle**  This method can only be called if the MpnSubscription has been initialized 
-   * using a "Field List".
-   * 
-   * **Returns** the "Field List" to be subscribed to through the server, or null if the MpnSubscription was initialized with a "Field Schema" or was not initialized at all.
+   * Returns the configured field list, or null if it has not been configured.
+   * MPN subscriptions returned by [LightstreamerClient.getMpnSubscriptions]
+   * expose their explicit field lists through this method.
    */
   List<String>? getFields() {
     return _stringList(_getFields());
   }
 
   /**
-   * Inquiry method that can be used to read the "Item List" specified for this MpnSubscription.
-   * 
-   * Note that if the single-item-constructor was used, this method will return an array 
-   * of length 1 containing such item.<BR>
-   * Note: if the MpnSubscription has been created by the client, such as when obtained through [LightstreamerClient.getMpnSubscriptions],
-   * items are always expressed with an "Item Group"", even if originally the MPN subscription used an "Item List".
-   *
-   * **Lifecycle** This method can only be called if the MpnSubscription has been initialized 
-   * with an "Item List".
-   * 
-   * **Returns** the "Item List" to be subscribed to through the server, or null if the MpnSubscription was initialized with an "Item Group" or was not initialized at all.
+   * Returns the configured item list, or null if it has not been configured.
+   * MPN subscriptions returned by [LightstreamerClient.getMpnSubscriptions]
+   * expose their explicit item lists through this method.
    */
   List<String>? getItems() {
     return _stringList(_getItems());
