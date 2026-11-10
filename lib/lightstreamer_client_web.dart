@@ -582,18 +582,39 @@ extension _ClientListenerExt on _ClientListener {
  */
 abstract class ClientListener {
   /**
-   * Event handler called when the state of a Data Adapter changes.
+   * Event handler called for every Data Adapter state notification for each
+   * Data Adapter included in the session's Adapter Set.
    *
-   * - [state] the state received from the Server.
-   * - [dataAdapterName] the Data Adapter name within the session's Adapter Set.
+   * The state values are `started`, `disabled`, `resumed`,
+   * `restarted`, and `terminated`. The expected sequence is
+   * `started`, followed by zero or more repetitions of `disabled`
+   * followed by either `resumed` or `restarted`. A `terminated`
+   * notification may occur at any time and may be followed by a new occurrence
+   * of that sequence.
+   *
+   * Adapters based on older Adapter Interface versions may send only
+   * `started` and `terminated` notifications.
+   *
+   * The [state] is the state value received in the message.
+   * The [dataAdapterName] is the Data Adapter name received in the message.
    */
   @JSExport()
   void onDataAdapterStateChange(String state, String dataAdapterName) {}
 
   /**
-   * Event handler called when the state of the Metadata Adapter changes.
+   * Event handler called for every Metadata Adapter state notification.
    *
-   * - [state] the state received from the Server.
+   * The state values are `started`, `disabled`, `resumed`,
+   * `restarted`, and `terminated`. The expected sequence is
+   * `started`, followed by zero or more repetitions of `disabled`
+   * followed by either `resumed` or `restarted`. A `terminated`
+   * notification may occur at any time and may be followed by a new occurrence
+   * of that sequence.
+   *
+   * Adapters based on older Adapter Interface versions may send only
+   * `started` and `terminated` notifications.
+   *
+   * The [state] is the state value received in the message.
    */
   @JSExport()
   void onMetadataAdapterStateChange(String state) {}
@@ -912,29 +933,26 @@ extension _SubscriptionListenerExt on _SubscriptionListener {
  */
 abstract class SubscriptionListener {
   /**
-   * Event handler called when problems obtaining updates block an item's
-   * update event flow.
+   * Event handler that is called when problems obtaining updates block an item's update event flow.
    *
-   * For two-level COMMAND Subscriptions, this notification refers only to
-   * first-level items. Stale notifications for internal second-level items
-   * are not propagated to this listener.
+   * For two-level COMMAND subscriptions, this callback refers only to first-level items.
+   * Stale notifications for internal second-level items are not propagated to the parent's listeners.
    *
-   * - [itemName] the item name from the explicit item list.
-   * - [itemPos] the 1-based position of the item in that list.
+   * The [itemName] is the name of the involved item in the explicit item list.
+   * The [itemPos] is the 1-based position of the item within the item list.
    */
   @JSExport()
   void onItemStale(String itemName, int itemPos) {}
 
   /**
-   * Event handler called when an item's update event flow, previously
-   * reported as blocked, is no longer blocked.
+   * Event handler that is called when an item's update event flow, previously reported as blocked,
+   * is no longer blocked.
    *
-   * For two-level COMMAND Subscriptions, this notification refers only to
-   * first-level items. Resume notifications for internal second-level items
-   * are not propagated to this listener.
+   * For two-level COMMAND subscriptions, this callback refers only to first-level items.
+   * Resume notifications for internal second-level items are not propagated to the parent's listeners.
    *
-   * - [itemName] the item name from the explicit item list.
-   * - [itemPos] the 1-based position of the item in that list.
+   * The [itemName] is the name of the involved item in the explicit item list.
+   * The [itemPos] is the 1-based position of the item within the item list.
    */
   @JSExport()
   void onItemResume(String itemName, int itemPos) {}
@@ -1034,38 +1052,33 @@ abstract class SubscriptionListener {
   @JSExport()
   void onEndOfSnapshot(String itemName, int itemPos) {}
   /**
-   * Event handler called when updates are lost for an item in the Subscription.
-   * 
-   * Server buffer overflows (`OV`) are reported with [isOverflow] true. Data
-   * Adapter loss notifications (`LOST`) are reported with [isOverflow] false;
-   * [lostUpdates] is `-1` when the Data Adapter does not provide a count.
-   * Overflow notifications are sent only if the items are delivered in an
-   * unfiltered mode; this occurs if the subscription mode is:
-   * <ul>
-   *   <li>RAW</li>
-   *   <li>MERGE or DISTINCT, with unfiltered dispatching specified</li>
-   *   <li>COMMAND, with unfiltered dispatching specified</li>
-   *   <li>COMMAND, without unfiltered dispatching specified (in this case, notifications apply to ADD 
-   *       and DELETE events only)</li>
-   * </ul>
-   * Data Adapter loss notifications are delivered in RAW or COMMAND mode
-   * regardless of unfiltered dispatching, and in MERGE or DISTINCT mode only
-   * when unfiltered dispatching is requested. For second-level COMMAND items,
-   * LOST notifications are not propagated to this listener; second-level
-   * Server overflows use [onCommandSecondLevelItemLostUpdates].
+   * Event handler that is called by Lightstreamer to report lost updates for an item in the [Subscription].
    *
-   * JavaScript callback functions that still declare only the former three
-   * parameters can continue to run, because extra arguments are accepted, but
-   * they must account for Data Adapter losses and `lostUpdates == -1`.
-   * By implementing this method it is possible to perform recovery actions.
-   * 
-   * - [itemName] the name of the involved item in the explicit item list.
-   * - [itemPos] the 1-based position of the item within that list.
-   * - [lostUpdates] the number of lost updates, or `-1` when unavailable.
-   * - [isOverflow] true for Server buffer overflow (`OV`); false for Data
-   *   Adapter-reported loss (`LOST`).
-   * 
-   * - See [Subscription.setRequestedMaxFrequency]
+   * When [isOverflow] is `true`, updates were dropped by Server buffer overflow (`OV`).
+   * Notifications can be delivered in the following modes:
+   *
+   * - `RAW`
+   * - `MERGE` or `DISTINCT`, with unfiltered dispatching specified
+   * - `COMMAND`, for `ADD` and `DELETE` events, or for all update event types when
+   *   unfiltered dispatching was requested
+   *
+   * When [isOverflow] is `false`, the Data Adapter reported lost updates (`LOST`).
+   * Notifications can be delivered in `RAW` or `COMMAND` mode regardless of whether
+   * unfiltered dispatching was requested, and in `MERGE` or `DISTINCT` mode only
+   * when unfiltered dispatching was requested.
+   *
+   * For two-level COMMAND subscriptions, this callback refers only to first-level items.
+   * Second-level `LOST` notifications are not propagated to the parent's listeners;
+   * second-level `OV` notifications continue through [onCommandSecondLevelItemLostUpdates].
+   *
+   * The [itemName] is the name of the involved item in the explicit item list.
+   * The [itemPos] is the 1-based position of the item within the item list.
+   * The [lostUpdates] value is the integer number of lost updates, or `-1` when
+   * the count is unavailable.
+   * The [isOverflow] flag is `true` for Server buffer overflow and `false` for
+   * Data Adapter loss notifications.
+   *
+   * See [Subscription.setRequestedMaxFrequency].
    */
   @JSExport()
   void onItemLostUpdates(
